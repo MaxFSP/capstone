@@ -23,6 +23,8 @@ const withPWA = nextPWA({
 });
 
 // Export the combined configuration for Next.js with PWA support
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 export default withPWA(nextConfig);
 
 // /** @type {import("next").NextConfig} */
