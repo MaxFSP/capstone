@@ -16,10 +16,6 @@ export const metadata: Metadata = {
 export const viewport =
   "width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover, minimum-scale=1";
 
-export const themeColor = [
-  { media: "(prefers-color-scheme: dark)", color: "#fff" },
-];
-
 export default function RootLayout({
   children,
 }: {
