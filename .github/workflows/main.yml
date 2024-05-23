@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Set environment variables
+        run: |
+          echo "POSTGRES_URL=postgres://dummy:dummy@localhost:5432/dummy" >> $GITHUB_ENV
+
       - name: Run ESLint
         run: npm run lint
         continue-on-error: true # Set to true if you want the workflow to continue even if ESLint errors are found
