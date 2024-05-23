@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";

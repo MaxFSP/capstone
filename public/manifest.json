@@ -1,8 +1,8 @@
 {
   "name": "Administrador de reparaciones de Rudan Maquinarias ",
   "short_name": "Dashboard",
-  "theme_color": "#2196f3",
-  "background_color": "#2196f3",
+  "theme_color": "#0000",
+  "background_color": "#0000",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
