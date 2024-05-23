@@ -2,7 +2,7 @@
 
 ## TODO
 
-- [ ] Deploy (vercel)
+- [x] Deploy (vercel)
 - [ ] Scaffold UI
 - [ ] Set up database (vercel postgres)
 - [ ] attach database to UI
