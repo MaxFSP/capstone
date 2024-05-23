@@ -1,4 +1,8 @@
-import "~/styles/globals.css";
+import "./styles/globals.css";
+
+import { ClerkProvider } from "@clerk/nextjs";
+
+import TopNav from "./_components/topnav";
 
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
@@ -16,26 +20,19 @@ export const metadata: Metadata = {
 export const viewport =
   "width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover, minimum-scale=1";
 
-function TopNav() {
-  return (
-    <nav className="flex justify-between  border-b bg-gray-800 p-4 text-xl font-semibold  text-white">
-      <div>Logo</div>
-      <div>Sign in</div>
-    </nav>
-  );
-}
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} flex flex-col gap-4`}>
-      <body>
-        <TopNav />
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${GeistSans.variable} flex flex-col gap-4`}>
+        <body>
+          <TopNav />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
