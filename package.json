@@ -12,7 +12,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@clerk/localizations": "^2.4.2",
     "@clerk/nextjs": "^5.1.0",
     "@clerk/themes": "^2.1.7",
     "@t3-oss/env-nextjs": "^0.10.1",
