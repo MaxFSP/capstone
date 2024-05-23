@@ -14,6 +14,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^5.1.0
         version: 5.1.0(next@14.2.3(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@clerk/themes':
+        specifier: ^2.1.7
+        version: 2.1.7
       '@t3-oss/env-nextjs':
         specifier: ^0.10.1
         version: 0.10.1(typescript@5.4.5)(zod@3.23.8)
@@ -723,6 +726,10 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  '@clerk/themes@2.1.7':
+    resolution: {integrity: sha512-BHXRW1dSD70kwaQwmzhIKT18kzGgGHiT7o8s9TOMRs2I2KrQh25Oz5J0RVfqpRMhMxfbl4bubf/xMXAmgGgm/w==}
+    engines: {node: '>=18.17.0'}
 
   '@clerk/types@4.5.0':
     resolution: {integrity: sha512-g+CulWZq/HG9uhYFkXr8n9e376zZKY7elhW8/vXKJHDQEYeBmcUAkDgtgYXOU9OtXNS8xTbnhAwScn1bk1pRNg==}
@@ -4506,6 +4513,11 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
+  '@clerk/themes@2.1.7':
+    dependencies:
+      '@clerk/types': 4.5.0
+      tslib: 2.4.1
+
   '@clerk/types@4.5.0':
     dependencies:
       csstype: 3.1.1
@@ -5554,7 +5566,7 @@ snapshots:
   dot-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.4.1
+      tslib: 2.6.2
 
   dreamopt@0.8.0:
     dependencies:
@@ -6537,7 +6549,7 @@ snapshots:
 
   lower-case@2.0.2:
     dependencies:
-      tslib: 2.4.1
+      tslib: 2.6.2
 
   lru-cache@10.2.2: {}
 
@@ -6694,7 +6706,7 @@ snapshots:
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.4.1
+      tslib: 2.6.2
 
   node-gyp-build@4.8.1: {}
 
@@ -7127,7 +7139,7 @@ snapshots:
   snake-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.4.1
+      tslib: 2.6.2
 
   snakecase-keys@5.4.4:
     dependencies:

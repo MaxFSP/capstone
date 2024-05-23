@@ -1,7 +1,7 @@
 import "../styles/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
-
+import { dark } from "@clerk/themes";
 import TopNav from "./_components/topnav";
 
 import { GeistSans } from "geist/font/sans";
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider localization={esES}>
+    <ClerkProvider localization={esES} appearance={{ baseTheme: dark }}>
       <html lang="en" className={`${GeistSans.variable} flex flex-col gap-4`}>
         <body>
           <TopNav />
