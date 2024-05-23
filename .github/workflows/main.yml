@@ -1,0 +1,47 @@
+name: Lint and Type Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true # Set to true if you want the workflow to continue even if ESLint errors are found
+
+      - name: Run TypeScript Type Check
+        run: npm run type-check
+        continue-on-error: true # Set to true if you want the workflow to continue even if type errors are found
+
+      - name: Upload ESLint Report
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: eslint-report
+          path: eslint-report.json
+
+      - name: Upload TypeScript Report
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: typescript-report
+          path: ts-report.json
