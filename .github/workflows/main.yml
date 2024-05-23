@@ -29,7 +29,7 @@ jobs:
         continue-on-error: true # Set to true if you want the workflow to continue even if ESLint errors are found
 
       - name: Run TypeScript Type Check
-        run: npm run type-check
+        run: npm run typecheck
         continue-on-error: true # Set to true if you want the workflow to continue even if type errors are found
 
       - name: Upload ESLint Report
