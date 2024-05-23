@@ -12,6 +12,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@clerk/localizations": "^2.4.2",
     "@clerk/nextjs": "^5.1.0",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@types/next-pwa": "^5.6.9",
@@ -46,5 +47,5 @@
   "ct3aMetadata": {
     "initVersion": "7.33.1"
   },
-  "packageManager": "pnpm@9.0.4"
+  "packageManager": "pnpm@9.1.2"
 }

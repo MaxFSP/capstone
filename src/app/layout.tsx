@@ -6,6 +6,7 @@ import TopNav from "./_components/topnav";
 
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import { esES } from "@clerk/localizations";
 
 export const metadata: Metadata = {
   title: "Capstone",
@@ -26,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={esES}>
       <html lang="en" className={`${GeistSans.variable} flex flex-col gap-4`}>
         <body>
           <TopNav />
