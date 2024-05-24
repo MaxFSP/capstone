@@ -47,7 +47,7 @@ export default function Sidebar({ user }: { user: string }) {
             <ul>
               <li className="mb-2">
                 <Link
-                  href="#"
+                  href="/"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
                 >
                   Home
@@ -55,10 +55,10 @@ export default function Sidebar({ user }: { user: string }) {
               </li>
               <li className="mb-2">
                 <Link
-                  href="#"
+                  href="/dashboard"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
                 >
-                  About
+                  Dashboard
                 </Link>
               </li>
               <li className="mb-2">
@@ -90,7 +90,7 @@ export default function Sidebar({ user }: { user: string }) {
 
       {/* Topbar */}
       {!isOpen && (
-        <div className="flex w-full justify-between border-b bg-gray-800 p-4 text-xl font-semibold text-white lg:hidden">
+        <div className="flex w-full justify-between bg-gray-800 p-4 text-xl font-semibold text-white lg:hidden">
           <div>
             <button
               onClick={toggleMenu}

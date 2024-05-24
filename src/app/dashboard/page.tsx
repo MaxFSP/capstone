@@ -1,5 +1,5 @@
 function dashboard() {
-  return <div></div>;
+  return <div>I AM IN FACT THE DASHBOARD</div>;
 }
 
 export default dashboard;

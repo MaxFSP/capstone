@@ -8,7 +8,7 @@ export default function HomePage() {
         <p> In development</p>
         <Image
           className="mt-4"
-          src={"/workinprogress.webp"}
+          src={"/images/workinprogress.webp"}
           style={{ objectFit: "contain" }}
           width={720}
           height={720}
