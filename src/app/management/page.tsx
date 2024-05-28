@@ -2,9 +2,9 @@ import Table from "../_components/table";
 
 function UserMaganement() {
   return (
-    <div className="mb-8 mt-12 flex flex-col gap-12">
+    <main className=" background-black mb-8 mt-12 flex min-h-screen flex-col items-center justify-center  gap-12">
       <Table />
-    </div>
+    </main>
   );
 }
 
