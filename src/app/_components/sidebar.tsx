@@ -18,7 +18,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
       <div
         className={`fixed inset-y-0 left-0 w-64 transform bg-gray-800 p-5 text-white ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0`}
+        } z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0`}
       >
         <div>
           <div className="mb-10 flex items-center justify-between">
