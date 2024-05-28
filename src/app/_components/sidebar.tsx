@@ -1,10 +1,11 @@
 "use client";
 
-import { SignedIn, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import React from "react";
+import { CustomOrgSwitcher } from "./orgSwitch";
 
-export default function Sidebar({ user }: { user: string }) {
+export default function Sidebar({ user, org }: { user: string; org: string }) {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const toggleMenu = () => {
@@ -49,6 +50,7 @@ export default function Sidebar({ user }: { user: string }) {
                 <Link
                   href="/"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
                 >
                   Home
                 </Link>
@@ -57,6 +59,7 @@ export default function Sidebar({ user }: { user: string }) {
                 <Link
                   href="/dashboard"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
                 >
                   Dashboard
                 </Link>
@@ -65,6 +68,7 @@ export default function Sidebar({ user }: { user: string }) {
                 <Link
                   href="#"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
                 >
                   Services
                 </Link>
@@ -73,18 +77,42 @@ export default function Sidebar({ user }: { user: string }) {
                 <Link
                   href="#"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
+                  onClick={toggleMenu}
                 >
                   Contact
                 </Link>
               </li>
+              {org == "administrativo" && (
+                <li className="mb-2">
+                  <Link
+                    href="/management"
+                    className="block rounded px-3 py-2 hover:bg-gray-700"
+                    onClick={toggleMenu}
+                  >
+                    Administracion de usuarios
+                  </Link>
+                </li>
+              )}
+              {org == "test" && (
+                <li className="mb-2">
+                  <Link
+                    href="/test"
+                    className="block rounded px-3 py-2 hover:bg-gray-700"
+                    onClick={toggleMenu}
+                  >
+                    Test
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
         </div>
         <div className="mb-4 flex items-center justify-between">
-          <span className="mr-2 text-sm">{user}</span>
-          <SignedIn>
+          <div className="flex items-center">
             <UserButton />
-          </SignedIn>
+            <span className="ml-3 text-sm">{user}</span>
+          </div>
+          <CustomOrgSwitcher />
         </div>
       </div>
 

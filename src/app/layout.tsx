@@ -1,10 +1,18 @@
 import "../styles/globals.css";
+
+// Clerk
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
+
+// Fonts
 import { GeistSans } from "geist/font/sans";
+
+// Types
 import type { Metadata } from "next";
-import { esMX } from "@clerk/localizations";
+
+// Providers
+import { Providers } from "./providers";
+
+// Components
 import SidebarContainer from "./_components/sidebarContainer";
 
 export const metadata: Metadata = {
@@ -22,24 +30,30 @@ export const viewport =
 
 export default function RootLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   return (
-    <ClerkProvider appearance={{ baseTheme: dark }} localization={esMX}>
-      <html lang="es" className={`${GeistSans.variable} flex flex-col gap-4`}>
-        <body className="">
+    <html
+      lang="es"
+      className={`${GeistSans.variable} flex flex-col gap-4 dark`}
+    >
+      <body className="bg-black">
+        <Providers>
           <SignedIn>
             <div className="flex flex-col lg:flex-row">
               <SidebarContainer />
-              <div className="ml-0 flex-grow p-5 transition-all duration-300 ease-in-out lg:ml-64">
+              <main className="ml-0 flex-grow p-5 transition-all duration-300 ease-in-out lg:ml-64">
                 {children}
-              </div>
+              </main>
+              {modal}
             </div>
           </SignedIn>
           <SignedOut>{children}</SignedOut>
-        </body>
-      </html>
-    </ClerkProvider>
+        </Providers>
+      </body>
+    </html>
   );
 }
