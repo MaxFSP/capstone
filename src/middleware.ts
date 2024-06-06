@@ -1,10 +1,8 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// Custom function to check if the route should be protected
 const isProtectedRoute = (pathname: string) => {
-  const protectedRoutes = ["/", "/*"];
-  const excludedRoutes = ["/signIn"];
+  const excludedRoutes = ["/signIn"]; // Include other auth-related routes if necessary
 
   // Check if the pathname starts with any excluded route
   for (const route of excludedRoutes) {
@@ -13,14 +11,8 @@ const isProtectedRoute = (pathname: string) => {
     }
   }
 
-  // Check if the pathname starts with any protected route
-  for (const route of protectedRoutes) {
-    if (pathname === route || pathname.startsWith(route + "/")) {
-      return true;
-    }
-  }
-
-  return false;
+  // All other routes are protected
+  return true;
 };
 
 export default clerkMiddleware(async (auth, request) => {
@@ -40,5 +32,5 @@ export default clerkMiddleware(async (auth, request) => {
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };
