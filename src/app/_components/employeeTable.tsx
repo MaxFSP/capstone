@@ -1,7 +1,8 @@
-import { getAllUsers } from "../../server/queries";
 import { CardBody } from "@nextui-org/card";
 import { Avatar } from "@nextui-org/avatar";
 import { Chip } from "@nextui-org/chip";
+import Link from "next/link";
+import { getAllUsers } from "~/server/queries";
 
 export default async function EmployeeTable() {
   const users = await getAllUsers();
@@ -24,13 +25,13 @@ export default async function EmployeeTable() {
           </tr>
         </thead>
         <tbody>
-          {users.map(({ img, name, email, job }, key) => {
+          {users.map(({ id, img, name, email, job }, key) => {
             const className = `py-3 px-5 ${
               key === users.length - 1 ? "" : "border-b border-blue-gray-50"
             }`;
 
             return (
-              <tr key={name}>
+              <tr key={id}>
                 <td className={className}>
                   <div className="flex items-center gap-4">
                     <Avatar src={img} alt={name} size="sm" />
@@ -62,9 +63,12 @@ export default async function EmployeeTable() {
                 </td>
 
                 <td className={className}>
-                  <p className="text-blue-gray-600 text-xs font-semibold">
+                  <Link
+                    href={`/user/${id}`}
+                    className="text-blue-gray-600 text-xs font-semibold"
+                  >
                     Edit
-                  </p>
+                  </Link>
                 </td>
               </tr>
             );

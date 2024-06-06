@@ -1,4 +1,4 @@
-import "../styles/globals.css";
+import "~/styles/globals.css";
 
 // Clerk
 import { SignedIn, SignedOut } from "@clerk/nextjs";
@@ -50,6 +50,7 @@ export default function RootLayout({
               </main>
               {modal}
             </div>
+            <div id="modal-root" />
           </SignedIn>
           <SignedOut>{children}</SignedOut>
         </Providers>

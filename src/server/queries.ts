@@ -1,7 +1,7 @@
 import "server-only";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
-import type { Employee } from "../app/types/employee";
+import type { Employee } from "~/app/types/employee";
 
 //user and auth queries
 
@@ -30,14 +30,37 @@ export async function getActiveOrg(): Promise<string> {
 }
 
 export async function getAllUsers(): Promise<Employee[]> {
+  const user = auth();
+
+  if (!user.userId) throw new Error("Unauthorized");
+
   const users = await clerkClient.users.getUserList();
   const transformedUser: Employee[] = users.data.map((user) => ({
+    id: user.id,
     img: user.imageUrl,
     name: user.username ?? "Unknown",
     email: user.emailAddresses[0]?.emailAddress ?? "Unknown",
     job: ["Unknown", "Unknown"],
     online: true,
   }));
+
+  return transformedUser;
+}
+
+export async function getUserById(id: string): Promise<Employee> {
+  const userf = auth();
+
+  if (!userf.userId) throw new Error("Unauthorized");
+
+  const user = await clerkClient.users.getUser(id);
+  const transformedUser: Employee = {
+    id: user.id,
+    img: user.imageUrl,
+    name: user.username ?? "Unknown",
+    email: user.emailAddresses[0]?.emailAddress ?? "Unknown",
+    job: ["Unknown", "Unknown"],
+    online: true,
+  };
 
   return transformedUser;
 }
