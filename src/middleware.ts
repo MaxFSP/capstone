@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 // Custom function to check if the route should be protected
 const isProtectedRoute = (pathname: string) => {
-  const protectedRoutes = ["/"];
+  const protectedRoutes = ["/", "/*"];
   const excludedRoutes = ["/signIn"];
 
   // Check if the pathname starts with any excluded route
