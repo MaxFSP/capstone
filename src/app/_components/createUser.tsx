@@ -96,7 +96,7 @@ export default function CreateUser({
     const formValuesWithOrg = { ...formValuesF, organizationId };
 
     try {
-      const response = await fetch("/api/createCompleteUser", {
+      const response = await fetch("/api/createUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
