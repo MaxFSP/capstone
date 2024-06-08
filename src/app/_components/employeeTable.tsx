@@ -25,7 +25,7 @@ export default async function EmployeeTable() {
           </tr>
         </thead>
         <tbody>
-          {users.map(({ id, img, name, email, job }, key) => {
+          {users.map(({ id, img, firstName, email, department }, key) => {
             const className = `py-3 px-5 ${
               key === users.length - 1 ? "" : "border-b border-blue-gray-50"
             }`;
@@ -34,10 +34,10 @@ export default async function EmployeeTable() {
               <tr key={id}>
                 <td className={className}>
                   <div className="flex items-center gap-4">
-                    <Avatar src={img} alt={name} size="sm" />
+                    <Avatar src={img} alt={firstName} size="sm" />
                     <div>
                       <p color="blue-gray" className="text-s font-semibold">
-                        {name}
+                        {firstName}
                       </p>
                       <p className="text-blue-gray-500 text-xs font-normal">
                         {email}
@@ -47,10 +47,10 @@ export default async function EmployeeTable() {
                 </td>
                 <td className={className}>
                   <p className="text-blue-gray-600 text-xs font-semibold">
-                    {job[0]}
+                    {department[0]}
                   </p>
                   <p className="text-blue-gray-500 text-xs font-normal">
-                    {job[1]}
+                    {department[1]}
                   </p>
                 </td>
                 <td className={className}>
@@ -67,7 +67,7 @@ export default async function EmployeeTable() {
                     href={`/user/${id}`}
                     className="text-blue-gray-600 text-xs font-semibold"
                   >
-                    Edit
+                    View
                   </Link>
                 </td>
               </tr>

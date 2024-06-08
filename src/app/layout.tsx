@@ -30,10 +30,8 @@ export const viewport =
 
 export default function RootLayout({
   children,
-  modal,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode;
 }) {
   return (
     <html
@@ -48,9 +46,7 @@ export default function RootLayout({
               <main className="ml-0 flex-grow p-5 transition-all duration-300 ease-in-out lg:ml-64">
                 {children}
               </main>
-              {modal}
             </div>
-            <div id="modal-root" />
           </SignedIn>
           <SignedOut>{children}</SignedOut>
         </Providers>
