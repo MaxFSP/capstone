@@ -16,7 +16,7 @@ import {
 } from "@nextui-org/react";
 import type { UpdateUserRequest, UpdateUserResponse } from "../types/api";
 
-export default function PageUser({
+export default function EditUser({
   user,
   departments,
 }: {
@@ -54,7 +54,7 @@ export default function PageUser({
   }, [user, departments, formValues]);
 
   useEffect(() => {
-    const isEmailValid = validateEmail(formValues.email);
+    const isEmailValid = validateEmail(formValues.email[0]!);
     const isUsernameValid = validateUsername(formValues.username);
     const isNameValid = validateName(formValues.firstName);
     const isLastNameValid = validateName(formValues.lastName);
@@ -138,7 +138,7 @@ export default function PageUser({
   const validateName = (name: string) => /^[a-zA-Z]+$/.test(name);
 
   const isEmailInvalid = useMemo(
-    () => formValues.email !== "" && !validateEmail(formValues.email),
+    () => formValues.email[0]! !== "" && !validateEmail(formValues.email[0]!),
     [formValues.email],
   );
   const isUsernameInvalid = useMemo(
@@ -217,7 +217,7 @@ export default function PageUser({
                 type="email"
                 label="Email"
                 name="email"
-                value={formValues.email}
+                value={formValues.email[0]}
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isEmailInvalid}

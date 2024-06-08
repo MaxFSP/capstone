@@ -1,6 +1,6 @@
 import EmployeeTable from "./employeeTable";
 import { Card, CardHeader } from "@nextui-org/card";
-import CreateUser from "./create_user_button";
+import CreateUser from "./createUserButton";
 
 export default function Table() {
   return (

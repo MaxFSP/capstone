@@ -2,7 +2,11 @@ import "server-only";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
-import type { Employee, UpdateEmployee } from "~/app/types/employee";
+import type {
+  CreateEmployee,
+  Employee,
+  UpdateEmployee,
+} from "~/app/types/employee";
 import type { Org, EmployeeInOrg } from "~/app/types/org";
 //user and auth queries
 
@@ -43,7 +47,7 @@ export async function getAllUsers(): Promise<Employee[]> {
     firstName: user.firstName ?? "Unknown",
     lastName: user.lastName ?? "Unknown",
     username: user.username ?? "Unknown",
-    email: user.emailAddresses[0]?.emailAddress ?? "Unknown",
+    email: [user.emailAddresses[0]!.emailAddress] ?? ["Unknown"],
     department: ["Unknown", "Unknown"],
     online: true,
   }));
@@ -63,7 +67,7 @@ export async function getUserById(id: string): Promise<Employee> {
     firstName: user.firstName ?? "Unknown",
     lastName: user.lastName ?? "Unknown",
     username: user.username ?? "Unknown",
-    email: user.emailAddresses[0]?.emailAddress ?? "Unknown",
+    email: [user.emailAddresses[0]!.emailAddress] ?? ["Unknown"],
     department: ["Unknown", "Unknown"],
     online: true,
   };
@@ -126,6 +130,14 @@ export async function updateUser(
 ): Promise<void> {
   const user = auth();
   if (!user.userId) throw new Error("Unauthorized");
-  const response = await clerkClient.users.updateUser(userId, formEmployee);
-  console.log(response);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  await clerkClient.users.updateUser(userId, formEmployee);
+}
+
+export async function createUser(newUser: CreateEmployee): Promise<void> {
+  const user = auth();
+  if (!user.userId) throw new Error("Unauthorized");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+  await clerkClient.users.createUser(newUser);
 }

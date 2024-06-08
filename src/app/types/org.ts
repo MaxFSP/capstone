@@ -7,3 +7,9 @@ export interface EmployeeInOrg {
   orgId: string;
   userId: string;
 }
+
+export interface AddEmployee {
+  organizationId: string;
+  userId: string;
+  role: string;
+}
