@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import type { Employee } from "../types/employee";
@@ -79,7 +80,7 @@ export default function PageUser({
 
   const handleEditClick = () => setIsEditing((prev) => !prev);
 
-  const handleSaveClick = async () => {
+  const handleSaveClick = async (): Promise<boolean> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { online, ...formValuesWithoutOnline } = formValues;
     const changes: UpdateUserRequest = {
@@ -110,8 +111,10 @@ export default function PageUser({
       }
 
       setIsEditing(false);
+      return true;
     } catch (error) {
       console.error("Failed to update user:", error);
+      return false;
     }
   };
 
@@ -122,8 +125,10 @@ export default function PageUser({
   };
 
   const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    router.push("/management");
+    const saveSuccessful = await handleSaveClick();
+    if (saveSuccessful) {
+      router.push("/management");
+    }
   };
 
   const validateEmail = (email: string) =>
