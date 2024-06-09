@@ -1,3 +1,5 @@
+import { Org } from "./org";
+
 export interface BaseEmployee {
   firstName: string;
   lastName: string;
@@ -11,12 +13,11 @@ export interface CreateEmployee extends BaseEmployee {
 }
 
 export interface UpdateEmployee {
-  img?: string;
   firstName?: string;
   lastName?: string;
   username?: string;
-  email?: string[];
-  department?: string[];
+  email: string[];
+  orgId?: string;
   online?: boolean;
   password?: string;
 }
@@ -24,8 +25,7 @@ export interface UpdateEmployee {
 export interface Employee extends BaseEmployee {
   id: string;
   img: string;
-  department: string[];
-  online: boolean;
+  org: Org;
 }
 
 export interface CreateEmployeeWithOrg extends CreateEmployee {

@@ -17,10 +17,10 @@ import type { CreateUserResponse } from "../types/api";
 
 export default function CreateUser({
   user,
-  departments,
+  orgs,
 }: {
   user: CreateEmployee;
-  departments: Org[];
+  orgs: Org[];
 }) {
   const router = useRouter();
 
@@ -36,11 +36,11 @@ export default function CreateUser({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setInitialFormValues] = useState({ ...formValues });
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([departments[0]!.name]),
+    new Set([orgs[0]!.name]),
   );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [initialSelectedKeys, setInitialSelectedKeys] = useState(
-    new Set([departments[0]!.name]),
+    new Set([orgs[0]!.name]),
   );
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -51,9 +51,10 @@ export default function CreateUser({
 
   useEffect(() => {
     setInitialFormValues({ ...formValues });
-    setSelectedKeys(new Set([departments[0]!.name]));
-    setInitialSelectedKeys(new Set([departments[0]!.name]));
-  }, [user, departments, formValues]);
+    setSelectedKeys(new Set([orgs[0]!.name]));
+    setInitialSelectedKeys(new Set([orgs[0]!.name]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, orgs]);
 
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
@@ -87,8 +88,8 @@ export default function CreateUser({
     const formValuesF = { email: emails, ...formValuesCrop };
 
     const selectedDepartmentName = Array.from(selectedKeys).join(", ");
-    const selectedDepartment = departments.find(
-      (department) => department.name === selectedDepartmentName,
+    const selectedDepartment = orgs.find(
+      (org) => org.name === selectedDepartmentName,
     );
     const organizationId = selectedDepartment ? selectedDepartment.id : "";
 
@@ -180,7 +181,7 @@ export default function CreateUser({
             />
           </div>
           <div className="w-full">
-            <h3 className="mb-4 text-2xl font-semibold">Edit User</h3>
+            <h3 className="mb-4 text-2xl font-semibold">Create User</h3>
             <form className="flex flex-col space-y-4">
               <Input
                 required
@@ -278,10 +279,8 @@ export default function CreateUser({
                   selectedKeys={selectedKeys}
                   onSelectionChange={(keys) => setSelectedKeys(new Set(keys))}
                 >
-                  {departments.map((department) => (
-                    <DropdownItem key={department.name}>
-                      {department.name}
-                    </DropdownItem>
+                  {orgs.map((org) => (
+                    <DropdownItem key={org.name}>{org.name}</DropdownItem>
                   ))}
                 </DropdownMenu>
               </Dropdown>

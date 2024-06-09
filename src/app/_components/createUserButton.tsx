@@ -10,7 +10,7 @@ function CreateUserButton() {
       href={`/user/${create}`}
       className="text-blue-gray-600 text-xs font-semibold"
     >
-      <Button color="primary">Crear nuevo usuario</Button>
+      <Button color="primary">Create a new user</Button>
     </Link>
   );
 }

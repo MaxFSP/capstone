@@ -24,10 +24,12 @@ export default async function EmployeeTable() {
             </tr>
           </thead>
           <tbody>
-            {users.map(({ id, img, firstName, email, department }, key) => {
+            {users.map(({ id, img, firstName, email, org, online }, key) => {
               const className = `py-3 px-5 ${
                 key === users.length - 1 ? "" : "border-b border-blue-gray-50"
               }`;
+              const statusClass = online ? "bg-green-500" : "bg-red-500";
+              const statusText = online ? "Enabled" : "Disabled";
 
               return (
                 <tr key={id}>
@@ -44,14 +46,16 @@ export default async function EmployeeTable() {
                   </td>
                   <td className={className}>
                     <p className="text-blue-gray-600 text-xs font-semibold">
-                      {department[0]}
+                      {org.name}
                     </p>
                   </td>
                   <td className={className}>
                     <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                      <div
+                        className={`h-3 w-3 rounded-full ${statusClass}`}
+                      ></div>
                       <p className="text-blue-gray-600 text-xs font-semibold">
-                        Enabled
+                        {statusText}
                       </p>
                     </div>
                   </td>
@@ -70,26 +74,32 @@ export default async function EmployeeTable() {
         </table>
       </div>
       <div className="block md:hidden">
-        {users.map(({ id, img, firstName, department }) => (
-          <Link
-            key={id}
-            href={`/user/${id}`}
-            className="border-blue-gray-50 flex items-center gap-4 border-b px-5 py-4"
-          >
-            <Avatar src={img} alt={firstName} size="lg" />
-            <div className="flex w-full flex-col justify-center">
-              <div className="flex items-center justify-between">
-                <p className="text-base font-semibold">{firstName}</p>
-                <div className="flex items-center gap-2 pr-5">
-                  <div className="text-blue-gray-600 text-sm font-semibold">
-                    {department[0]}
+        {users.map(({ id, img, firstName, org, online }) => {
+          const statusClass = online ? "bg-green-500" : "bg-red-500";
+
+          return (
+            <Link
+              key={id}
+              href={`/user/${id}`}
+              className="border-blue-gray-50 flex items-center gap-4 border-b px-5 py-4"
+            >
+              <Avatar src={img} alt={firstName} size="lg" />
+              <div className="flex w-full flex-col justify-center">
+                <div className="flex items-center justify-between">
+                  <p className="text-base font-semibold">{firstName}</p>
+                  <div className="flex items-center gap-2 pr-5">
+                    <div className="text-blue-gray-600 text-sm font-semibold">
+                      {org.name}
+                    </div>
+                    <div
+                      className={`ml-6 h-3 w-3 rounded-full ${statusClass}`}
+                    ></div>
                   </div>
-                  <div className="ml-6 h-3 w-3 rounded-full bg-green-500"></div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </CardBody>
   );

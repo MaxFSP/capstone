@@ -15,13 +15,16 @@ import {
   Checkbox,
 } from "@nextui-org/react";
 import type { UpdateUserRequest, UpdateUserResponse } from "../types/api";
+import type { UpdateEmployee } from "../types/employee";
 
 export default function EditUser({
   user,
-  departments,
+  orgs,
+  currentOrg,
 }: {
   user: Employee;
-  departments: Org[];
+  orgs: Org[];
+  currentOrg: Org;
 }) {
   const router = useRouter();
 
@@ -30,17 +33,18 @@ export default function EditUser({
     firstName: user.firstName,
     lastName: user.lastName,
     username: user.username,
-    email: user.email,
+    email: user.email[0],
     online: user.online,
     password: "",
     confirmPassword: "",
   });
+
   const [initialFormValues, setInitialFormValues] = useState({ ...formValues });
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([departments[0]!.name]),
+    new Set([currentOrg.name]),
   );
   const [initialSelectedKeys, setInitialSelectedKeys] = useState(
-    new Set([departments[0]!.name]),
+    new Set([currentOrg.name]),
   );
   const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -51,11 +55,11 @@ export default function EditUser({
   );
 
   useEffect(() => {
-    setInitialFormValues({ ...formValues });
-    setSelectedKeys(new Set([departments[0]!.name]));
-    setInitialSelectedKeys(new Set([departments[0]!.name]));
+    setInitialFormValues({ ...formValues, email: user.email[0] });
+    setSelectedKeys(new Set([currentOrg.name]));
+    setInitialSelectedKeys(new Set([currentOrg.name]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, departments]);
+  }, [user, orgs, currentOrg]);
 
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
@@ -77,7 +81,8 @@ export default function EditUser({
     );
 
     const hasChanges =
-      JSON.stringify(formValues) !== JSON.stringify(initialFormValues) ||
+      JSON.stringify({ ...formValues, confirmPassword: "" }) !==
+        JSON.stringify({ ...initialFormValues, confirmPassword: "" }) ||
       JSON.stringify(Array.from(selectedKeys)) !==
         JSON.stringify(Array.from(initialSelectedKeys));
     setHasChanges(hasChanges);
@@ -97,26 +102,53 @@ export default function EditUser({
 
   const handleSaveClick = async (): Promise<boolean> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, confirmPassword, online, ...formValuesWithoutOnline } =
+    const { password, confirmPassword, ...formValuesWithoutPassword } =
       formValues;
 
-    const changes: UpdateUserRequest = {
+    const changes: Partial<UpdateEmployee> = {};
+
+    (
+      Object.keys(
+        formValuesWithoutPassword,
+      ) as (keyof typeof formValuesWithoutPassword)[]
+    ).forEach((key) => {
+      if (formValuesWithoutPassword[key] !== initialFormValues[key]) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        changes[key] = formValuesWithoutPassword[key] as any;
+      }
+    });
+
+    if (password) {
+      changes.password = password;
+    }
+
+    const selectedDepartmentName = Array.from(selectedKeys).join(", ");
+    const selectedDepartment = orgs.find(
+      (department) => department.name === selectedDepartmentName,
+    );
+    const orgId = selectedDepartment ? selectedDepartment.id : "";
+    changes.orgId = orgId;
+
+    if (!changes.email) {
+      changes.email = [formValues.email!];
+    }
+
+    const finalChanges: UpdateUserRequest = {
       userId: user.id,
       formEmployee: {
-        ...formValuesWithoutOnline,
-        department: Array.from(selectedKeys),
-        online: formValues.online,
-        password: formValues.password || undefined, // only include password if it's not empty
+        ...changes,
+        email: changes.email,
       },
     };
-    console.log(changes);
+
+    // console.log(finalChanges);
     try {
       const response = await fetch("/api/updateUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(changes),
+        body: JSON.stringify(finalChanges),
       });
 
       if (!response.ok) {
@@ -150,6 +182,10 @@ export default function EditUser({
     if (saveSuccessful) {
       router.push("/management");
     }
+  };
+
+  const handleCloseClick = () => {
+    router.push("/management");
   };
 
   const validateEmail = (email: string) =>
@@ -251,12 +287,13 @@ export default function EditUser({
                 label="Email"
                 name="email"
                 value={formValues.email}
-                onChange={handleInputChange} // Correct this line
+                onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isEmailInvalid}
                 color={isEmailInvalid ? "danger" : "default"}
                 errorMessage={isEmailInvalid && "Please enter a valid email"}
               />
+
               <Input
                 type="password"
                 label="Password"
@@ -297,7 +334,7 @@ export default function EditUser({
                   selectedKeys={selectedKeys}
                   onSelectionChange={(keys) => setSelectedKeys(new Set(keys))}
                 >
-                  {departments.map((department) => (
+                  {orgs.map((department) => (
                     <DropdownItem key={department.name}>
                       {department.name}
                     </DropdownItem>
@@ -313,6 +350,9 @@ export default function EditUser({
                 Online
               </Checkbox>
               <div className="flex space-x-4">
+                {!isEditing && (
+                  <Button onClick={handleCloseClick}>Close</Button>
+                )}
                 <Button
                   onClick={isEditing ? handleCancelClick : handleEditClick}
                 >
