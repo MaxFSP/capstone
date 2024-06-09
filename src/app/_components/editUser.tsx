@@ -32,6 +32,8 @@ export default function EditUser({
     username: user.username,
     email: user.email,
     online: user.online,
+    password: "",
+    confirmPassword: "",
   });
   const [initialFormValues, setInitialFormValues] = useState({ ...formValues });
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
@@ -41,6 +43,7 @@ export default function EditUser({
     new Set([departments[0]!.name]),
   );
   const [isFormValid, setIsFormValid] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const selectedValue = useMemo(
     () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
@@ -51,22 +54,34 @@ export default function EditUser({
     setInitialFormValues({ ...formValues });
     setSelectedKeys(new Set([departments[0]!.name]));
     setInitialSelectedKeys(new Set([departments[0]!.name]));
-  }, [user, departments, formValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, departments]);
 
   useEffect(() => {
-    const isEmailValid = validateEmail(formValues.email[0]!);
+    const isEmailValid = validateEmail(formValues.email);
     const isUsernameValid = validateUsername(formValues.username);
     const isNameValid = validateName(formValues.firstName);
     const isLastNameValid = validateName(formValues.lastName);
+    const isPasswordValid = validatePassword(formValues.password);
+    const isConfirmPasswordValid =
+      formValues.password === formValues.confirmPassword;
 
     setIsFormValid(
       isEmailValid &&
         isUsernameValid &&
         isNameValid &&
         isLastNameValid &&
+        (formValues.password === "" ||
+          (isPasswordValid && isConfirmPasswordValid)) &&
         selectedKeys.size > 0,
     );
-  }, [formValues, selectedKeys]);
+
+    const hasChanges =
+      JSON.stringify(formValues) !== JSON.stringify(initialFormValues) ||
+      JSON.stringify(Array.from(selectedKeys)) !==
+        JSON.stringify(Array.from(initialSelectedKeys));
+    setHasChanges(hasChanges);
+  }, [formValues, selectedKeys, initialFormValues, initialSelectedKeys]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -82,15 +97,19 @@ export default function EditUser({
 
   const handleSaveClick = async (): Promise<boolean> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { online, ...formValuesWithoutOnline } = formValues;
+    const { password, confirmPassword, online, ...formValuesWithoutOnline } =
+      formValues;
+
     const changes: UpdateUserRequest = {
       userId: user.id,
       formEmployee: {
         ...formValuesWithoutOnline,
         department: Array.from(selectedKeys),
+        online: formValues.online,
+        password: formValues.password || undefined, // only include password if it's not empty
       },
     };
-
+    console.log(changes);
     try {
       const response = await fetch("/api/updateUser", {
         method: "POST",
@@ -111,6 +130,8 @@ export default function EditUser({
       }
 
       setIsEditing(false);
+      setInitialFormValues({ ...formValues });
+      setInitialSelectedKeys(new Set(selectedKeys));
       return true;
     } catch (error) {
       console.error("Failed to update user:", error);
@@ -136,9 +157,11 @@ export default function EditUser({
   const validateUsername = (username: string) =>
     /^[a-zA-Z0-9]+$/.test(username);
   const validateName = (name: string) => /^[a-zA-Z]+$/.test(name);
+  const validatePassword = (password: string) =>
+    /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const isEmailInvalid = useMemo(
-    () => formValues.email[0]! !== "" && !validateEmail(formValues.email[0]!),
+    () => formValues.email !== "" && !validateEmail(formValues.email),
     [formValues.email],
   );
   const isUsernameInvalid = useMemo(
@@ -152,6 +175,16 @@ export default function EditUser({
   const isLastNameInvalid = useMemo(
     () => formValues.lastName !== "" && !validateName(formValues.lastName),
     [formValues.lastName],
+  );
+  const isPasswordInvalid = useMemo(
+    () => formValues.password !== "" && !validatePassword(formValues.password),
+    [formValues.password],
+  );
+  const isConfirmPasswordInvalid = useMemo(
+    () =>
+      formValues.confirmPassword !== "" &&
+      formValues.password !== formValues.confirmPassword,
+    [formValues.password, formValues.confirmPassword],
   );
 
   return (
@@ -176,7 +209,7 @@ export default function EditUser({
               />
               <Input
                 type="text"
-                label="firstName"
+                label="First Name"
                 name="firstName"
                 value={formValues.firstName}
                 onChange={handleInputChange}
@@ -217,12 +250,39 @@ export default function EditUser({
                 type="email"
                 label="Email"
                 name="email"
-                value={formValues.email[0]}
-                onChange={handleInputChange}
+                value={formValues.email}
+                onChange={handleInputChange} // Correct this line
                 isDisabled={!isEditing}
                 isInvalid={isEmailInvalid}
                 color={isEmailInvalid ? "danger" : "default"}
                 errorMessage={isEmailInvalid && "Please enter a valid email"}
+              />
+              <Input
+                type="password"
+                label="Password"
+                name="password"
+                value={formValues.password}
+                onChange={handleInputChange}
+                isDisabled={!isEditing}
+                isInvalid={isPasswordInvalid}
+                color={isPasswordInvalid ? "danger" : "default"}
+                errorMessage={
+                  isPasswordInvalid &&
+                  "Password must contain at least 8 characters, one uppercase letter, and one number"
+                }
+              />
+              <Input
+                type="password"
+                label="Confirm Password"
+                name="confirmPassword"
+                value={formValues.confirmPassword}
+                onChange={handleInputChange}
+                isDisabled={!isEditing}
+                isInvalid={isConfirmPasswordInvalid}
+                color={isConfirmPasswordInvalid ? "danger" : "default"}
+                errorMessage={
+                  isConfirmPasswordInvalid && "Passwords do not match"
+                }
               />
               <Dropdown isDisabled={!isEditing} closeOnSelect={true}>
                 <DropdownTrigger>
@@ -260,12 +320,15 @@ export default function EditUser({
                 </Button>
                 {isEditing && (
                   <>
-                    <Button onClick={handleSaveClick} isDisabled={!isFormValid}>
+                    <Button
+                      onClick={handleSaveClick}
+                      isDisabled={!isFormValid || !hasChanges}
+                    >
                       Save
                     </Button>
                     <Button
                       onClick={handleSaveAndCloseClick}
-                      isDisabled={!isFormValid}
+                      isDisabled={!isFormValid || !hasChanges}
                     >
                       Save & Close
                     </Button>

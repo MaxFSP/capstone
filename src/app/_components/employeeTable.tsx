@@ -1,80 +1,91 @@
 import { CardBody } from "@nextui-org/card";
 import { Avatar } from "@nextui-org/avatar";
-import { Chip } from "@nextui-org/chip";
 import Link from "next/link";
 import { getAllUsers } from "~/server/queries";
 
 export default async function EmployeeTable() {
   const users = await getAllUsers();
-
   return (
     <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
-      <table className="w-full min-w-[640px] table-auto">
-        <thead>
-          <tr>
-            {["user", "function", "status", ""].map((el) => (
-              <th
-                key={el}
-                className="border-blue-gray-50 border-b px-5 py-3 text-left"
-              >
-                <p className="text-blue-gray-400 text-s text-[11px] font-bold uppercase">
-                  {el}
-                </p>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(({ id, img, firstName, email, department }, key) => {
-            const className = `py-3 px-5 ${
-              key === users.length - 1 ? "" : "border-b border-blue-gray-50"
-            }`;
+      <div className="hidden md:block">
+        <table className="w-full min-w-[640px] table-auto">
+          <thead>
+            <tr>
+              {["user", "function", "status", ""].map((el) => (
+                <th
+                  key={el}
+                  className="border-blue-gray-50 border-b px-5 py-3 text-left"
+                >
+                  <p className="text-blue-gray-400 text-s text-[11px] font-bold uppercase">
+                    {el}
+                  </p>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(({ id, img, firstName, email, department }, key) => {
+              const className = `py-3 px-5 ${
+                key === users.length - 1 ? "" : "border-b border-blue-gray-50"
+              }`;
 
-            return (
-              <tr key={id}>
-                <td className={className}>
-                  <div className="flex items-center gap-4">
-                    <Avatar src={img} alt={firstName} size="sm" />
-                    <div>
-                      <p color="blue-gray" className="text-s font-semibold">
-                        {firstName}
-                      </p>
-                      <p className="text-blue-gray-500 text-xs font-normal">
-                        {email}
-                      </p>
+              return (
+                <tr key={id}>
+                  <td className={className}>
+                    <div className="flex items-center gap-4">
+                      <Avatar src={img} alt={firstName} size="sm" />
+                      <div>
+                        <p color="blue-gray" className="text-s font-semibold">
+                          {firstName}
+                        </p>
+                        <p className="text-blue-gray-400 text-xs">{email}</p>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className={className}>
-                  <p className="text-blue-gray-600 text-xs font-semibold">
+                  </td>
+                  <td className={className}>
+                    <p className="text-blue-gray-600 text-xs font-semibold">
+                      {department[0]}
+                    </p>
+                  </td>
+                  <td className={className}>
+                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                  </td>
+                  <td className={className}>
+                    <Link
+                      href={`/user/${id}`}
+                      className="text-blue-gray-600 text-xs font-semibold"
+                    >
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="block md:hidden">
+        {users.map(({ id, img, firstName, department }) => (
+          <Link
+            key={id}
+            href={`/user/${id}`}
+            className="border-blue-gray-50 flex items-center gap-4 border-b px-5 py-4"
+          >
+            <Avatar src={img} alt={firstName} size="lg" />
+            <div className="flex w-full flex-col justify-center">
+              <div className="flex items-center justify-between">
+                <p className="text-base font-semibold">{firstName}</p>
+                <div className="flex items-center gap-2 pr-5">
+                  <div className="text-blue-gray-600 text-sm font-semibold">
                     {department[0]}
-                  </p>
-                  <p className="text-blue-gray-500 text-xs font-normal">
-                    {department[1]}
-                  </p>
-                </td>
-                <td className={className}>
-                  <Chip
-                    className="w-fit px-2 py-0.5 text-[11px] font-medium"
-                    color="success"
-                  >
-                    Online
-                  </Chip>
-                </td>
-
-                <td className={className}>
-                  <Link
-                    href={`/user/${id}`}
-                    className="text-blue-gray-600 text-xs font-semibold"
-                  >
-                    View
-                  </Link>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  </div>
+                  <div className="ml-6 h-3 w-3 rounded-full bg-green-500"></div>
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
     </CardBody>
   );
 }

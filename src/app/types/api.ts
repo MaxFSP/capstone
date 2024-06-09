@@ -4,7 +4,8 @@ import type { BaseEmployee } from "./employee";
 export interface UpdateUserRequest {
   userId: string;
   formEmployee: BaseEmployee & {
-    department: string[];
+    department?: string[];
+    password?: string;
   };
 }
 

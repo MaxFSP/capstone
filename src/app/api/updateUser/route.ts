@@ -10,11 +10,11 @@ export async function POST(req: NextRequest) {
 
   if (!userId) return NextResponse.redirect("/sign-in");
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const { userId: targetUserId, formEmployee }: UpdateUserRequest =
-    await req.json();
-
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { userId: targetUserId, formEmployee }: UpdateUserRequest =
+      await req.json();
+
     await clerkClient.users.updateUser(targetUserId, formEmployee);
     return NextResponse.json({
       message: "User updated successfully",

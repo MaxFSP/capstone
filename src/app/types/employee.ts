@@ -3,6 +3,7 @@ export interface BaseEmployee {
   lastName: string;
   username: string;
   email: string[];
+  online?: boolean;
 }
 
 export interface CreateEmployee extends BaseEmployee {
@@ -16,6 +17,8 @@ export interface UpdateEmployee {
   username?: string;
   email?: string[];
   department?: string[];
+  online?: boolean;
+  password?: string;
 }
 
 export interface Employee extends BaseEmployee {
