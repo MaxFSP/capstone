@@ -11,7 +11,7 @@ export default async function EmployeeTable() {
         <table className="w-full min-w-[640px] table-auto">
           <thead>
             <tr>
-              {["user", "function", "status", ""].map((el) => (
+              {["User", "Role", "Status", ""].map((el) => (
                 <th
                   key={el}
                   className="border-blue-gray-50 border-b px-5 py-3 text-left"
@@ -48,7 +48,12 @@ export default async function EmployeeTable() {
                     </p>
                   </td>
                   <td className={className}>
-                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                      <p className="text-blue-gray-600 text-xs font-semibold">
+                        Enabled
+                      </p>
+                    </div>
                   </td>
                   <td className={className}>
                     <Link
@@ -79,7 +84,7 @@ export default async function EmployeeTable() {
                   <div className="text-blue-gray-600 text-sm font-semibold">
                     {department[0]}
                   </div>
-                  <div className="ml-6 h-3 w-3 rounded-full bg-green-500"></div>
+                  <div className="ml-2 h-3 w-3 rounded-full bg-green-500"></div>
                 </div>
               </div>
             </div>
