@@ -84,7 +84,7 @@ export default async function EmployeeTable() {
                   <div className="text-blue-gray-600 text-sm font-semibold">
                     {department[0]}
                   </div>
-                  <div className="ml-2 h-3 w-3 rounded-full bg-green-500"></div>
+                  <div className="ml-6 h-3 w-3 rounded-full bg-green-500"></div>
                 </div>
               </div>
             </div>
