@@ -73,7 +73,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
                   Inventory
                 </Link>
               </li>
-              
+
               {org == "administrativo" && (
                 <li className="mb-2">
                   <Link
@@ -81,7 +81,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
                     className="block rounded px-3 py-2 hover:bg-gray-700"
                     onClick={toggleMenu}
                   >
-                    Administracion de usuarios
+                    User Management
                   </Link>
                 </li>
               )}
