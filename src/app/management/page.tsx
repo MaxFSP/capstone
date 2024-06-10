@@ -11,7 +11,7 @@ async function UserMaganement() {
       <div>
         <Card>
           <CardHeader className="mb-8 flex items-center justify-between bg-gray-700 p-6">
-            <p className="text-l text-white">Usuarios activos</p>
+            <p className="text-l text-white">Users</p>
             <CreateUserButton />
           </CardHeader>
           <EmployeeTable users={users} />
