@@ -1,8 +1,11 @@
 import EmployeeTable from "../_components/employeeTable";
 import { Card, CardHeader } from "@nextui-org/card";
 import CreateUserButton from "../_components/createUserButton";
+import { getAllUsers } from "~/server/queries";
 
-function UserMaganement() {
+async function UserMaganement() {
+  const users = await getAllUsers();
+
   return (
     <main className=" background-black mb-8  mt-12  flex flex-col  gap-12">
       <div>
@@ -11,7 +14,7 @@ function UserMaganement() {
             <p className="text-l text-white">Usuarios activos</p>
             <CreateUserButton />
           </CardHeader>
-          <EmployeeTable />
+          <EmployeeTable users={users} />
         </Card>
       </div>
     </main>
