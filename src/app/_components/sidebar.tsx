@@ -22,7 +22,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
       >
         <div>
           <div className="mb-10 flex items-center justify-between">
-            <span className="text-2xl font-bold">Logo</span>
+            <span className="text-2xl font-bold">Rudan Maquinarias</span>
             <button
               onClick={toggleMenu}
               className="text-white focus:outline-none lg:hidden"
@@ -132,7 +132,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
                 />
               </svg>
             </button>
-            <span className="ml-3">Logo</span>
+            <span className="ml-3">Rudan Maquinarias</span>
           </div>
         </div>
       )}
