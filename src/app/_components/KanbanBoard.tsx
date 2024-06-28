@@ -136,8 +136,6 @@ function KanbanBoard() {
         ))}
         <div className="flex h-full flex-col items-center justify-center">
           <Input
-            clearable
-            underlined
             placeholder="New Column Name"
             value={newColumnName}
             onChange={(e) => setNewColumnName(e.target.value)}
