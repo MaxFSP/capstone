@@ -1,4 +1,4 @@
-import { getAllOrgs, getOrgByUserId, getUserById } from "~/server/queries";
+import { getAllOrgs, getOrgByUserId, getUserByIdClerk } from "~/server/queries";
 import EditUser from "../_components/editUser";
 import CreateUser from "../_components/createUser";
 
@@ -18,7 +18,7 @@ export default async function FullPageUserView(props: { id: string }) {
       />
     );
   }
-  const user = await getUserById(props.id);
+  const user = await getUserByIdClerk(props.id);
   const orgs = await getAllOrgs();
   const currentOrg = await getOrgByUserId(props.id);
 
