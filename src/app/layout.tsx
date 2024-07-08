@@ -43,7 +43,7 @@ export default function RootLayout({
           <SignedIn>
             <div className="flex flex-col lg:flex-row">
               <SidebarContainer />
-              <main className="ml-0 flex-grow p-5 transition-all duration-300 ease-in-out lg:ml-64">
+              <main className="w-screen flex-grow transition-all duration-300 ease-in-out">
                 {children}
               </main>
             </div>
