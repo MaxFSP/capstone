@@ -18,14 +18,14 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
       <div
         className={`fixed inset-y-0 left-0 w-64 transform bg-gray-800 p-5 text-white ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0`}
+        } z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out`}
       >
         <div>
           <div className="mb-10 flex items-center justify-between">
             <span className="text-2xl font-bold">Rudan Maquinarias</span>
             <button
               onClick={toggleMenu}
-              className="text-white focus:outline-none lg:hidden"
+              className="text-white focus:outline-none"
               aria-label="Close menu"
             >
               <svg
@@ -110,8 +110,8 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
 
       {/* Topbar */}
       {!isOpen && (
-        <div className="flex w-full justify-between bg-gray-800 p-4 text-xl font-semibold text-white lg:hidden">
-          <div>
+        <div className="fixed z-40 flex w-full items-center justify-between bg-gray-800 p-4 text-xl font-semibold text-white">
+          <div className="flex items-center">
             <button
               onClick={toggleMenu}
               className="text-white focus:outline-none"
