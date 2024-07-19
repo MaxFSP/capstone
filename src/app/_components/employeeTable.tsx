@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
-import { CardBody } from "@nextui-org/card";
 import { Avatar } from "@nextui-org/avatar";
 import Link from "next/link";
-import { type Employee } from "../types/employee";
+import { type Employee } from "../../server/types/employee";
 
 export default function EmployeeTable(props: { users: Employee[] }) {
   const { users } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [showDisabled, setShowDisabled] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -20,8 +21,23 @@ export default function EmployeeTable(props: { users: Employee[] }) {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  const handleNextPage = () => {
+    setCurrentPage((prev) => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
+  };
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  const paginatedUsers = filteredUsers.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage,
+  );
+
   return (
-    <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+    <div className="px-0 pb-2 pt-0">
       <div className="px-4 py-4 md:flex md:items-center md:space-x-4">
         <input
           type="text"
@@ -49,11 +65,11 @@ export default function EmployeeTable(props: { users: Employee[] }) {
           {showDisabled ? "Hide Disabled" : "Show Disabled"}
         </button>
       </div>
-      <div className="hidden md:block">
-        <table className="w-full min-w-[640px] table-auto">
+      <div className="hidden p-4 md:block">
+        <table className="w-full table-auto">
           <thead>
             <tr>
-              {["User", "Role", "Status", ""].map((el) => (
+              {["ID", "User", "Role", "Status", ""].map((el) => (
                 <th
                   key={el}
                   className="border-blue-gray-50 border-b px-5 py-3 text-left"
@@ -66,16 +82,21 @@ export default function EmployeeTable(props: { users: Employee[] }) {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map(
-              ({ id, img, firstName, email, org, online }, key) => {
+            {paginatedUsers.map(
+              ({ id, img, firstName, email, org, online }, index) => {
                 const className = `py-3 px-5 ${
-                  key === users.length - 1 ? "" : "border-b border-blue-gray-50"
+                  index === users.length - 1
+                    ? ""
+                    : "border-b border-blue-gray-50"
                 }`;
                 const statusClass = online ? "bg-green-500" : "bg-red-500";
                 const statusText = online ? "Enabled" : "Disabled";
 
                 return (
                   <tr key={id}>
+                    <td className={className}>
+                      {currentPage * itemsPerPage + index + 1}
+                    </td>
                     <td className={className}>
                       <div className="flex items-center gap-4">
                         <Avatar src={img} alt={firstName} size="sm" />
@@ -105,7 +126,7 @@ export default function EmployeeTable(props: { users: Employee[] }) {
                     <td className={className}>
                       <Link
                         href={`/user/${id}`}
-                        className="text-blue-gray-600 text-xs font-semibold"
+                        className="text-blue-gray-600 text-s font-semibold"
                       >
                         View
                       </Link>
@@ -118,7 +139,7 @@ export default function EmployeeTable(props: { users: Employee[] }) {
         </table>
       </div>
       <div className="block md:hidden">
-        {filteredUsers.map(({ id, img, firstName, org, online }) => {
+        {paginatedUsers.map(({ id, img, firstName, org, online }) => {
           const statusClass = online ? "bg-green-500" : "bg-red-500";
 
           return (
@@ -145,6 +166,27 @@ export default function EmployeeTable(props: { users: Employee[] }) {
           );
         })}
       </div>
-    </CardBody>
+      <div className="flex justify-between px-4 py-2">
+        <button
+          onClick={handlePrevPage}
+          disabled={currentPage === 0}
+          className={`rounded px-4 py-2 ${currentPage === 0 ? "cursor-not-allowed bg-gray-300 text-gray-900" : "bg-blue-500 text-white"}`}
+        >
+          Previous
+        </button>
+        <div className="flex items-center">
+          <span className="text-sm font-medium">
+            Page {currentPage + 1} of {totalPages}
+          </span>
+        </div>
+        <button
+          onClick={handleNextPage}
+          disabled={(currentPage + 1) * itemsPerPage >= filteredUsers.length}
+          className={`rounded px-4 py-2 ${(currentPage + 1) * itemsPerPage >= filteredUsers.length ? "cursor-not-allowed bg-gray-300 text-gray-900" : "bg-blue-500 text-white"}`}
+        >
+          Next
+        </button>
+      </div>
+    </div>
   );
 }

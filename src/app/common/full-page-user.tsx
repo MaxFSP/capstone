@@ -1,4 +1,8 @@
-import { getAllOrgs, getOrgByUserId, getUserByIdClerk } from "~/server/queries";
+import {
+  getAllOrgs,
+  getOrgByUserId,
+  getUserByIdClerk,
+} from "~/server/queries/queries";
 import EditUser from "../_components/editUser";
 import CreateUser from "../_components/createUser";
 

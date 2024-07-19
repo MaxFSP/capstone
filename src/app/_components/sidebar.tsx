@@ -16,7 +16,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
     <div className="flex">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 w-64 transform bg-gray-800 p-5 text-white ${
+        className={`fixed inset-y-0 left-0  w-64 transform bg-gray-800 p-5 text-white ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } z-50 flex flex-col justify-between transition-transform duration-300 ease-in-out`}
       >
@@ -66,11 +66,11 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
               </li>
               <li className="mb-2">
                 <Link
-                  href="#"
+                  href="/stock"
                   className="block rounded px-3 py-2 hover:bg-gray-700"
                   onClick={toggleMenu}
                 >
-                  Inventory
+                  Stock
                 </Link>
               </li>
 
@@ -110,7 +110,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
 
       {/* Topbar */}
       {!isOpen && (
-        <div className="fixed z-40 flex w-full items-center justify-between bg-gray-800 p-4 text-xl font-semibold text-white">
+        <div className="fixed  z-40 flex w-full items-center justify-between bg-gray-800 p-4 text-xl font-semibold text-white">
           <div className="flex items-center">
             <button
               onClick={toggleMenu}

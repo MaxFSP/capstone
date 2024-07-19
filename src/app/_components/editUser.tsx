@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import type { Employee } from "../types/employee";
-import type { Org } from "../types/org";
+import type { Employee } from "../../server/types/employee";
+import type { Org } from "../../server/types/org";
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -14,8 +14,11 @@ import {
   Button,
   Checkbox,
 } from "@nextui-org/react";
-import type { UpdateUserRequest, UpdateUserResponse } from "../types/api";
-import type { UpdateEmployee } from "../types/employee";
+import type {
+  UpdateUserRequest,
+  UpdateUserResponse,
+} from "../../server/types/api";
+import type { UpdateEmployee } from "../../server/types/employee";
 
 export default function EditUser({
   user,
@@ -224,8 +227,8 @@ export default function EditUser({
   );
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center text-gray-100">
-      <div className="w-full max-w-4xl rounded-lg bg-gray-800 p-8 shadow-lg">
+    <div className="flex min-h-screen w-full items-center justify-center  p-8 text-gray-100">
+      <div className="w-full max-w-6xl  ">
         <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
           <div className="mb-4 flex-shrink-0 md:mb-0">
             <img

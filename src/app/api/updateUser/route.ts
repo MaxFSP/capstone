@@ -7,8 +7,8 @@ import {
   clerkClient,
   type AllowlistIdentifier,
 } from "@clerk/nextjs/server";
-import type { UpdateUserRequest, UpdateUserResponse } from "~/app/types/api";
-import { getOrgByUserId } from "~/server/queries";
+import type { UpdateUserRequest, UpdateUserResponse } from "~/server/types/api";
+import { getOrgByUserId } from "~/server/queries/queries";
 
 export async function POST(req: NextRequest) {
   const { userId } = getAuth(req);
