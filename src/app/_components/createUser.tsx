@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import type { CreateEmployee } from "../types/employee";
-import type { Org } from "../types/org";
+import type { CreateEmployee } from "../../server/types/employee";
+import type { Org } from "../../server/types/org";
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,7 +13,7 @@ import {
   DropdownItem,
   Button,
 } from "@nextui-org/react";
-import type { CreateUserResponse } from "../types/api";
+import type { CreateUserResponse } from "../../server/types/api";
 
 export default function CreateUser({
   user,

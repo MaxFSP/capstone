@@ -9,19 +9,13 @@ import {
   serial,
 } from "drizzle-orm/pg-core";
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 const createTable = pgTableCreator((name) => `capstone_${name}`);
 
 // Role Table
 export const roles = createTable("role", {
   rol_id: serial("rol_id").primaryKey(),
   rol_name: text("rol_name").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
+  created_at: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
 });
@@ -37,7 +31,7 @@ export const fixes = createTable(
     machine_id: serial("machine_id").references(
       () => machineryStock.machine_id,
     ),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
@@ -55,23 +49,34 @@ export const machineryStock = createTable(
     machine_id: serial("machine_id").primaryKey(),
     brand: text("brand").notNull(),
     model: text("model").notNull(),
-    license_plate: text("license_plate").notNull(),
-    accquisition_date: timestamp("accquisition_date").notNull(),
+    year: integer("year").notNull(),
     serial_number: text("serial_number").notNull(),
+    acquisition_date: timestamp("acquisition_date").notNull(),
     location_id: serial("location_id").references(() => locations.location_id),
-    comments: text("comments"),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    observations: text("observations"),
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    state: text("state").notNull(), // "Available", "Sold", "Under Maintenance"
+    sold_price: integer("sold_price"),
+    sold_to: text("sold_to"),
+    sold_date: timestamp("sold_date"),
   },
   (machinery_index) => ({
-    brandIndex: index("brand_idx").on(machinery_index.brand),
-    modelIndex: index("model_idx").on(machinery_index.model),
-    licensePlateIndex: index("license_plate_idx").on(
-      machinery_index.license_plate,
-    ),
+    machine_id: index("machine_id_idx").on(machinery_index.machine_id),
   }),
 );
+
+// Machinery Images Table
+
+export const machineryImages = createTable("machinery_images", {
+  image_id: serial("image_id").primaryKey(),
+  machine_id: serial("machine_id").references(() => machineryStock.machine_id),
+  image_url: text("image_url").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
 
 // User Table
 export const users = createTable(
@@ -84,15 +89,12 @@ export const users = createTable(
     profile_image_url: text("profile_image_url").notNull(),
     rol_id: serial("rol_id").references(() => roles.rol_id),
     clerk_id: text("clerk_id").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (user_index) => ({
-    usernameIndex: index("username_idx").on(user_index.username),
-    firstNameIndex: index("first_name_idx").on(user_index.first_name),
-    lastNameIndex: index("last_name_idx").on(user_index.last_name),
-    rolIndex: index("rol_idx").on(user_index.rol_id),
+    user_id: index("user_id_idx").on(user_index.user_id),
   }),
 );
 
@@ -102,19 +104,31 @@ export const toolStock = createTable(
   {
     tool_id: serial("tool_id").primaryKey(),
     name: text("name").notNull(),
-    usage: varchar("usage", { length: 255 }).notNull(),
+    category: text("category").notNull(),
+    tool_type: text("tool_type").notNull(),
+    condition: varchar("condition", { length: 255 }).notNull(),
     quantity: integer("quantity").notNull(),
+    acquisition_date: timestamp("acquisition_date").notNull(),
     location_id: serial("location_id").references(() => locations.location_id),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    observations: text("observations"),
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (tool_index) => ({
-    nameIndex: index("name_tool_idx").on(tool_index.name),
-    usageIndex: index("usage_tool_idx").on(tool_index.usage),
-    quantityIndex: index("quantity_tool_idx").on(tool_index.quantity),
+    tool_id: index("tool_id_idx").on(tool_index.tool_id),
   }),
 );
+
+// Tool Images Table
+export const toolImages = createTable("tool_images", {
+  image_id: serial("image_id").primaryKey(),
+  tool_id: serial("tool_id").references(() => toolStock.tool_id),
+  image_url: text("image_url").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
 
 // Part Stock Table
 export const partStock = createTable(
@@ -122,19 +136,55 @@ export const partStock = createTable(
   {
     part_id: serial("part_id").primaryKey(),
     name: text("name").notNull(),
-    usage: text("usage").notNull(),
+    part_number: text("part_number").notNull(),
+    condition: varchar("condition", { length: 255 }).notNull(),
     quantity: integer("quantity").notNull(),
     location_id: serial("location_id").references(() => locations.location_id),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    length: integer("length").notNull(), // Length of the part
+    length_unit: varchar("length_unit", { length: 2 }).notNull(), // Unit for length (cm, mm)
+    width: integer("width").notNull(), // Width of the part
+    width_unit: varchar("width_unit", { length: 2 }).notNull(), // Unit for width (cm, mm)
+    height: integer("height").notNull(), // Height of the part
+    height_unit: varchar("height_unit", { length: 2 }).notNull(), // Unit for height (cm, mm)
+    compatible_machines: text("compatible_machines"), // Optional field for machines not in stock
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (part_index) => ({
-    nameIndex: index("name_part__idx").on(part_index.name),
-    usageIndex: index("usage_part_idx").on(part_index.usage),
-    quantityIndex: index("quantity_part_idx").on(part_index.quantity),
+    part_id: index("part_id_idx").on(part_index.part_id),
   }),
 );
+
+// Part Machinery Table
+
+export const partMachinery = createTable(
+  "part_machinery",
+  {
+    part_id: serial("part_id")
+      .references(() => partStock.part_id)
+      .notNull(),
+    machine_id: serial("machine_id")
+      .references(() => machineryStock.machine_id)
+      .notNull(),
+  },
+  (partMachinery_index) => ({
+    part_machinery_idx: index("part_machinery_idx").on(
+      partMachinery_index.part_id,
+      partMachinery_index.machine_id,
+    ),
+  }),
+);
+
+// Part Images Table
+export const partImages = createTable("part_images", {
+  image_id: serial("image_id").primaryKey(),
+  part_id: serial("part_id").references(() => partStock.part_id),
+  image_url: text("image_url").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
 
 // Repair Order Table
 export const repairOrders = createTable(
@@ -144,14 +194,12 @@ export const repairOrders = createTable(
     name: text("name").notNull(),
     user_id: serial("user_id").references(() => users.user_id),
     fix_id: serial("fix_id").references(() => fixes.fix_id),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (repair_order_index) => ({
-    nameIndex: index("name_repair_idx").on(repair_order_index.name),
-    userIndex: index("user_repair_idx").on(repair_order_index.user_id),
-    fixIndex: index("fix_repair_idx").on(repair_order_index.fix_id),
+    order_id: index("order_id_idx").on(repair_order_index.order_id),
   }),
 );
 
@@ -161,7 +209,7 @@ export const locations = createTable(
     location_id: serial("location_id").primaryKey(),
     name: text("name").notNull(),
     address: text("address").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },

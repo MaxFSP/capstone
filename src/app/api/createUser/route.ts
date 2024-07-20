@@ -4,9 +4,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import type { User } from "@clerk/nextjs/server";
-import type { CreateUserResponse } from "~/app/types/api";
-import type { CreateEmployeeWithOrg } from "~/app/types/employee";
-import type { AddEmployee } from "~/app/types/org";
+import type { CreateUserResponse } from "~/server/types/api";
+import type { CreateEmployeeWithOrg } from "~/server/types/employee";
+import type { AddEmployee } from "~/server/types/org";
 
 export async function POST(req: NextRequest) {
   const { userId } = getAuth(req);
