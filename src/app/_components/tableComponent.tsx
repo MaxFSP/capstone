@@ -8,8 +8,8 @@
 "use client";
 import { useState, type ChangeEvent } from "react";
 import { Avatar } from "@nextui-org/avatar";
-import Link from "next/link";
 import { DataViewDialog } from "./dataViewDialog";
+import { SmallDataViewDialog } from "./smalldataViewDialog";
 
 interface TableColumn {
   key: string;
@@ -98,7 +98,7 @@ const TableComponent = (props: {
               } text-white`;
 
               return (
-                <tr key={item.user_id}>
+                <tr key={item.id}>
                   <td className={className}>
                     {currentPage * itemsPerPage + index + 1}
                   </td>
@@ -132,37 +132,14 @@ const TableComponent = (props: {
       </div>
       <div className="block md:hidden">
         {paginatedData.map((item, index) => (
-          <Link
+          <SmallDataViewDialog
             key={item.user_id}
-            href={`#`}
-            className="flex flex-col border-b border-gray-700 px-5 py-4 text-white"
-          >
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-base font-semibold">ID</p>
-              <div className="flex items-center gap-2">
-                {currentPage * itemsPerPage + index + 1}
-              </div>
-            </div>
-            {columns.map((col) => (
-              <div
-                key={col.key}
-                className="mb-2 flex items-center justify-between"
-              >
-                <p className="text-sm font-medium text-gray-400">{col.label}</p>
-                <div className="flex items-center gap-2">
-                  {col.type === "avatar" ? (
-                    <Avatar src={item[col.key]} alt="Profile Image" size="sm" />
-                  ) : item[col.key] !== undefined ? (
-                    <span className="text-sm text-gray-200">
-                      {item[col.key].toString()}
-                    </span>
-                  ) : (
-                    ""
-                  )}
-                </div>
-              </div>
-            ))}
-          </Link>
+            item={item}
+            index={currentPage * itemsPerPage + index + 1}
+            columns={columns}
+            dbColumns={props.dbColumns}
+            data={item}
+          />
         ))}
       </div>
       <div className="flex justify-between px-4 py-2">
