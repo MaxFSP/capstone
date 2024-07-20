@@ -8,8 +8,12 @@
 "use client";
 import { useState, type ChangeEvent } from "react";
 import { Avatar } from "@nextui-org/avatar";
-import { DataViewDialog } from "./dataViewDialog";
-import { SmallDataViewDialog } from "./smalldataViewDialog";
+import { MachineryDataViewDialog } from "./machineryDialog";
+import { PartDataViewDialog } from "./partDialog";
+import { ToolDataViewDialog } from "./toolDialog";
+import { SmallMachineryDialog } from "./smallMachineryDialog";
+import { SmallPartDialog } from "./smallPartDialog";
+import { SmallToolDialog } from "./smallToolDialog";
 
 interface TableColumn {
   key: string;
@@ -20,9 +24,9 @@ interface TableColumn {
 const TableComponent = (props: {
   data: any[];
   columns: TableColumn[];
-  dbColumns: any[];
+  valueType: string;
 }) => {
-  const { data, columns } = props;
+  const { data, columns, valueType } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -118,11 +122,15 @@ const TableComponent = (props: {
                     </td>
                   ))}
                   <td className={className}>
-                    <DataViewDialog
-                      title="View"
-                      dbColumns={props.dbColumns}
-                      data={item}
-                    />
+                    {valueType === "machinery" ? (
+                      <MachineryDataViewDialog title="View" data={item} />
+                    ) : valueType === "part" ? (
+                      <PartDataViewDialog title="View" data={item} />
+                    ) : valueType === "tool" ? (
+                      <ToolDataViewDialog title="View" data={item} />
+                    ) : (
+                      ""
+                    )}
                   </td>
                 </tr>
               );
@@ -131,16 +139,29 @@ const TableComponent = (props: {
         </table>
       </div>
       <div className="block md:hidden">
-        {paginatedData.map((item, index) => (
-          <SmallDataViewDialog
-            key={item.user_id}
-            item={item}
-            index={currentPage * itemsPerPage + index + 1}
-            columns={columns}
-            dbColumns={props.dbColumns}
-            data={item}
-          />
-        ))}
+        {paginatedData.map((item, index) =>
+          valueType === "machinery" ? (
+            <SmallMachineryDialog
+              key={item.machine_id}
+              index={currentPage * itemsPerPage + index + 1}
+              data={item}
+            />
+          ) : valueType === "part" ? (
+            <SmallPartDialog
+              key={item.part_id}
+              index={currentPage * itemsPerPage + index + 1}
+              data={item}
+            />
+          ) : valueType === "tool" ? (
+            <SmallToolDialog
+              key={item.tool_id}
+              index={currentPage * itemsPerPage + index + 1}
+              data={item}
+            />
+          ) : (
+            ""
+          ),
+        )}
       </div>
       <div className="flex justify-between px-4 py-2">
         <button

@@ -4,7 +4,7 @@ import "server-only";
 import { db } from "../../db";
 import { machineryStock, locations, machineryImages } from "../../db/schema";
 import { eq, asc } from "drizzle-orm";
-import { type MachineryData } from "../../types/api";
+import { type Machinery } from "../../types/IMachinery";
 
 // Machinery Stock Table --------------------------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ export async function getMachineries() {
     .orderBy(asc(machineryStock.machine_id));
 
   // Create a map to aggregate images and store machinery details
-  const machineryMap = new Map<number, MachineryData>();
+  const machineryMap = new Map<number, Machinery>();
 
   allMachineries.forEach((row) => {
     const { machinery_stock, location, machinery_images } = row;

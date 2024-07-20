@@ -76,14 +76,16 @@ export function SmallDataViewDialog(props: {
             ))}
           </div>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md lg:max-w-lg">
+        <DialogContent className="h-auto max-h-[80vh] overflow-auto sm:max-w-md lg:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-large">Testing</DialogTitle>
+            <DialogTitle className="text-large">
+              {data.name !== "" ? data.name : "Name"}
+            </DialogTitle>
             <DialogDescription>
-              Anyone who has this link will be able to view this.
+              {data.observations !== "" ? data.observations : "Observations"}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2">
             <div className="grid flex-1 gap-2">
               {dbColumns.map((col) => (
                 <div key={col.key}>
@@ -97,7 +99,7 @@ export function SmallDataViewDialog(props: {
               ))}
             </div>
           </div>
-          <DialogFooter className="sm:justify-start">
+          <DialogFooter className="flex justify-end sm:justify-start">
             <DialogClose asChild>
               <Button type="button" variant="secondary">
                 Close

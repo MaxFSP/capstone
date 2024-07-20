@@ -2,11 +2,6 @@ import { getParts } from "~/server/queries/part/queries";
 import { getTools } from "~/server/queries/tool/queries";
 import { getMachineries } from "~/server/queries/machinery/queries";
 import TableComponent from "../_components/tableComponent";
-import {
-  machineryStockColumns,
-  partStockColumns,
-  toolStockColumns,
-} from "~/server/types/constants";
 
 const partsColumns = [
   { key: "name", label: "Name" },
@@ -43,14 +38,14 @@ export default async function StockPage() {
         <TableComponent
           data={machineryData}
           columns={machineryColumns}
-          dbColumns={machineryStockColumns}
+          valueType="machinery"
         />
       </TabsContent>
       <TabsContent value="parts">
         <TableComponent
           data={partData}
           columns={partsColumns}
-          dbColumns={partStockColumns}
+          valueType="part"
         />
       </TabsContent>
 
@@ -58,7 +53,7 @@ export default async function StockPage() {
         <TableComponent
           data={toolData}
           columns={toolsColumns}
-          dbColumns={toolStockColumns}
+          valueType="tool"
         />
       </TabsContent>
     </Tabs>

@@ -104,6 +104,7 @@ export const toolStock = createTable(
   {
     tool_id: serial("tool_id").primaryKey(),
     name: text("name").notNull(),
+    brand: text("brand").notNull(),
     category: text("category").notNull(),
     tool_type: text("tool_type").notNull(),
     condition: varchar("condition", { length: 255 }).notNull(),

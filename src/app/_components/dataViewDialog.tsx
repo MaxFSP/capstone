@@ -36,7 +36,7 @@ export function DataViewDialog(props: {
       <DialogTrigger asChild>
         <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md lg:max-w-lg">
+      <DialogContent className=" h-auto max-h-[90vh] overflow-auto sm:max-w-md lg:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-large">Testing</DialogTitle>
           <DialogDescription>
