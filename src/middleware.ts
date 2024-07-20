@@ -1,6 +1,8 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+//TODO CHECK IF THE USER IS ALLOWED TO ACCES THE PAGE SPECIALLY WITH ADMINISTRATION STUFF
+
 const isProtectedRoute = (pathname: string) => {
   const excludedRoutes = ["/signIn"]; // Include other auth-related routes if necessary
 
