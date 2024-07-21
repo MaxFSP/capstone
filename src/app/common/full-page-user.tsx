@@ -7,7 +7,8 @@ import EditUser from "../_components/editUser";
 import CreateUser from "../_components/createUser";
 
 export default async function FullPageUserView(props: { id: string }) {
-  if (props.id === "newUser") {
+  const { id } = props;
+  if (id === "newUser") {
     const orgs = await getAllOrgs();
     return (
       <CreateUser
@@ -22,9 +23,9 @@ export default async function FullPageUserView(props: { id: string }) {
       />
     );
   }
-  const user = await getUserByIdClerk(props.id);
+  const user = await getUserByIdClerk(id);
   const orgs = await getAllOrgs();
-  const currentOrg = await getOrgByUserId(props.id);
+  const currentOrg = await getOrgByUserId(id);
 
   return <EditUser user={user} orgs={orgs} currentOrg={currentOrg} />;
 }

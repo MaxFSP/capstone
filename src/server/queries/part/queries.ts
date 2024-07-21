@@ -2,8 +2,9 @@ import "server-only";
 
 //DB stuff
 import { db } from "../../db";
-import { partStock } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { locations, partImages, partStock } from "../../db/schema";
+import { eq, asc } from "drizzle-orm";
+import { type Part } from "~/server/types/IPart";
 
 // Part Stock Table --------------------------------------------------------------------------------------------
 
@@ -46,10 +47,46 @@ export async function createPart(
 
 // Read Parts
 export async function getParts() {
-  const allParts = await db.query.partStock.findMany({
-    orderBy: (partStock, { asc }) => asc(partStock.part_id),
+  // const allParts = await db.query.partStock.findMany({
+  //   orderBy: (partStock, { asc }) => asc(partStock.part_id),
+  // });
+  // return allParts;
+
+  const allParts = await db
+    .select()
+    .from(partStock)
+    .leftJoin(locations, eq(partStock.location_id, locations.location_id))
+    .leftJoin(partImages, eq(partStock.part_id, partImages.part_id))
+    .orderBy(asc(partStock.part_id));
+
+  // Create a map to aggregate images and store machinery details
+  const partMap = new Map<number, Part>();
+
+  allParts.forEach((row) => {
+    const { part_stock, location, part_images } = row;
+    const partId = part_stock.part_id;
+
+    // Check if the machinery item already exists in the map
+    if (!partMap.has(partId)) {
+      partMap.set(partId, {
+        ...part_stock,
+        location_name: location?.name ?? "",
+        images: [],
+      });
+    }
+
+    const currentPart = partMap.get(partId)!;
+
+    // Add image URL if it exists
+    if (part_images?.image_url) {
+      currentPart.images.push(part_images.image_url);
+    }
   });
-  return allParts;
+
+  // Convert the map values to an array
+  const machineryWithImages = Array.from(partMap.values());
+
+  return machineryWithImages;
 }
 
 export async function getPartById(partId: number) {
