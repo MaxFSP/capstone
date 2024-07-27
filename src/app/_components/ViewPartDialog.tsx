@@ -37,6 +37,7 @@ import { type ILocation } from "~/server/types/ILocation";
 import { UploadButton } from "../utils/uploadthing";
 import { type Image } from "~/server/types/IImages";
 import DeleteImageDialog from "./deleteImageDialog";
+import { useRouter } from "next/navigation";
 
 export function PartDataViewDialog(props: {
   title: string;
@@ -44,6 +45,7 @@ export function PartDataViewDialog(props: {
   locations: ILocation[];
 }) {
   const { title, data, locations } = props;
+  const router = useRouter();
 
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
@@ -54,8 +56,6 @@ export function PartDataViewDialog(props: {
   const [conditionValue, setConditionValue] = useState<PartCondition>(
     data.condition as PartCondition,
   );
-
-  console.log(data.images);
 
   const [locationValue, setLocationValue] = useState<string>(current_location);
   const [length, setLength] = useState(data.length_unit);
@@ -80,6 +80,10 @@ export function PartDataViewDialog(props: {
     validateForm();
     checkForChanges();
   }, [formData, locationValue, conditionValue]);
+
+  const handleUploadComplete = () => {
+    router.refresh();
+  };
 
   const validateForm = () => {
     const isDataValid =
@@ -173,8 +177,8 @@ export function PartDataViewDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
+                            type: "Part",
                           }}
-                          type="Part"
                         />
                       </div>
                     </CarouselItem>
@@ -419,7 +423,7 @@ export function PartDataViewDialog(props: {
                   input={{ part_id: data.part_id }}
                   endpoint="partImageUploader"
                   onClientUploadComplete={() => {
-                    // here i want to save the image url to be displayed here as of rn
+                    handleUploadComplete();
                   }}
                 />
               </div>

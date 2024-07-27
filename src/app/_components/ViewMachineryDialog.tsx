@@ -50,6 +50,7 @@ import { type States, type Machinery } from "~/server/types/IMachinery";
 import { type ILocation } from "~/server/types/ILocation";
 import { type Image } from "~/server/types/IImages";
 import DeleteImageDialog from "./deleteImageDialog";
+import { useRouter } from "next/navigation";
 
 export function MachineryDataViewDialog(props: {
   title: string;
@@ -59,6 +60,7 @@ export function MachineryDataViewDialog(props: {
   const { title, data, locations } = props;
   const current_date = data.acquisition_date;
   const current_state = data.state;
+  const router = useRouter();
 
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
@@ -87,6 +89,10 @@ export function MachineryDataViewDialog(props: {
     validateForm();
     checkForChanges();
   }, [formData, locationValue, dateValue, stateValue]);
+
+  const handleUploadComplete = () => {
+    router.refresh();
+  };
 
   const validateForm = () => {
     const isDataValid =
@@ -193,8 +199,8 @@ export function MachineryDataViewDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
+                            type: "Machinery",
                           }}
-                          type="Machinery"
                         />
                       </div>
                     </CarouselItem>
@@ -478,7 +484,7 @@ export function MachineryDataViewDialog(props: {
                   input={{ machine_id: data.machine_id }}
                   endpoint="machineryImageUploader"
                   onClientUploadComplete={() => {
-                    // here i want to save the image url to be displayed here as of rn
+                    handleUploadComplete();
                   }}
                 />
               </div>

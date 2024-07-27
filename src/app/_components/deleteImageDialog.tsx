@@ -14,19 +14,14 @@ import {
 import { type DeleteImage } from "~/server/types/IImages";
 import { useRouter } from "next/navigation";
 
-export default function DeleteImageDialog(props: {
-  imageInfo: DeleteImage;
-  type: string;
-}) {
-  const { imageInfo, type } = props;
+export default function DeleteImageDialog(props: { imageInfo: DeleteImage }) {
+  const { imageInfo } = props;
   const router = useRouter();
 
   const handleDelete = async () => {
-    imageInfo.type = type;
-
     try {
       const response = await fetch("/api/deleteImage", {
-        method: "POST",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },

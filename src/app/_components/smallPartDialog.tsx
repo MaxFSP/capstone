@@ -38,6 +38,8 @@ import {
 import { type ILocation } from "~/server/types/ILocation";
 import { UploadButton } from "../utils/uploadthing";
 import { type Image } from "~/server/types/IImages";
+import DeleteImageDialog from "./deleteImageDialog";
+import { useRouter } from "next/navigation";
 
 export function SmallPartDialog(props: {
   data: Part;
@@ -48,7 +50,7 @@ export function SmallPartDialog(props: {
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
-
+  const router = useRouter();
   const curret_condition = data.condition;
 
   const [locationValue, setLocationValue] = useState<string>(current_location);
@@ -78,6 +80,10 @@ export function SmallPartDialog(props: {
     validateForm();
     checkForChanges();
   }, [formData, locationValue, conditionValue]);
+
+  const handleUploadComplete = () => {
+    router.refresh();
+  };
 
   const validateForm = () => {
     const isDataValid =
@@ -190,11 +196,20 @@ export function SmallPartDialog(props: {
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
-                      <img
-                        src={image.image_url}
-                        className="h-full w-full object-cover"
-                        alt="Machinery Images"
-                      />
+                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                        <img
+                          src={image.image_url}
+                          className="h-full w-full object-scale-down "
+                          alt="Part Images"
+                        />
+                        <DeleteImageDialog
+                          imageInfo={{
+                            image_id: image.image_id,
+                            image_key: image.image_key,
+                            type: "Part",
+                          }}
+                        />
+                      </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -450,7 +465,7 @@ export function SmallPartDialog(props: {
                   input={{ part_id: data.part_id }}
                   endpoint="partImageUploader"
                   onClientUploadComplete={() => {
-                    // here i want to save the image url to be displayed here as of rn
+                    handleUploadComplete();
                   }}
                 />
               </div>

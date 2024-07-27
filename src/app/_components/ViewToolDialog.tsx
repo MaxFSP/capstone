@@ -46,6 +46,7 @@ import {
 } from "~/components/ui/popover";
 import { type Image } from "~/server/types/IImages";
 import DeleteImageDialog from "./deleteImageDialog";
+import { useRouter } from "next/navigation";
 
 export function ToolDataViewDialog(props: {
   title: string;
@@ -54,6 +55,7 @@ export function ToolDataViewDialog(props: {
 }) {
   const { title, data, locations } = props;
 
+  const router = useRouter();
   const current_date = data.acquisition_date;
 
   const current_location: string = locations.find(
@@ -86,6 +88,10 @@ export function ToolDataViewDialog(props: {
     validateForm();
     checkForChanges();
   }, [formData, locationValue, conditionValue, dateValue]);
+
+  const handleUploadComplete = () => {
+    router.refresh();
+  };
 
   const validateForm = () => {
     const isDataValid =
@@ -184,8 +190,8 @@ export function ToolDataViewDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
+                            type: "Tool",
                           }}
-                          type="Tool"
                         />
                       </div>
                     </CarouselItem>
@@ -394,7 +400,7 @@ export function ToolDataViewDialog(props: {
                   input={{ tool_id: data.tool_id }}
                   endpoint="toolImageUploader"
                   onClientUploadComplete={() => {
-                    // here i want to save the image url to be displayed here as of rn
+                    handleUploadComplete();
                   }}
                 />
               </div>

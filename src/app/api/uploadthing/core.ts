@@ -60,10 +60,6 @@ export const ourFileRouter = {
         image_url: file.url,
         image_key: file.key,
       });
-      console.log(
-        "upload complete to the machine id:",
-        metadata.input.machine_id,
-      );
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId };
     }),
@@ -95,7 +91,6 @@ export const ourFileRouter = {
         image_url: file.url,
         image_key: file.key,
       });
-      console.log("upload complete to the tool id:", metadata.input.tool_id);
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId };
     }),
@@ -127,7 +122,6 @@ export const ourFileRouter = {
         image_url: file.url,
         image_key: file.key,
       });
-      console.log("upload complete to the part id:", metadata.input.part_id);
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
       return { uploadedBy: metadata.userId };
     }),

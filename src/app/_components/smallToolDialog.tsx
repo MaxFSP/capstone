@@ -44,6 +44,8 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { type Image } from "~/server/types/IImages";
+import DeleteImageDialog from "./deleteImageDialog";
+import { useRouter } from "next/navigation";
 
 export function SmallToolDialog(props: {
   data: Tool;
@@ -52,7 +54,7 @@ export function SmallToolDialog(props: {
 }) {
   const { index, data, locations } = props;
   const current_date = data.acquisition_date;
-
+  const router = useRouter();
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
@@ -84,6 +86,10 @@ export function SmallToolDialog(props: {
     validateForm();
     checkForChanges();
   }, [formData, locationValue, conditionValue, dateValue]);
+
+  const handleUploadComplete = () => {
+    router.refresh();
+  };
 
   const validateForm = () => {
     const isDataValid =
@@ -206,11 +212,20 @@ export function SmallToolDialog(props: {
                 <CarouselContent>
                   {formData.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
-                      <img
-                        src={image.image_url}
-                        className="h-full w-full rounded-lg object-cover"
-                        alt="Part Images"
-                      />
+                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                        <img
+                          src={image.image_url}
+                          className="h-full w-full object-scale-down "
+                          alt="Tool Images"
+                        />
+                        <DeleteImageDialog
+                          imageInfo={{
+                            image_id: image.image_id,
+                            image_key: image.image_key,
+                            type: "Tool",
+                          }}
+                        />
+                      </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -414,7 +429,7 @@ export function SmallToolDialog(props: {
                 input={{ tool_id: data.tool_id }}
                 endpoint="toolImageUploader"
                 onClientUploadComplete={() => {
-                  // here i want to save the image url to be displayed here as of rn
+                  handleUploadComplete();
                 }}
               />
             </div>

@@ -90,7 +90,6 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
     const { brand, model, year, serial_number, ...formValuesNew } = formValues;
 
     try {
-      console.log(formValuesNew);
       const response = await fetch("/api/sellMachinery", {
         method: "POST",
         headers: {

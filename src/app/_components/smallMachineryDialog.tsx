@@ -51,6 +51,8 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { type Image } from "~/server/types/IImages";
+import DeleteImageDialog from "./deleteImageDialog";
+import { useRouter } from "next/navigation";
 
 export function SmallMachineryDialog(props: {
   data: Machinery;
@@ -58,6 +60,7 @@ export function SmallMachineryDialog(props: {
   locations: ILocation[];
 }) {
   const { index, data, locations } = props;
+  const router = useRouter();
 
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
@@ -89,6 +92,10 @@ export function SmallMachineryDialog(props: {
     validateForm();
     checkForChanges();
   }, [formData, locationValue, dateValue]);
+
+  const handleUploadComplete = () => {
+    router.refresh();
+  };
 
   const validateForm = () => {
     const isDataValid =
@@ -215,11 +222,20 @@ export function SmallMachineryDialog(props: {
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
-                      <img
-                        src={image.image_url}
-                        className="h-full w-full object-cover"
-                        alt="Machinery Images"
-                      />
+                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                        <img
+                          src={image.image_url}
+                          className="h-full w-full object-scale-down "
+                          alt="Machinery Images"
+                        />
+                        <DeleteImageDialog
+                          imageInfo={{
+                            image_id: image.image_id,
+                            image_key: image.image_key,
+                            type: "Machinery",
+                          }}
+                        />
+                      </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -460,7 +476,7 @@ export function SmallMachineryDialog(props: {
                   input={{ machine_id: data.machine_id }}
                   endpoint="machineryImageUploader"
                   onClientUploadComplete={() => {
-                    // here i want to save the image url to be displayed here as of rn
+                    handleUploadComplete();
                   }}
                 />
               </div>
