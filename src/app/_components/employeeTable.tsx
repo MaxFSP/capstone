@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { Avatar } from "@nextui-org/avatar";
-import Link from "next/link";
 import { type Employee } from "../../server/types/employee";
+import EditUser from "./editUser";
+import SmallEditUser from "./smallEditUser";
 
 export default function EmployeeTable(props: { users: Employee[] }) {
   const { users } = props;
@@ -83,7 +84,10 @@ export default function EmployeeTable(props: { users: Employee[] }) {
           </thead>
           <tbody>
             {paginatedUsers.map(
-              ({ id, img, firstName, email, org, online }, index) => {
+              (
+                { id, img, firstName, lastName, username, email, org, online },
+                index,
+              ) => {
                 const className = `py-3 px-5 ${
                   index === users.length - 1
                     ? ""
@@ -124,12 +128,18 @@ export default function EmployeeTable(props: { users: Employee[] }) {
                       </div>
                     </td>
                     <td className={className}>
-                      <Link
-                        href={`/user/${id}`}
-                        className="text-blue-gray-600 text-s font-semibold"
-                      >
-                        View
-                      </Link>
+                      <EditUser
+                        user={{
+                          id,
+                          img,
+                          username,
+                          firstName,
+                          lastName,
+                          email,
+                          org,
+                          online,
+                        }}
+                      />
                     </td>
                   </tr>
                 );
@@ -139,32 +149,25 @@ export default function EmployeeTable(props: { users: Employee[] }) {
         </table>
       </div>
       <div className="block md:hidden">
-        {paginatedUsers.map(({ id, img, firstName, org, online }) => {
-          const statusClass = online ? "bg-green-500" : "bg-red-500";
-
-          return (
-            <Link
-              key={id}
-              href={`/user/${id}`}
-              className="border-blue-gray-50 flex items-center gap-4 border-b px-5 py-4"
-            >
-              <Avatar src={img} alt={firstName} size="lg" />
-              <div className="flex w-full flex-col justify-center">
-                <div className="flex items-center justify-between">
-                  <p className="text-base font-semibold">{firstName}</p>
-                  <div className="flex items-center gap-2 pr-5">
-                    <div className="text-blue-gray-600 text-sm font-semibold">
-                      {org.name}
-                    </div>
-                    <div
-                      className={`ml-6 h-3 w-3 rounded-full ${statusClass}`}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          );
-        })}
+        {paginatedUsers.map(
+          ({ id, img, firstName, lastName, username, email, org, online }) => {
+            return (
+              <SmallEditUser
+                key={id}
+                user={{
+                  id,
+                  img,
+                  firstName,
+                  lastName,
+                  username,
+                  email,
+                  online,
+                  org,
+                }}
+              />
+            );
+          },
+        )}
       </div>
       <div className="flex justify-between px-4 py-2">
         <button

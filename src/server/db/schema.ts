@@ -73,6 +73,7 @@ export const machineryImages = createTable("machinery_images", {
   image_id: serial("image_id").primaryKey(),
   machine_id: serial("machine_id").references(() => machineryStock.machine_id),
   image_url: text("image_url").notNull(),
+  image_key: text("image_key").notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -126,6 +127,7 @@ export const toolImages = createTable("tool_images", {
   image_id: serial("image_id").primaryKey(),
   tool_id: serial("tool_id").references(() => toolStock.tool_id),
   image_url: text("image_url").notNull(),
+  image_key: text("image_key").notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -182,6 +184,7 @@ export const partImages = createTable("part_images", {
   image_id: serial("image_id").primaryKey(),
   part_id: serial("part_id").references(() => partStock.part_id),
   image_url: text("image_url").notNull(),
+  image_key: text("image_key").notNull(),
   created_at: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

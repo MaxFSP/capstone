@@ -1,17 +1,15 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
 
-// TODO: ADD FUNCTIONALITY TO UPLOAD IMAGES
-// TODO ADD FUNCTIONALITY TO EDIT VALUES
-// TODO ADD FUNCTIONALITY TO "SELL" MACHINERY MOST LIKELY PUT A DIALOG TO CONFIRM AND SET THE VALUES
 import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
 
+import { Button } from "~/components/ui/button";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 } from "~/components/ui/carousel";
 import {
   Dialog,
@@ -41,23 +39,25 @@ import { type Image } from "~/server/types/IImages";
 import DeleteImageDialog from "./deleteImageDialog";
 import { useRouter } from "next/navigation";
 
-export function SmallPartDialog(props: {
+export function PartDataViewDialog(props: {
+  title: string;
   data: Part;
-  index: number;
   locations: ILocation[];
 }) {
-  const { index, data, locations } = props;
+  const { title, data, locations } = props;
+  const router = useRouter();
+
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
-  const router = useRouter();
+
   const curret_condition = data.condition;
 
-  const [locationValue, setLocationValue] = useState<string>(current_location);
   const [conditionValue, setConditionValue] = useState<PartCondition>(
     data.condition as PartCondition,
   );
 
+  const [locationValue, setLocationValue] = useState<string>(current_location);
   const [length, setLength] = useState(data.length_unit);
   const [width, setWidth] = useState(data.width_unit);
   const [height, setHeight] = useState(data.height_unit);
@@ -146,37 +146,15 @@ export function SmallPartDialog(props: {
     await handleSaveClick();
     setIsEditing(false);
   };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-base font-semibold">ID</p>
-            <div className="flex items-center gap-2">{index}</div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Name</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.name}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Condition</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.condition}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Quantity</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.quantity}</span>
-            </div>
-          </div>
-        </div>
+        <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Test</DialogTitle>
+          <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
             Anyone who has this link will be able to view this.
           </DialogDescription>
@@ -185,17 +163,10 @@ export function SmallPartDialog(props: {
         <div className="space-y-4">
           {data.images && data.images.length > 0 && (
             <div className="flex justify-center">
-              <Carousel
-                className="w-full max-w-xs"
-                plugins={[
-                  Autoplay({
-                    delay: 5000,
-                  }),
-                ]}
-              >
+              <Carousel className="w-full max-w-xs">
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
-                    <CarouselItem key={index} className="p-0">
+                    <CarouselItem key={index} className=" p-0">
                       <div className=" flex h-full w-full flex-col items-center justify-center">
                         <img
                           src={image.image_url}
@@ -213,6 +184,8 @@ export function SmallPartDialog(props: {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
               </Carousel>
             </div>
           )}
@@ -234,12 +207,13 @@ export function SmallPartDialog(props: {
                 name="part_number"
                 value={formData.part_number}
                 readOnly={!isEditing}
-                onChange={handleChange}
                 disabled={!isEditing}
+                onChange={handleChange}
                 className="border border-gray-300"
               />
             </div>
           </div>
+
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Name</Label>
@@ -247,8 +221,8 @@ export function SmallPartDialog(props: {
                 name="name"
                 value={formData.name}
                 readOnly={!isEditing}
-                disabled={!isEditing}
                 onChange={handleChange}
+                disabled={!isEditing}
                 className="border border-gray-300"
               />
             </div>
@@ -267,7 +241,7 @@ export function SmallPartDialog(props: {
               />
             </div>
             <div className="flex-1">
-              <Label>Acquisition Date</Label>
+              <Label>Creation Date</Label>
               <Input
                 name="created_at"
                 value={formData.created_at.toLocaleDateString()}
@@ -279,117 +253,101 @@ export function SmallPartDialog(props: {
           </div>
 
           <div className="flex items-center space-x-4 ">
-            <div className="flex-1">
-              <Label>Dimensions (L x W x H)</Label>
-              <div className="flex flex-row">
-                <div className="m-2 flex items-center gap-2">
-                  <Input
-                    name="length"
-                    value={formData.length}
-                    readOnly={!isEditing}
-                    disabled={!isEditing}
-                    onChange={handleChange}
-                    className="  border border-gray-300"
-                  />
+            <div className="flex flex-col items-center">
+              <Label>Dimensions</Label>
+              <Label>(L x W x H)</Label>
+            </div>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className="w-1/6" variant="outline">
-                        {length}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel>Unit</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup
-                        value={formData.length_unit}
-                        onValueChange={(e) => {
-                          setLength(e);
-                          setFormData((prev) => ({ ...prev, length_unit: e }));
-                        }}
-                      >
-                        <DropdownMenuRadioItem value="cm">
-                          cm
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="mm">
-                          mm
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+            <div className="m-4 flex">
+              <Input
+                name="length"
+                value={formData.length}
+                readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="m-2 w-1/6 border border-gray-300"
+              />
 
-                <div className="m-2 flex  items-center gap-2">
-                  <Input
-                    name="width"
-                    value={formData.width}
-                    readOnly={!isEditing}
-                    disabled={!isEditing}
-                    onChange={handleChange}
-                    className=" border border-gray-300"
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className=" w-1/6" variant="outline">
-                        {width}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel>Unit</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup
-                        value={formData.width_unit}
-                        onValueChange={(e) => {
-                          setWidth(e);
-                          setFormData((prev) => ({ ...prev, width_unit: e }));
-                        }}
-                      >
-                        <DropdownMenuRadioItem value="cm">
-                          cm
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="mm">
-                          mm
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="m-2  flex items-center gap-2">
-                  <Input
-                    name="height"
-                    value={formData.height}
-                    disabled={!isEditing}
-                    readOnly={!isEditing}
-                    onChange={handleChange}
-                    className=" border border-gray-300"
-                  />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className=" w-1/6" variant="outline">
-                        {height}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel>Unit</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup
-                        value={formData.height_unit}
-                        onValueChange={(e) => {
-                          setHeight(e);
-                          setFormData((prev) => ({ ...prev, height_unit: e }));
-                        }}
-                      >
-                        <DropdownMenuRadioItem value="cm">
-                          cm
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="mm">
-                          mm
-                        </DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="m-2 w-1/6" variant="outline">
+                    {length}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Unit</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.length_unit}
+                    onValueChange={(e) => {
+                      setLength(e);
+                      setFormData((prev) => ({ ...prev, length_unit: e }));
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Input
+                name="width"
+                value={formData.width}
+                readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="m-2  w-1/6 border border-gray-300"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="m-2 w-1/6" variant="outline">
+                    {width}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Unit</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.width_unit}
+                    onValueChange={(e) => {
+                      setWidth(e);
+                      setFormData((prev) => ({ ...prev, width_unit: e }));
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Input
+                name="height"
+                value={formData.height}
+                readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="m-2 w-1/6 border border-gray-300"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="m-2 w-1/6" variant="outline">
+                    {height}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Unit</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.height_unit}
+                    onValueChange={(e) => {
+                      setHeight(e);
+                      setFormData((prev) => ({ ...prev, height_unit: e }));
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -459,7 +417,7 @@ export function SmallPartDialog(props: {
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
-                <Input readOnly disabled></Input>
+                <Input readOnly disabled className="bg-zinc-700"></Input>
                 <UploadButton
                   disabled={!isEditing}
                   input={{ part_id: data.part_id }}

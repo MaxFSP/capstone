@@ -1,13 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect } from "react";
 
 import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 } from "~/components/ui/carousel";
 import {
   Dialog,
@@ -35,12 +32,9 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { type Machinery } from "~/server/types/IMachinery";
 import { type ILocation } from "~/server/types/ILocation";
+import { type ToolCondition, type Tool } from "~/server/types/ITool";
 import { UploadButton } from "../utils/uploadthing";
-import { SellDataViewDialog } from "./sellMachineDialog";
-import { type States } from "~/server/types/IMachinery";
-
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { cn } from "~/lib/utils";
@@ -54,27 +48,27 @@ import { type Image } from "~/server/types/IImages";
 import DeleteImageDialog from "./deleteImageDialog";
 import { useRouter } from "next/navigation";
 
-export function SmallMachineryDialog(props: {
-  data: Machinery;
-  index: number;
+export function ToolDataViewDialog(props: {
+  title: string;
+  data: Tool;
   locations: ILocation[];
 }) {
-  const { index, data, locations } = props;
+  const { title, data, locations } = props;
+
   const router = useRouter();
+  const current_date = data.acquisition_date;
 
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
-
-  const current_date = data.acquisition_date;
-  const current_state = data.state;
-
-  const [locationValue, setLocationValue] = useState<string>(current_location);
-  const [stateValue, setStateValue] = useState<States>(data.state as States);
+  const curret_condition = data.condition;
+  const [conditionValue, setConditionValue] = useState<ToolCondition>(
+    data.condition as ToolCondition,
+  );
   const [dateValue, setDateValue] = useState<Date>(
     new Date(data.acquisition_date),
   );
-
+  const [locationValue, setLocationValue] = useState<string>(current_location);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
@@ -83,15 +77,17 @@ export function SmallMachineryDialog(props: {
 
   useEffect(() => {
     if (!isEditing) {
-      setFormData({ ...data });
       setLocationValue(current_location);
+      setConditionValue(data.condition as ToolCondition);
+      setFormData({ ...data });
+      setDateValue(data.acquisition_date);
     }
   }, [isEditing, data]);
 
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formData, locationValue, dateValue]);
+  }, [formData, locationValue, conditionValue, dateValue]);
 
   const handleUploadComplete = () => {
     router.refresh();
@@ -99,7 +95,7 @@ export function SmallMachineryDialog(props: {
 
   const validateForm = () => {
     const isDataValid =
-      formData.machine_id !== null && formData.machine_id !== undefined;
+      formData.tool_id !== null && formData.tool_id !== undefined;
     setIsFormValid(isDataValid);
   };
 
@@ -112,9 +108,8 @@ export function SmallMachineryDialog(props: {
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
       locationValue !== current_location ||
-      dateWithoutTime !== dateWithoutTimeCurrent ||
-      stateValue !== current_state;
-
+      conditionValue !== curret_condition ||
+      dateWithoutTime !== dateWithoutTimeCurrent;
     setHasChanges(hasChanges);
   };
 
@@ -141,8 +136,9 @@ export function SmallMachineryDialog(props: {
         formData.location_id = locations.find(
           (location) => location.name === locationValue,
         )!.location_id;
-        formData.state = stateValue;
-        const response = await fetch("/api/updateMachinery", {
+        formData.condition = conditionValue;
+        formData.acquisition_date = dateValue;
+        const response = await fetch("/api/updateTool", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -167,42 +163,11 @@ export function SmallMachineryDialog(props: {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-base font-semibold">ID</p>
-            <div className="flex items-center gap-2">{index}</div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Brand</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.brand}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Model</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.model}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Serial Number</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">
-                {data.serial_number}
-              </span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">State</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.state}</span>
-            </div>
-          </div>
-        </div>
+        <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Test</DialogTitle>
+          <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
             Anyone who has this link will be able to view this.
           </DialogDescription>
@@ -211,14 +176,7 @@ export function SmallMachineryDialog(props: {
         <div className="space-y-4">
           {data.images && data.images.length > 0 && (
             <div className="flex justify-center">
-              <Carousel
-                className="w-full max-w-xs"
-                plugins={[
-                  Autoplay({
-                    delay: 5000,
-                  }),
-                ]}
-              >
+              <Carousel className="w-full max-w-xs">
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
@@ -226,29 +184,31 @@ export function SmallMachineryDialog(props: {
                         <img
                           src={image.image_url}
                           className="h-full w-full object-scale-down "
-                          alt="Machinery Images"
+                          alt="Tool Images"
                         />
                         <DeleteImageDialog
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Machinery",
+                            type: "Tool",
                           }}
                         />
                       </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
               </Carousel>
             </div>
           )}
 
           <div className="flex space-x-4">
             <div className="flex-1">
-              <Label>Machine ID</Label>
+              <Label>Tool ID</Label>
               <Input
-                name="machine_id"
-                value={formData.machine_id}
+                name="tool_id"
+                value={data.tool_id}
                 readOnly
                 disabled
                 className="bg-zinc-700"
@@ -260,8 +220,8 @@ export function SmallMachineryDialog(props: {
                 name="brand"
                 value={formData.brand}
                 readOnly={!isEditing}
-                disabled={!isEditing}
                 onChange={handleChange}
+                disabled={!isEditing}
                 className="border border-gray-300"
               />
             </div>
@@ -269,24 +229,24 @@ export function SmallMachineryDialog(props: {
 
           <div className="flex space-x-4">
             <div className="flex-1">
-              <Label>Model</Label>
+              <Label>Name</Label>
               <Input
-                name="model"
-                value={formData.model}
+                name="name"
+                value={formData.name}
                 readOnly={!isEditing}
-                disabled={!isEditing}
                 onChange={handleChange}
+                disabled={!isEditing}
                 className="border border-gray-300"
               />
             </div>
             <div className="flex-1">
-              <Label>Year</Label>
+              <Label>Category</Label>
               <Input
-                name="year"
-                value={formData.year}
-                disabled={!isEditing}
+                name="category"
+                value={formData.category}
                 readOnly={!isEditing}
                 onChange={handleChange}
+                disabled={!isEditing}
                 className="border border-gray-300"
               />
             </div>
@@ -294,12 +254,23 @@ export function SmallMachineryDialog(props: {
 
           <div className="flex space-x-4">
             <div className="flex-1">
-              <Label>Serial Number</Label>
+              <Label>Tool Type</Label>
               <Input
-                name="serial_number"
-                value={formData.serial_number}
-                disabled={!isEditing}
+                name="tool_type"
+                value={formData.tool_type}
                 readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="border border-gray-300"
+              />
+            </div>
+            <div className="flex-1">
+              <Label>Qauntity</Label>
+              <Input
+                name="quantity"
+                value={formData.quantity}
+                readOnly={!isEditing}
+                disabled={!isEditing}
                 onChange={handleChange}
                 className="border border-gray-300"
               />
@@ -355,48 +326,9 @@ export function SmallMachineryDialog(props: {
                 className="border border-gray-300"
               />
             </div>
-            <div className="flex-1">
-              <Label>Created At</Label>
-              <Input
-                name="created_at"
-                value={formData.created_at.toLocaleDateString()}
-                disabled
-                readOnly={!isEditing}
-                onChange={handleChange}
-                className="border border-gray-300"
-              />
-            </div>
           </div>
 
           <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>State</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
-                    {stateValue}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
-                  <DropdownMenuLabel>State</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={stateValue}
-                    onValueChange={(value) => setStateValue(value as States)}
-                  >
-                    <DropdownMenuRadioItem value="Available">
-                      Available
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Sold">
-                      Sold
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Under Maintenance">
-                      Under Maintenance
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
             <div className="flex-1">
               <Label>Location</Label>
               <DropdownMenu>
@@ -424,64 +356,56 @@ export function SmallMachineryDialog(props: {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </div>
-
-          {data.sold_price !== null && (
-            <>
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label>Sold Price</Label>
-                  <Input
-                    value={data.sold_price}
-                    readOnly
-                    disabled={!isEditing}
-                    className="border border-gray-300"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label>Sold Date</Label>
-                  <Input
-                    value={
-                      data.sold_date
-                        ? data.sold_date.toLocaleDateString()
-                        : "N/A"
+            <div className="flex-1">
+              <Label>Condition</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full" variant="outline">
+                    {conditionValue}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  <DropdownMenuLabel>Condition</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={conditionValue}
+                    onValueChange={(value) =>
+                      setConditionValue(value as ToolCondition)
                     }
-                    readOnly
-                    disabled={!isEditing}
-                    className="border border-gray-300"
-                  />
-                </div>
-              </div>
-
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label>Sold To</Label>
-                  <Input
-                    value={data.sold_to ?? "N/A"}
-                    readOnly
-                    disabled={!isEditing}
-                    className="border border-gray-300"
-                  />
-                </div>
-              </div>
-            </>
-          )}
-          {data.state !== "Sold" && (
+                  >
+                    <DropdownMenuRadioItem value="Good">
+                      Good
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Bad">
+                      Bad
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Excellent">
+                      Excellent
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Poor">
+                      Poor
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
                 <Input readOnly disabled></Input>
                 <UploadButton
                   disabled={!isEditing}
-                  input={{ machine_id: data.machine_id }}
-                  endpoint="machineryImageUploader"
+                  input={{ tool_id: data.tool_id }}
+                  endpoint="toolImageUploader"
                   onClientUploadComplete={() => {
                     handleUploadComplete();
                   }}
                 />
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         <DialogFooter className="sm:justify-start">
@@ -492,11 +416,9 @@ export function SmallMachineryDialog(props: {
               </Button>
             </DialogClose>
           )}
-          {data.state !== "Sold" && (
-            <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-              {isEditing ? "Cancel" : "Edit"}
-            </Button>
-          )}
+          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
           {isEditing && (
             <>
               <DialogClose asChild>
@@ -517,20 +439,6 @@ export function SmallMachineryDialog(props: {
                 </Button>
               </DialogClose>
             </>
-          )}
-          {data.state !== "Sold" && (
-            <SellDataViewDialog
-              data={{
-                machine_id: data.machine_id,
-                brand: data.brand,
-                model: data.model,
-                year: data.year,
-                serial_number: data.serial_number,
-                sold_price: data.sold_price ?? 0,
-                sold_to: data.sold_to ?? "N/A",
-                sold_date: data.sold_date ?? new Date(),
-              }}
-            />
           )}
         </DialogFooter>
       </DialogContent>
