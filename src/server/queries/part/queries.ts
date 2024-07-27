@@ -11,7 +11,6 @@ import { type Part } from "~/server/types/IPart";
 // Create Part
 export async function createPart(
   name: string,
-  created_at: Date,
   part_number: string,
   condition: string, // MAYBE MAKE AN ENUM
   length: number,
@@ -28,7 +27,6 @@ export async function createPart(
     .insert(partStock)
     .values({
       name,
-      created_at,
       part_number,
       condition,
       length,
@@ -72,6 +70,7 @@ export async function getParts() {
         ...part_stock,
         location_name: location?.name ?? "",
         images: [],
+        compatible_machines: part_stock.compatible_machines ?? "",
       });
     }
 
@@ -79,7 +78,11 @@ export async function getParts() {
 
     // Add image URL if it exists
     if (part_images?.image_url) {
-      currentPart.images.push(part_images.image_url);
+      currentPart.images.push({
+        image_id: part_images.image_id,
+        image_url: part_images.image_url,
+        image_key: part_images.image_key,
+      });
     }
   });
 
@@ -99,36 +102,34 @@ export async function getPartById(partId: number) {
 // Update Part
 export async function updatePart(
   part_id: number,
-  name?: string,
-  created_at?: Date,
-  part_number?: string,
-  condition?: string,
-  length?: number,
-  quantity?: number,
-  location_id?: number,
-  length_unit?: string,
-  width?: number,
-  width_unit?: string,
-  height?: number,
-  height_unit?: string,
-  compatible_machines?: string,
+  nameValue?: string,
+  partNumberValue?: string,
+  conditionValue?: string,
+  lengthValue?: number,
+  quantityValue?: number,
+  locationIdValue?: number,
+  lengthUnitValue?: string,
+  widthValue?: number,
+  widthUnitValue?: string,
+  heightValue?: number,
+  heightUnitValue?: string,
+  compatibleMachinesValue?: string,
 ) {
   const updatedPart = await db
     .update(partStock)
     .set({
-      name,
-      created_at,
-      part_number,
-      condition,
-      length,
-      quantity,
-      location_id,
-      length_unit,
-      width,
-      width_unit,
-      height,
-      height_unit,
-      compatible_machines,
+      name: nameValue,
+      part_number: partNumberValue,
+      condition: conditionValue,
+      quantity: quantityValue,
+      location_id: locationIdValue,
+      length: lengthValue,
+      length_unit: lengthUnitValue,
+      width: widthValue,
+      width_unit: widthUnitValue,
+      height: heightValue,
+      height_unit: heightUnitValue,
+      compatible_machines: compatibleMachinesValue,
     })
     .where(eq(partStock.part_id, part_id))
     .returning();
@@ -142,4 +143,12 @@ export async function deletePart(partId: number) {
     .where(eq(partStock.part_id, partId))
     .returning();
   return deletedPart;
+}
+
+export async function deleteImagePart(imageId: number) {
+  const deletedImage = await db
+    .delete(partImages)
+    .where(eq(partImages.image_id, imageId))
+    .returning();
+  return deletedImage;
 }

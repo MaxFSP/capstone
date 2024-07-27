@@ -1,23 +1,15 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 
+import { Button } from "~/components/ui/button";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 } from "~/components/ui/carousel";
 import {
   Dialog,
@@ -31,40 +23,45 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { type ToolCondition, type Tool } from "~/server/types/ITool";
+import { type PartCondition, type Part } from "~/server/types/IPart";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { type ILocation } from "~/server/types/ILocation";
 import { UploadButton } from "../utils/uploadthing";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
 import { type Image } from "~/server/types/IImages";
+import DeleteImageDialog from "./deleteImageDialog";
 
-export function SmallToolDialog(props: {
-  data: Tool;
-  index: number;
+export function PartDataViewDialog(props: {
+  title: string;
+  data: Part;
   locations: ILocation[];
 }) {
-  const { index, data, locations } = props;
-  const current_date = data.acquisition_date;
+  const { title, data, locations } = props;
 
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
+
   const curret_condition = data.condition;
-  const [conditionValue, setConditionValue] = useState<ToolCondition>(
-    data.condition as ToolCondition,
-  );
-  const [dateValue, setDateValue] = useState<Date>(
-    new Date(data.acquisition_date),
+
+  const [conditionValue, setConditionValue] = useState<PartCondition>(
+    data.condition as PartCondition,
   );
 
+  console.log(data.images);
+
   const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [length, setLength] = useState(data.length_unit);
+  const [width, setWidth] = useState(data.width_unit);
+  const [height, setHeight] = useState(data.height_unit);
+
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
@@ -74,35 +71,28 @@ export function SmallToolDialog(props: {
   useEffect(() => {
     if (!isEditing) {
       setLocationValue(current_location);
+      setConditionValue(data.condition as PartCondition);
       setFormData({ ...data });
-      setConditionValue(data.condition as ToolCondition);
-      setDateValue(data.acquisition_date);
     }
   }, [isEditing, data]);
 
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formData, locationValue, conditionValue, dateValue]);
+  }, [formData, locationValue, conditionValue]);
 
   const validateForm = () => {
     const isDataValid =
-      formData.tool_id !== null && formData.tool_id !== undefined;
+      formData.part_id !== null && formData.part_id !== undefined;
+    formData;
     setIsFormValid(isDataValid);
   };
 
   const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
-
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
       locationValue !== current_location ||
-      conditionValue !== curret_condition ||
-      dateWithoutTime !== dateWithoutTimeCurrent;
-
+      conditionValue !== curret_condition;
     setHasChanges(hasChanges);
   };
 
@@ -129,7 +119,8 @@ export function SmallToolDialog(props: {
         formData.location_id = locations.find(
           (location) => location.name === locationValue,
         )!.location_id;
-        const response = await fetch("/api/updateTool", {
+        formData.condition = conditionValue;
+        const response = await fetch("/api/updatePart", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -151,89 +142,66 @@ export function SmallToolDialog(props: {
     await handleSaveClick();
     setIsEditing(false);
   };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-base font-semibold">ID</p>
-            <div className="flex items-center gap-2">{index}</div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Name</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.name}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Condition</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.condition}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Quantity</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.quantity}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Condition</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.condition}</span>
-            </div>
-          </div>
-        </div>
+        <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Test</DialogTitle>
+          <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
             Anyone who has this link will be able to view this.
           </DialogDescription>
         </DialogHeader>
+
         <div className="space-y-4">
-          {formData.images && formData.images.length > 0 && (
+          {data.images && data.images.length > 0 && (
             <div className="flex justify-center">
-              <Carousel
-                className="w-full max-w-xs"
-                plugins={[
-                  Autoplay({
-                    delay: 5000,
-                  }),
-                ]}
-              >
+              <Carousel className="w-full max-w-xs">
                 <CarouselContent>
-                  {formData.images.map((image: Image, index: number) => (
-                    <CarouselItem key={index} className="p-0">
-                      <img
-                        src={image.image_url}
-                        className="h-full w-full rounded-lg object-cover"
-                        alt="Part Images"
-                      />
+                  {data.images.map((image: Image, index: number) => (
+                    <CarouselItem key={index} className=" p-0">
+                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                        <img
+                          src={image.image_url}
+                          className="h-full w-full object-scale-down "
+                          alt="Part Images"
+                        />
+                        <DeleteImageDialog
+                          imageInfo={{
+                            image_id: image.image_id,
+                            image_key: image.image_key,
+                          }}
+                          type="Part"
+                        />
+                      </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
               </Carousel>
             </div>
           )}
 
           <div className="flex space-x-4">
             <div className="flex-1">
-              <Label>Tool ID</Label>
+              <Label>Part ID</Label>
               <Input
-                name="tool_id"
-                value={data.tool_id}
+                name="part_id"
+                value={formData.part_id}
                 readOnly
                 disabled
                 className="bg-zinc-700"
               />
             </div>
             <div className="flex-1">
-              <Label>Brand</Label>
+              <Label>Part Number</Label>
               <Input
-                name="brand"
-                value={formData.brand}
+                name="part_number"
+                value={formData.part_number}
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
@@ -246,30 +214,8 @@ export function SmallToolDialog(props: {
             <div className="flex-1">
               <Label>Name</Label>
               <Input
-                name="Name"
+                name="name"
                 value={formData.name}
-                readOnly={!isEditing}
-                disabled={!isEditing}
-                onChange={handleChange}
-                className="border border-gray-300"
-              />
-            </div>
-            <div className="flex-1">
-              <Label>Category</Label>
-              <Input
-                name="category"
-                value={formData.category}
-                readOnly={!isEditing}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="border border-gray-300"
-              />
-            </div>
-            <div className="flex-1">
-              <Label>Tool Type</Label>
-              <Input
-                name="tool_type"
-                value={formData.tool_type}
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
@@ -285,61 +231,119 @@ export function SmallToolDialog(props: {
                 name="quantity"
                 value={formData.quantity}
                 readOnly={!isEditing}
-                onChange={handleChange}
                 disabled={!isEditing}
+                onChange={handleChange}
                 className="border border-gray-300"
               />
             </div>
             <div className="flex-1">
-              <Label>Acquisition Date</Label>
-              <Popover>
-                <PopoverTrigger asChild disabled={!isEditing}>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[240px] justify-start text-left font-normal",
-                      !dateValue && "text-muted-foreground",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? (
-                      format(dateValue, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateValue}
-                    onSelect={(date) => {
-                      if (date) {
-                        setDateValue(date);
-                        setFormData((prev) => ({
-                          ...prev,
-                          acquisition_date: date,
-                        }));
-                      }
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label>Creation Date</Label>
+              <Input
+                name="created_at"
+                value={formData.created_at.toLocaleDateString()}
+                readOnly
+                disabled
+                className="bg-zinc-700"
+              />
             </div>
           </div>
 
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Observations</Label>
+          <div className="flex items-center space-x-4 ">
+            <div className="flex flex-col items-center">
+              <Label>Dimensions</Label>
+              <Label>(L x W x H)</Label>
+            </div>
+
+            <div className="m-4 flex">
               <Input
-                name="observations"
-                value={formData.observations ?? "N/A"}
+                name="length"
+                value={formData.length}
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="m-2 w-1/6 border border-gray-300"
               />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="m-2 w-1/6" variant="outline">
+                    {length}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Unit</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.length_unit}
+                    onValueChange={(e) => {
+                      setLength(e);
+                      setFormData((prev) => ({ ...prev, length_unit: e }));
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Input
+                name="width"
+                value={formData.width}
+                readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="m-2  w-1/6 border border-gray-300"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="m-2 w-1/6" variant="outline">
+                    {width}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Unit</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.width_unit}
+                    onValueChange={(e) => {
+                      setWidth(e);
+                      setFormData((prev) => ({ ...prev, width_unit: e }));
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Input
+                name="height"
+                value={formData.height}
+                readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
+                className="m-2 w-1/6 border border-gray-300"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="m-2 w-1/6" variant="outline">
+                    {height}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Unit</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.height_unit}
+                    onValueChange={(e) => {
+                      setHeight(e);
+                      setFormData((prev) => ({ ...prev, height_unit: e }));
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -385,7 +389,7 @@ export function SmallToolDialog(props: {
                   <DropdownMenuRadioGroup
                     value={conditionValue}
                     onValueChange={(value) =>
-                      setConditionValue(value as ToolCondition)
+                      setConditionValue(value as PartCondition)
                     }
                   >
                     <DropdownMenuRadioItem value="Good">
@@ -405,21 +409,24 @@ export function SmallToolDialog(props: {
               </DropdownMenu>
             </div>
           </div>
-          <div className="flex-1">
-            <Label>Upload Images</Label>
-            <div className="flex items-center gap-2">
-              <Input readOnly disabled></Input>
-              <UploadButton
-                disabled={!isEditing}
-                input={{ tool_id: data.tool_id }}
-                endpoint="toolImageUploader"
-                onClientUploadComplete={() => {
-                  // here i want to save the image url to be displayed here as of rn
-                }}
-              />
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <Label>Upload Images</Label>
+              <div className="flex items-center gap-2">
+                <Input readOnly disabled className="bg-zinc-700"></Input>
+                <UploadButton
+                  disabled={!isEditing}
+                  input={{ part_id: data.part_id }}
+                  endpoint="partImageUploader"
+                  onClientUploadComplete={() => {
+                    // here i want to save the image url to be displayed here as of rn
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
+
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>

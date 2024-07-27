@@ -19,14 +19,17 @@ const machineryColumns = [
   { key: "brand", label: "Brand" },
   { key: "model", label: "Model" },
   { key: "serial_number", label: "Serial Number" },
+  { key: "state", label: "State" },
 ];
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { getLocations } from "~/server/queries/location/queries";
 
 export default async function StockPage() {
   const machineryData = await getMachineries();
   const partData = await getParts();
   const toolData = await getTools();
+  const locations = await getLocations();
   return (
     <Tabs defaultValue="machines">
       <TabsList className="m-4 grid grid-cols-3 sm:w-full md:w-1/2">
@@ -38,14 +41,16 @@ export default async function StockPage() {
         <TableComponent
           data={machineryData}
           columns={machineryColumns}
-          valueType="machinery"
+          valueType="Machinery"
+          locations={locations}
         />
       </TabsContent>
       <TabsContent value="parts">
         <TableComponent
           data={partData}
           columns={partsColumns}
-          valueType="part"
+          valueType="Part"
+          locations={locations}
         />
       </TabsContent>
 
@@ -53,7 +58,8 @@ export default async function StockPage() {
         <TableComponent
           data={toolData}
           columns={toolsColumns}
-          valueType="tool"
+          valueType="Tool"
+          locations={locations}
         />
       </TabsContent>
     </Tabs>

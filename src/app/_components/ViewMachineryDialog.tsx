@@ -1,13 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect } from "react";
 
-import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
-
+import { UploadButton } from "../utils/uploadthing";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +14,13 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 
+import { Button } from "~/components/ui/button";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 } from "~/components/ui/carousel";
 import {
   Dialog,
@@ -35,11 +34,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { type Machinery } from "~/server/types/IMachinery";
-import { type ILocation } from "~/server/types/ILocation";
-import { UploadButton } from "../utils/uploadthing";
 import { SellDataViewDialog } from "./sellMachineDialog";
-import { type States } from "~/server/types/IMachinery";
 
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
@@ -50,29 +45,31 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { type Image } from "~/server/types/IImages";
 
-export function SmallMachineryDialog(props: {
+import { type States, type Machinery } from "~/server/types/IMachinery";
+import { type ILocation } from "~/server/types/ILocation";
+import { type Image } from "~/server/types/IImages";
+import DeleteImageDialog from "./deleteImageDialog";
+
+export function MachineryDataViewDialog(props: {
+  title: string;
   data: Machinery;
-  index: number;
   locations: ILocation[];
 }) {
-  const { index, data, locations } = props;
+  const { title, data, locations } = props;
+  const current_date = data.acquisition_date;
+  const current_state = data.state;
 
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
 
-  const current_date = data.acquisition_date;
-  const current_state = data.state;
-
-  const [locationValue, setLocationValue] = useState<string>(current_location);
   const [stateValue, setStateValue] = useState<States>(data.state as States);
   const [dateValue, setDateValue] = useState<Date>(
     new Date(data.acquisition_date),
   );
-
-  const [isEditing, setIsEditing] = useState(false);
+  const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [isFormValid, setIsFormValid] = useState(false);
@@ -80,15 +77,16 @@ export function SmallMachineryDialog(props: {
 
   useEffect(() => {
     if (!isEditing) {
-      setFormData({ ...data });
       setLocationValue(current_location);
+      setStateValue(data.state as States);
+      setFormData({ ...data });
     }
   }, [isEditing, data]);
 
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formData, locationValue, dateValue]);
+  }, [formData, locationValue, dateValue, stateValue]);
 
   const validateForm = () => {
     const isDataValid =
@@ -157,45 +155,22 @@ export function SmallMachineryDialog(props: {
     await handleSaveClick();
     setIsEditing(false);
   };
+
+  const inputProps = {
+    readOnly: data.state === "Sold",
+    disabled: data.state === "Sold",
+    className:
+      data.state === "Sold" ? "bg-zinc-700 " : "border border-gray-300",
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-base font-semibold">ID</p>
-            <div className="flex items-center gap-2">{index}</div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Brand</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.brand}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Model</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.model}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Serial Number</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">
-                {data.serial_number}
-              </span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">State</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.state}</span>
-            </div>
-          </div>
-        </div>
+        <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Test</DialogTitle>
+          <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
             Anyone who has this link will be able to view this.
           </DialogDescription>
@@ -204,25 +179,29 @@ export function SmallMachineryDialog(props: {
         <div className="space-y-4">
           {data.images && data.images.length > 0 && (
             <div className="flex justify-center">
-              <Carousel
-                className="w-full max-w-xs"
-                plugins={[
-                  Autoplay({
-                    delay: 5000,
-                  }),
-                ]}
-              >
+              <Carousel className="w-full max-w-xs">
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
-                      <img
-                        src={image.image_url}
-                        className="h-full w-full object-cover"
-                        alt="Machinery Images"
-                      />
+                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                        <img
+                          src={image.image_url}
+                          className="h-full w-full object-scale-down "
+                          alt="Machinery Images"
+                        />
+                        <DeleteImageDialog
+                          imageInfo={{
+                            image_id: image.image_id,
+                            image_key: image.image_key,
+                          }}
+                          type="Machinery"
+                        />
+                      </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
               </Carousel>
             </div>
           )}
@@ -243,10 +222,14 @@ export function SmallMachineryDialog(props: {
               <Input
                 name="brand"
                 value={formData.brand}
-                readOnly={!isEditing}
-                disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                readOnly={!isEditing && inputProps.readOnly}
+                disabled={!isEditing}
+                className={
+                  inputProps.readOnly
+                    ? inputProps.className
+                    : "border border-gray-300"
+                }
               />
             </div>
           </div>
@@ -257,10 +240,14 @@ export function SmallMachineryDialog(props: {
               <Input
                 name="model"
                 value={formData.model}
-                readOnly={!isEditing}
-                disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                readOnly={!isEditing && inputProps.readOnly}
+                disabled={!isEditing}
+                className={
+                  inputProps.readOnly
+                    ? inputProps.className
+                    : "border border-gray-300"
+                }
               />
             </div>
             <div className="flex-1">
@@ -268,10 +255,14 @@ export function SmallMachineryDialog(props: {
               <Input
                 name="year"
                 value={formData.year}
-                disabled={!isEditing}
-                readOnly={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                readOnly={!isEditing && inputProps.readOnly}
+                disabled={!isEditing}
+                className={
+                  inputProps.readOnly
+                    ? inputProps.className
+                    : "border border-gray-300"
+                }
               />
             </div>
           </div>
@@ -282,10 +273,14 @@ export function SmallMachineryDialog(props: {
               <Input
                 name="serial_number"
                 value={formData.serial_number}
-                disabled={!isEditing}
-                readOnly={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                readOnly={!isEditing && inputProps.readOnly}
+                disabled={!isEditing}
+                className={
+                  inputProps.readOnly
+                    ? inputProps.className
+                    : "border border-gray-300"
+                }
               />
             </div>
             <div className="flex-1">
@@ -333,10 +328,14 @@ export function SmallMachineryDialog(props: {
               <Input
                 name="observations"
                 value={formData.observations ?? "N/A"}
+                onChange={handleChange}
                 readOnly={!isEditing}
                 disabled={!isEditing}
-                onChange={handleChange}
-                className="border border-gray-300"
+                className={
+                  inputProps.readOnly
+                    ? inputProps.className
+                    : "border border-gray-300"
+                }
               />
             </div>
             <div className="flex-1">
@@ -344,10 +343,14 @@ export function SmallMachineryDialog(props: {
               <Input
                 name="created_at"
                 value={formData.created_at.toLocaleDateString()}
-                disabled
-                readOnly={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                readOnly={!isEditing}
+                disabled
+                className={
+                  inputProps.readOnly
+                    ? inputProps.className
+                    : "border border-gray-300"
+                }
               />
             </div>
           </div>
@@ -410,46 +413,61 @@ export function SmallMachineryDialog(props: {
             </div>
           </div>
 
-          {data.sold_price !== null && (
-            <>
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label>Sold Price</Label>
-                  <Input
-                    value={data.sold_price}
-                    readOnly
-                    disabled={!isEditing}
-                    className="border border-gray-300"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label>Sold Date</Label>
-                  <Input
-                    value={
-                      data.sold_date
-                        ? data.sold_date.toLocaleDateString()
-                        : "N/A"
-                    }
-                    readOnly
-                    disabled={!isEditing}
-                    className="border border-gray-300"
-                  />
-                </div>
-              </div>
+          {data.state === "Sold" &&
+            data.sold_price !== null &&
+            data.sold_to !== null && (
+              <>
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <Label>Sold Price</Label>
+                    <Input
+                      value={data.sold_price}
+                      readOnly={!isEditing}
+                      disabled={!isEditing}
+                      className={
+                        inputProps.readOnly
+                          ? inputProps.className
+                          : "border border-gray-300"
+                      }
+                    />
+                  </div>
 
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label>Sold To</Label>
-                  <Input
-                    value={data.sold_to ?? "N/A"}
-                    readOnly
-                    disabled={!isEditing}
-                    className="border border-gray-300"
-                  />
+                  <div className="flex-1">
+                    <Label>Sold To</Label>
+                    <Input
+                      value={data.sold_to}
+                      readOnly={!isEditing}
+                      disabled={!isEditing}
+                      className={
+                        inputProps.readOnly
+                          ? inputProps.className
+                          : "border border-gray-300"
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <Label>Sold Date</Label>
+                    <Input
+                      value={
+                        data.sold_date
+                          ? data.sold_date.toLocaleDateString()
+                          : "N/A"
+                      }
+                      readOnly={!isEditing && inputProps.readOnly}
+                      disabled={!isEditing}
+                      className={
+                        inputProps.readOnly
+                          ? inputProps.className
+                          : "border border-gray-300"
+                      }
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           {data.state !== "Sold" && (
             <div className="flex-1">
               <Label>Upload Images</Label>

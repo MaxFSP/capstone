@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+"use client";
+
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
@@ -25,7 +28,9 @@ import type {
 import type { UpdateEmployee } from "../../server/types/employee";
 import { DialogClose } from "@radix-ui/react-dialog";
 
-export default function EditUser({ user }: { user: Employee }) {
+import { Avatar } from "@nextui-org/react";
+
+export default function SmallEditUser({ user }: { user: Employee }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     firstName: user.firstName,
@@ -199,10 +204,27 @@ export default function EditUser({ user }: { user: Employee }) {
     [formValues.password, formValues.confirmPassword],
   );
 
+  const statusClass = user.online ? "bg-green-500" : "bg-red-500";
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <p className=" w-8 cursor-pointer text-small font-semibold"> View </p>
+        <div className="border-blue-gray-50 flex cursor-pointer items-center gap-4 border-b px-5 py-4">
+          <Avatar src={user.img} alt={user.firstName} size="lg" />
+          <div className="flex w-full flex-col justify-center">
+            <div className="flex items-center justify-between">
+              <p className="text-base font-semibold">{user.firstName}</p>
+              <div className="flex items-center gap-2 pr-5">
+                <div className="text-blue-gray-600 text-sm font-semibold">
+                  {user.org.name}
+                </div>
+                <div
+                  className={`ml-6 h-3 w-3 rounded-full ${statusClass}`}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
         <DialogHeader>

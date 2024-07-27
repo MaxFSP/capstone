@@ -11,10 +11,10 @@ import { type Tool } from "~/server/types/ITool";
 // Create Tool
 export async function createTool(
   name: string,
+  brand: string,
   condition: string,
   quantity: number,
   location_id: number,
-  created_at: Date,
   category: string,
   tool_type: string,
   acquisition_date: Date,
@@ -24,11 +24,11 @@ export async function createTool(
     .insert(toolStock)
     .values({
       name,
+      brand,
+      category,
       condition,
       quantity,
       location_id,
-      created_at,
-      category,
       tool_type,
       acquisition_date,
       observations,
@@ -60,6 +60,7 @@ export async function getTools() {
         ...tool_stock,
         location_name: location?.name ?? "",
         images: [],
+        observations: tool_stock.observations ?? "",
       });
     }
 
@@ -67,7 +68,11 @@ export async function getTools() {
 
     // Add image URL if it exists
     if (tool_images?.image_url) {
-      currentTool.images.push(tool_images.image_url);
+      currentTool.images.push({
+        image_id: tool_images.image_id,
+        image_url: tool_images.image_url,
+        image_key: tool_images.image_key,
+      });
     }
   });
 
@@ -87,31 +92,28 @@ export async function getToolById(toolId: number) {
 // Update Tool
 export async function updateTool(
   tool_id: number,
-  name?: string,
-  created_at?: Date,
-  condition?: string,
-  quantity?: number,
-  location_id?: number,
-  category?: string,
-  tool_type?: string,
-  acquisition_date?: Date,
-  observations?: string,
+  nameValue?: string,
+  brandValue?: string,
+  categoryValue?: string,
+  tool_typeValue?: string,
+  conditionValue?: string,
+  quantityValue?: number,
+  location_idValue?: number,
+  observationsValue?: string,
 ) {
   const updatedTool = await db
     .update(toolStock)
     .set({
-      name,
-      created_at,
-      condition,
-      quantity,
-      location_id,
-      category,
-      tool_type,
-      acquisition_date,
-      observations,
+      name: nameValue,
+      brand: brandValue,
+      category: categoryValue,
+      tool_type: tool_typeValue,
+      condition: conditionValue,
+      quantity: quantityValue,
+      location_id: location_idValue,
+      observations: observationsValue,
     })
-    .where(eq(toolStock.tool_id, tool_id))
-    .returning();
+    .where(eq(toolStock.tool_id, tool_id));
   return updatedTool;
 }
 
@@ -122,4 +124,12 @@ export async function deleteTool(toolId: number) {
     .where(eq(toolStock.tool_id, toolId))
     .returning();
   return deletedTool;
+}
+
+export async function deleteImageTool(imageId: number) {
+  const deletedImage = await db
+    .delete(toolImages)
+    .where(eq(toolImages.image_id, imageId))
+    .returning();
+  return deletedImage;
 }

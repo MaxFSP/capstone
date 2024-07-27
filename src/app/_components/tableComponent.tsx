@@ -7,13 +7,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 "use client";
 import { useState, type ChangeEvent } from "react";
-import { Avatar } from "@nextui-org/avatar";
-import { MachineryDataViewDialog } from "./machineryDialog";
-import { PartDataViewDialog } from "./partDialog";
-import { ToolDataViewDialog } from "./toolDialog";
+import { MachineryDataViewDialog } from "./ViewMachineryDialog";
+import { PartDataViewDialog } from "./ViewPartDialog";
+import { ToolDataViewDialog } from "./ViewToolDialog";
 import { SmallMachineryDialog } from "./smallMachineryDialog";
 import { SmallPartDialog } from "./smallPartDialog";
 import { SmallToolDialog } from "./smallToolDialog";
+import { type ILocation } from "~/server/types/ILocation";
+import { CreateNewStockDialog } from "./createNewStock";
 
 interface TableColumn {
   key: string;
@@ -25,8 +26,9 @@ const TableComponent = (props: {
   data: any[];
   columns: TableColumn[];
   valueType: string;
+  locations: ILocation[];
 }) => {
-  const { data, columns, valueType } = props;
+  const { data, columns, valueType, locations } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -71,7 +73,9 @@ const TableComponent = (props: {
           }
           className="mb-2 w-full rounded-md border  p-2 md:mb-0 md:flex-1"
         />
-        <div className="lg:flex-1"></div>
+        <div className="flex-1">
+          <CreateNewStockDialog locations={locations} type={valueType} />
+        </div>
       </div>
       <div className="hidden p-4 md:block">
         <table className="w-full table-auto">
@@ -106,28 +110,36 @@ const TableComponent = (props: {
                   <td className={className}>
                     {currentPage * itemsPerPage + index + 1}
                   </td>
-                  {columns.map((col) => (
-                    <td key={col.key} className={className}>
-                      {col.type === "avatar" ? (
-                        <Avatar
-                          src={item[col.key]}
-                          alt="Profile Image"
-                          size="sm"
-                        />
-                      ) : item[col.key] !== undefined ? (
-                        item[col.key].toString()
-                      ) : (
-                        ""
-                      )}
+                  {columns.map((col, colIndex) => (
+                    <td
+                      key={`${col.key}-${index}-${colIndex}`}
+                      className={className}
+                    >
+                      {item[col.key].toString()}
                     </td>
                   ))}
                   <td className={className}>
-                    {valueType === "machinery" ? (
-                      <MachineryDataViewDialog title="View" data={item} />
-                    ) : valueType === "part" ? (
-                      <PartDataViewDialog title="View" data={item} />
-                    ) : valueType === "tool" ? (
-                      <ToolDataViewDialog title="View" data={item} />
+                    {valueType === "Machinery" ? (
+                      <MachineryDataViewDialog
+                        key={item.machine_id}
+                        title="View"
+                        data={item}
+                        locations={locations}
+                      />
+                    ) : valueType === "Part" ? (
+                      <PartDataViewDialog
+                        key={item.part_id}
+                        title="View"
+                        data={item}
+                        locations={locations}
+                      />
+                    ) : valueType === "Tool" ? (
+                      <ToolDataViewDialog
+                        key={item.tool_id}
+                        title="View"
+                        data={item}
+                        locations={locations}
+                      />
                     ) : (
                       ""
                     )}
@@ -140,21 +152,24 @@ const TableComponent = (props: {
       </div>
       <div className="block md:hidden">
         {paginatedData.map((item, index) =>
-          valueType === "machinery" ? (
+          valueType === "Machinery" ? (
             <SmallMachineryDialog
               key={item.machine_id}
               index={currentPage * itemsPerPage + index + 1}
               data={item}
+              locations={locations}
             />
-          ) : valueType === "part" ? (
+          ) : valueType === "Part" ? (
             <SmallPartDialog
               key={item.part_id}
               index={currentPage * itemsPerPage + index + 1}
               data={item}
+              locations={locations}
             />
-          ) : valueType === "tool" ? (
+          ) : valueType === "Tool" ? (
             <SmallToolDialog
               key={item.tool_id}
+              locations={locations}
               index={currentPage * itemsPerPage + index + 1}
               data={item}
             />

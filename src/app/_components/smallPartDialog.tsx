@@ -1,4 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
+
+// TODO: ADD FUNCTIONALITY TO UPLOAD IMAGES
+// TODO ADD FUNCTIONALITY TO EDIT VALUES
+// TODO ADD FUNCTIONALITY TO "SELL" MACHINERY MOST LIKELY PUT A DIALOG TO CONFIRM AND SET THE VALUES
+import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -19,7 +25,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { type Part } from "~/server/types/IPart";
+import { type PartCondition, type Part } from "~/server/types/IPart";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,14 +35,111 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import * as React from "react";
+import { type ILocation } from "~/server/types/ILocation";
+import { UploadButton } from "../utils/uploadthing";
+import { type Image } from "~/server/types/IImages";
 
-export function SmallPartDialog(props: { data: Part; index: number }) {
-  const { index, data } = props;
-  const [length, setLength] = React.useState(data.length_unit);
-  const [width, setWidth] = React.useState(data.width_unit);
-  const [height, setHeight] = React.useState(data.height_unit);
+export function SmallPartDialog(props: {
+  data: Part;
+  index: number;
+  locations: ILocation[];
+}) {
+  const { index, data, locations } = props;
+  const current_location: string = locations.find(
+    (location) => data.location_name === location.name,
+  )!.name;
 
+  const curret_condition = data.condition;
+
+  const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [conditionValue, setConditionValue] = useState<PartCondition>(
+    data.condition as PartCondition,
+  );
+
+  const [length, setLength] = useState(data.length_unit);
+  const [width, setWidth] = useState(data.width_unit);
+  const [height, setHeight] = useState(data.height_unit);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({ ...data });
+  const [initialFormData, setInitialFormData] = useState({ ...data });
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setLocationValue(current_location);
+      setConditionValue(data.condition as PartCondition);
+      setFormData({ ...data });
+    }
+  }, [isEditing, data]);
+
+  useEffect(() => {
+    validateForm();
+    checkForChanges();
+  }, [formData, locationValue, conditionValue]);
+
+  const validateForm = () => {
+    const isDataValid =
+      formData.part_id !== null && formData.part_id !== undefined;
+    formData;
+    setIsFormValid(isDataValid);
+  };
+
+  const checkForChanges = () => {
+    const hasChanges =
+      JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
+      locationValue !== current_location ||
+      conditionValue !== curret_condition;
+    setHasChanges(hasChanges);
+  };
+
+  const handleEditClick = () => {
+    if (isEditing) {
+      setInitialFormData({ ...formData });
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCancelClick = () => {
+    setFormData(initialFormData);
+    setIsEditing(false);
+  };
+
+  const handleSaveClick = async () => {
+    if (isFormValid && hasChanges) {
+      try {
+        formData.location_id = locations.find(
+          (location) => location.name === locationValue,
+        )!.location_id;
+        formData.condition = conditionValue;
+        const response = await fetch("/api/updatePart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+        if (response.ok) {
+          // console.log("Tool updated successfully:", result);
+        } else {
+          // console.error("Failed to update tool:", result.error);
+        }
+      } catch (error) {
+        console.error("Error updating tool:", error);
+      }
+    }
+  };
+
+  const handleSaveAndCloseClick = async () => {
+    await handleSaveClick();
+    setIsEditing(false);
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -65,7 +168,7 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">Test</DialogTitle>
           <DialogDescription>
@@ -85,10 +188,10 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
                 ]}
               >
                 <CarouselContent>
-                  {data.images.map((image: string, index: number) => (
+                  {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
                       <img
-                        src={image}
+                        src={image.image_url}
                         className="h-full w-full object-cover"
                         alt="Machinery Images"
                       />
@@ -99,32 +202,25 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
             </div>
           )}
 
-          {data.images && data.images.length === 0 && (
-            <div>
-              <Label className="text-sm font-medium text-gray-400">
-                Upload Images
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input readOnly className="border border-gray-300"></Input>
-                <Button>Upload</Button>
-              </div>
-            </div>
-          )}
-
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Part ID</Label>
               <Input
-                value={data.part_id}
+                name="part_id"
+                value={formData.part_id}
                 readOnly
-                className="border border-gray-300"
+                disabled
+                className="bg-zinc-700"
               />
             </div>
             <div className="flex-1">
               <Label>Part Number</Label>
               <Input
-                value={data.part_number}
-                readOnly
+                name="part_number"
+                value={formData.part_number}
+                readOnly={!isEditing}
+                onChange={handleChange}
+                disabled={!isEditing}
                 className="border border-gray-300"
               />
             </div>
@@ -133,8 +229,11 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
             <div className="flex-1">
               <Label>Name</Label>
               <Input
-                value={data.name}
-                readOnly
+                name="name"
+                value={formData.name}
+                readOnly={!isEditing}
+                disabled={!isEditing}
+                onChange={handleChange}
                 className="border border-gray-300"
               />
             </div>
@@ -144,17 +243,22 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
             <div className="flex-1">
               <Label>Quantity</Label>
               <Input
-                value={data.quantity}
-                readOnly
+                name="quantity"
+                value={formData.quantity}
+                readOnly={!isEditing}
+                disabled={!isEditing}
+                onChange={handleChange}
                 className="border border-gray-300"
               />
             </div>
             <div className="flex-1">
               <Label>Acquisition Date</Label>
               <Input
-                value={data.created_at.toLocaleDateString()}
+                name="created_at"
+                value={formData.created_at.toLocaleDateString()}
                 readOnly
-                className="border border-gray-300"
+                disabled
+                className="bg-zinc-700"
               />
             </div>
           </div>
@@ -165,13 +269,16 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
               <div className="flex flex-row">
                 <div className="m-2 flex items-center gap-2">
                   <Input
-                    value={data.length}
-                    readOnly
-                    className=" border border-gray-300"
+                    name="length"
+                    value={formData.length}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    className="  border border-gray-300"
                   />
 
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild disabled={!isEditing}>
                       <Button className="w-1/6" variant="outline">
                         {length}
                       </Button>
@@ -180,8 +287,11 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
                       <DropdownMenuLabel>Unit</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
-                        value={length}
-                        onValueChange={setLength}
+                        value={formData.length_unit}
+                        onValueChange={(e) => {
+                          setLength(e);
+                          setFormData((prev) => ({ ...prev, length_unit: e }));
+                        }}
                       >
                         <DropdownMenuRadioItem value="cm">
                           cm
@@ -196,12 +306,15 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
 
                 <div className="m-2 flex  items-center gap-2">
                   <Input
-                    value={data.width}
-                    readOnly
-                    className="border border-gray-300"
+                    name="width"
+                    value={formData.width}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    onChange={handleChange}
+                    className=" border border-gray-300"
                   />
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild disabled={!isEditing}>
                       <Button className=" w-1/6" variant="outline">
                         {width}
                       </Button>
@@ -210,8 +323,11 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
                       <DropdownMenuLabel>Unit</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
-                        value={width}
-                        onValueChange={setWidth}
+                        value={formData.width_unit}
+                        onValueChange={(e) => {
+                          setWidth(e);
+                          setFormData((prev) => ({ ...prev, width_unit: e }));
+                        }}
                       >
                         <DropdownMenuRadioItem value="cm">
                           cm
@@ -225,12 +341,15 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
                 </div>
                 <div className="m-2  flex items-center gap-2">
                   <Input
-                    value={data.height}
-                    readOnly
-                    className="border border-gray-300"
+                    name="height"
+                    value={formData.height}
+                    disabled={!isEditing}
+                    readOnly={!isEditing}
+                    onChange={handleChange}
+                    className=" border border-gray-300"
                   />
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild disabled={!isEditing}>
                       <Button className=" w-1/6" variant="outline">
                         {height}
                       </Button>
@@ -239,8 +358,11 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
                       <DropdownMenuLabel>Unit</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
-                        value={height}
-                        onValueChange={setHeight}
+                        value={formData.height_unit}
+                        onValueChange={(e) => {
+                          setHeight(e);
+                          setFormData((prev) => ({ ...prev, height_unit: e }));
+                        }}
                       >
                         <DropdownMenuRadioItem value="cm">
                           cm
@@ -258,23 +380,116 @@ export function SmallPartDialog(props: { data: Part; index: number }) {
 
           <div className="flex space-x-4">
             <div className="flex-1">
-              <Label>Location Name</Label>
-              <Input
-                value={data.location_name}
-                readOnly
-                className="border border-gray-300"
-              />
+              <Label>Location</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full" variant="outline">
+                    {locationValue}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Locations</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={locationValue}
+                    onValueChange={setLocationValue}
+                  >
+                    {locations.map((location) => (
+                      <DropdownMenuRadioItem
+                        key={location.name}
+                        value={location.name}
+                      >
+                        {location.name}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex-1">
+              <Label>Condition</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full" variant="outline">
+                    {conditionValue}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  <DropdownMenuLabel>Condition</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={conditionValue}
+                    onValueChange={(value) =>
+                      setConditionValue(value as PartCondition)
+                    }
+                  >
+                    <DropdownMenuRadioItem value="Good">
+                      Good
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Bad">
+                      Bad
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Excellent">
+                      Excellent
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Poor">
+                      Poor
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <Label>Upload Images</Label>
+              <div className="flex items-center gap-2">
+                <Input readOnly disabled></Input>
+                <UploadButton
+                  disabled={!isEditing}
+                  input={{ part_id: data.part_id }}
+                  endpoint="partImageUploader"
+                  onClientUploadComplete={() => {
+                    // here i want to save the image url to be displayed here as of rn
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         <DialogFooter className="sm:justify-start">
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
-            </Button>
-          </DialogClose>
-          <Button>Edit</Button>
+          {!isEditing && (
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          )}
+          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
+          {isEditing && (
+            <>
+              <DialogClose asChild>
+                <Button
+                  onClick={handleSaveClick}
+                  disabled={!isFormValid || !hasChanges}
+                >
+                  Save
+                </Button>
+              </DialogClose>
+
+              <DialogClose asChild>
+                <Button
+                  onClick={handleSaveAndCloseClick}
+                  disabled={!isFormValid || !hasChanges}
+                >
+                  Save & Close
+                </Button>
+              </DialogClose>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

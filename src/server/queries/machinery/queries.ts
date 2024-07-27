@@ -10,26 +10,26 @@ import { type Machinery } from "../../types/IMachinery";
 
 // Create Machinery
 export async function createMachinery(
-  brand: string,
-  model: string,
-  year: number,
-  acquisition_date: Date,
-  serialNumber: string,
-  locationId: number,
-  state: string,
-  observations?: string,
+  brandValue: string,
+  modelValue: string,
+  yearValue: number,
+  acquisition_dateValue: Date,
+  serialNumberValue: string,
+  locationIdValue: number,
+  stateValue: string,
+  observationsValue?: string,
 ) {
   const newMachinery = await db
     .insert(machineryStock)
     .values({
-      brand,
-      model,
-      year,
-      acquisition_date: acquisition_date,
-      serial_number: serialNumber,
-      location_id: locationId,
-      observations,
-      state,
+      brand: brandValue,
+      model: modelValue,
+      year: yearValue,
+      acquisition_date: acquisition_dateValue,
+      serial_number: serialNumberValue,
+      location_id: locationIdValue,
+      observations: observationsValue,
+      state: stateValue,
     })
     .returning();
   return newMachinery;
@@ -60,6 +60,7 @@ export async function getMachineries() {
         ...machinery_stock,
         location_name: location?.name ?? "",
         images: [],
+        observations: machinery_stock.observations ?? "",
       });
     }
 
@@ -67,7 +68,11 @@ export async function getMachineries() {
 
     // Add image URL if it exists
     if (machinery_images?.image_url) {
-      currentMachinery.images.push(machinery_images.image_url);
+      currentMachinery.images.push({
+        image_id: machinery_images.image_id,
+        image_url: machinery_images.image_url,
+        image_key: machinery_images.image_key,
+      });
     }
   });
 
@@ -87,24 +92,44 @@ export async function getMachineryById(machineId: number) {
 // Update Machinery
 export async function updateMachinery(
   machineId: number,
-  brand?: string,
-  model?: string,
-  year?: number,
-  acquisitionDate?: Date,
-  serialNumber?: string,
-  locationId?: number,
-  observations?: string,
+  brandValue?: string,
+  modelValue?: string,
+  yearValue?: number,
+  serialNumberValue?: string,
+  locationIdValue?: number,
+  stateValue?: string,
+  observationsValue?: string,
 ) {
   const updatedMachinery = await db
     .update(machineryStock)
     .set({
-      brand,
-      model,
-      year: year,
-      acquisition_date: acquisitionDate,
-      serial_number: serialNumber,
-      location_id: locationId,
-      observations: observations,
+      brand: brandValue,
+      model: modelValue,
+      year: yearValue,
+      serial_number: serialNumberValue,
+      location_id: locationIdValue,
+      state: stateValue,
+      observations: observationsValue,
+    })
+    .where(eq(machineryStock.machine_id, machineId))
+    .returning();
+  return updatedMachinery;
+}
+
+// Sell Machinery
+export async function sellMachinery(
+  machineId: number,
+  sold_dateValue: Date,
+  sold_priceValue: number,
+  sold_toValue: string,
+) {
+  const updatedMachinery = await db
+    .update(machineryStock)
+    .set({
+      sold_date: sold_dateValue,
+      sold_price: sold_priceValue,
+      sold_to: sold_toValue,
+      state: "Sold",
     })
     .where(eq(machineryStock.machine_id, machineId))
     .returning();
@@ -118,4 +143,12 @@ export async function deleteMachinery(machineId: number) {
     .where(eq(machineryStock.machine_id, machineId))
     .returning();
   return deletedMachinery;
+}
+
+export async function deleteImageMachinery(imageId: number) {
+  const deletedImage = await db
+    .delete(machineryImages)
+    .where(eq(machineryImages.image_id, imageId))
+    .returning();
+  return deletedImage;
 }
