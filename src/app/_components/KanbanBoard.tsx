@@ -40,7 +40,10 @@ function KanbanBoard() {
       title: "New Task",
       description: "Description for new task",
     };
-    setTasks((prev) => ({ ...prev, [column]: [...prev[column], newTask] }));
+    setTasks((prev) => ({
+      ...prev,
+      [column]: prev[column] ? [...(prev[column] ?? []), newTask] : [newTask],
+    }));
   };
 
   const addColumn = () => {
@@ -67,8 +70,12 @@ function KanbanBoard() {
     const startColumnId = source.droppableId;
     const finishColumnId = destination.droppableId;
 
-    const startTasks = Array.from(tasks[startColumnId]);
-    const [movedTask] = startTasks.splice(source.index, 1);
+    const startTasks = tasks[startColumnId]
+      ? Array.from(tasks[startColumnId]!)
+      : [];
+    const movedTask = startTasks.splice(source.index, 1)[0];
+
+    if (!movedTask) return; // Ensure movedTask is of type 'Task'
 
     if (startColumnId === finishColumnId) {
       startTasks.splice(destination.index, 0, movedTask);
@@ -77,8 +84,12 @@ function KanbanBoard() {
         [startColumnId]: startTasks,
       }));
     } else {
-      const finishTasks = Array.from(tasks[finishColumnId]);
-      finishTasks.splice(destination.index, 0, movedTask);
+      const finishTasks = tasks[finishColumnId]
+        ? Array.from(tasks[finishColumnId]!)
+        : [];
+      if (movedTask) {
+        finishTasks.splice(destination.index, 0, movedTask);
+      }
       setTasks((prev) => ({
         ...prev,
         [startColumnId]: startTasks,
