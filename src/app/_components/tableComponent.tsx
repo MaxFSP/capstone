@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 "use client";
 import { useState, type ChangeEvent } from "react";
 import { MachineryDataViewDialog } from "./ViewMachineryDialog";

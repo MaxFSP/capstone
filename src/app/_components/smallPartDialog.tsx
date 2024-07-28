@@ -1,9 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-// TODO: ADD FUNCTIONALITY TO UPLOAD IMAGES
-// TODO ADD FUNCTIONALITY TO EDIT VALUES
-// TODO ADD FUNCTIONALITY TO "SELL" MACHINERY MOST LIKELY PUT A DIALOG TO CONFIRM AND SET THE VALUES
 import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import Autoplay from "embla-carousel-autoplay";
