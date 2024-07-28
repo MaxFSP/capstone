@@ -39,9 +39,6 @@ export function SmallDataViewDialog(props: {
   dbColumns: TableColumns[];
   data: DataType;
 }) {
-  // TODO: CHECK PERFORMANCE ISSUES WITH LARGE DATA SETS
-  // MAYBE GET DATA ON MOUNT AND GET IT FROM ID INSTEAD OF PASSING IT
-
   const { key, index, item, columns, dbColumns, data } = props;
   return (
     <div key={key}>

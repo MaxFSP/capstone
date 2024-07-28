@@ -27,9 +27,6 @@ export function DataViewDialog(props: {
   data: DataType;
   dbColumns: TableColumn[];
 }) {
-  // TODO: CHECK PERFORMANCE ISSUES WITH LARGE DATA SETS
-  // MAYBE GET DATA ON MOUNT AND GET IT FROM ID INSTEAD OF PASSING IT
-
   const { title, data, dbColumns } = props;
   return (
     <Dialog>
