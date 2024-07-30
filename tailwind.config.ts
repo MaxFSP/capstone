@@ -20,6 +20,9 @@ const config = {
       },
     },
     extend: {
+      boxShadow: {
+        outline: "0 0 0 2px rgba(59, 130, 246, 0.5)", // Adjust the color and size as needed
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

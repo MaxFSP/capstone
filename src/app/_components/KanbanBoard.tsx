@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 "use client";
 
 import { useState } from "react";
@@ -126,7 +123,7 @@ function KanbanBoard() {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="mb-4"
+                          className="m-1 mb-4"
                         >
                           <KanbanTask
                             title={task.title}
