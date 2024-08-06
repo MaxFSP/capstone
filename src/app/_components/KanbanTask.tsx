@@ -1,4 +1,3 @@
-import { Card } from "@nextui-org/react";
 import { Button } from "~/components/ui/button";
 
 import {
@@ -17,7 +16,7 @@ export default function KanbanTask(props: {
   description: string;
 }) {
   return (
-    <Card className="hover:shadow-outline  p-4 transition-shadow duration-150 ease-in-out hover:z-10">
+    <div className="rounded bg-gray-800 p-4 transition-shadow duration-150 ease-in-out hover:z-10 hover:shadow-outline">
       <Dialog>
         <DialogTrigger asChild>
           <div className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -40,6 +39,6 @@ export default function KanbanTask(props: {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }

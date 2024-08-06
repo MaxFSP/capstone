@@ -31,19 +31,13 @@ import {
 
 import type { CreateUserResponse } from "../../server/types/api";
 
-export default function CreateUser({
-  user,
-  orgs,
-}: {
-  user: CreateEmployee;
-  orgs: Org[];
-}) {
+export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    username: user.username,
-    email: user.email[0]!,
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -175,7 +169,7 @@ export default function CreateUser({
           <div className="mb-4 flex-shrink-0 md:mb-0">
             <img
               src="https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3FVVEYwYk8yTGxBZUZQYkFMYWFMT1Njc2QiLCJyaWQiOiJ1c2VyXzJndWxDUGRBTE03OFFGSVhZZ0RseGt0UGR4VCIsImluaXRpYWxzIjoiTEcifQ"
-              alt={`${user.firstName} ${user.lastName}'s profile picture`}
+              alt={`${formValues.firstName} ${formValues.lastName}'s profile picture`}
               className="h-32 w-32 rounded-full object-cover"
             />
           </div>

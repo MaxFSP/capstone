@@ -222,3 +222,89 @@ export const locations = createTable(
     addressIndex: index("address_location_idx").on(location_index.address),
   }),
 );
+
+export const tasks = createTable(
+  "task",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    position: integer("position").notNull(),
+    column: text("column").notNull(),
+    status: text("status").notNull(),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (task_index) => ({
+    idIndex: index("id_idx").on(task_index.id),
+  }),
+);
+
+export const task_machinery = createTable(
+  "task_machinery",
+  {
+    task_id: serial("task_id")
+      .references(() => tasks.id)
+      .notNull(),
+    machine_id: serial("machine_id")
+      .references(() => machineryStock.machine_id)
+      .notNull(),
+  },
+  (task_machinery_index) => ({
+    task_machinery_idx: index("task_machinery_idx").on(
+      task_machinery_index.task_id,
+      task_machinery_index.machine_id,
+    ),
+  }),
+);
+
+export const task_part = createTable(
+  "task_part",
+  {
+    task_id: serial("task_id")
+      .references(() => tasks.id)
+      .notNull(),
+    part_id: serial("part_id")
+      .references(() => partStock.part_id)
+      .notNull(),
+  },
+  (task_part_index) => ({
+    task_part_idx: index("task_part_idx").on(
+      task_part_index.task_id,
+      task_part_index.part_id,
+    ),
+  }),
+);
+
+export const task_tool = createTable(
+  "task_tool",
+  {
+    task_id: serial("task_id")
+      .references(() => tasks.id)
+      .notNull(),
+    tool_id: serial("tool_id")
+      .references(() => toolStock.tool_id)
+      .notNull(),
+  },
+  (task_tool_index) => ({
+    task_tool_idx: index("task_tool_idx").on(
+      task_tool_index.task_id,
+      task_tool_index.tool_id,
+    ),
+  }),
+);
+
+export const column_Lists = createTable(
+  "column_list",
+  {
+    column_id: serial("column_id").primaryKey(),
+    column_name: text("column_name").notNull(),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (column_index) => ({
+    column_id: index("column_id_idx").on(column_index.column_id),
+  }),
+);

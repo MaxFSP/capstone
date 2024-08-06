@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useOrganizationList } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export const CustomOrgSwitcher = () => {
+  const router = useRouter();
   const { isLoaded, setActive, userMemberships } = useOrganizationList({
     userMemberships: {
       infinite: true,
@@ -36,6 +38,7 @@ export const CustomOrgSwitcher = () => {
       try {
         await setActive({ organization: organizationId });
         setIsOpen(false);
+        router.refresh();
       } catch (error) {
         console.error("Failed to set active organization:", error);
       }

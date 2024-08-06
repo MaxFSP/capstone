@@ -11,16 +11,7 @@ async function UserMaganement() {
     <div>
       <CardLayout>
         <p className="text-l text-white">Users</p>
-        <CreateUser
-          user={{
-            firstName: " ",
-            lastName: " ",
-            username: " ",
-            email: [" "],
-            password: " ",
-          }}
-          orgs={orgs}
-        />
+        <CreateUser orgs={orgs} />
       </CardLayout>
       <EmployeeTable users={users} />
     </div>
