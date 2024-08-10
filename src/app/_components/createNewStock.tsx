@@ -15,12 +15,18 @@ import { type ILocation } from "~/server/types/ILocation";
 import CreatePartDialog from "./createPartDialog";
 import { CreateMachineryDialog } from "./createMachineryDialog";
 import { CreateToolDialog } from "./createToolDialog";
+import { CreateEmployeeDialog } from "./createEmployeeDialog";
+import { CreateWorkOrderDialog } from "./createWorkOrderDialog";
+import { type User } from "~/server/types/IUser";
+import { type Machinery } from "~/server/types/IMachinery";
 
 export function CreateNewStockDialog(props: {
-  locations: ILocation[];
+  locations?: ILocation[];
   type: string;
+  users?: User[];
+  machines?: Machinery[];
 }) {
-  const { locations, type } = props;
+  const { locations, type, users, machines } = props;
 
   return (
     <AlertDialog>
@@ -39,11 +45,15 @@ export function CreateNewStockDialog(props: {
         </AlertDialogHeader>
 
         {type === "Machinery" ? (
-          <CreateMachineryDialog locations={locations} />
+          <CreateMachineryDialog locations={locations!} />
         ) : type === "Part" ? (
-          <CreatePartDialog locations={locations} />
+          <CreatePartDialog locations={locations!} />
+        ) : type === "Tool" ? (
+          <CreateToolDialog locations={locations!} />
+        ) : type === "Employee" ? (
+          <CreateEmployeeDialog />
         ) : (
-          <CreateToolDialog locations={locations} />
+          <CreateWorkOrderDialog users={users!} machines={machines!} />
         )}
       </AlertDialogContent>
     </AlertDialog>

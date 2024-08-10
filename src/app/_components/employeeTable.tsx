@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Avatar } from "@nextui-org/avatar";
-import { type Employee } from "../../server/types/employee";
+import { Avatar } from "@nextui-org/react";
+import { type ClerkUser } from "../../server/types/IClerkUser";
 import EditUser from "./editUser";
 import SmallEditUser from "./smallEditUser";
 
-export default function EmployeeTable(props: { users: Employee[] }) {
+export default function EmployeeTable(props: { users: ClerkUser[] }) {
   const { users } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");

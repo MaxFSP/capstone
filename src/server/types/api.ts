@@ -1,9 +1,9 @@
 import type { User } from "@clerk/nextjs/server";
-import type { UpdateEmployee } from "./employee";
+import type { UpdateClerkUser } from "./IClerkUser";
 
 export interface UpdateUserRequest {
   userId: string;
-  formEmployee: UpdateEmployee;
+  formEmployee: UpdateClerkUser;
 }
 
 export interface UpdateUserResponse {

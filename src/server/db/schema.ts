@@ -20,28 +20,6 @@ export const roles = createTable("role", {
     .notNull(),
 });
 
-// Fix Table
-export const fixes = createTable(
-  "fix",
-  {
-    fix_id: serial("fix_id").primaryKey(),
-    name: text("name").notNull(),
-    part_id: serial("part_id").references(() => partStock.part_id),
-    tool_id: serial("tool_id").references(() => toolStock.tool_id),
-    machine_id: serial("machine_id").references(
-      () => machineryStock.machine_id,
-    ),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (fix_index) => ({
-    partIndex: index("part_idx").on(fix_index.part_id),
-    toolIndex: index("tool_idx").on(fix_index.tool_id),
-    machineIndex: index("machine_idx").on(fix_index.machine_id),
-  }),
-);
-
 // Machinery Stock Table
 export const machineryStock = createTable(
   "machinery_stock",
@@ -87,7 +65,8 @@ export const users = createTable(
     username: text("username").notNull(),
     first_name: text("first_name").notNull(),
     last_name: text("last_name").notNull(),
-    profile_image_url: text("profile_image_url").notNull(),
+    imageUrl: text("image_url"),
+    imageKey: text("image_key"),
     rol_id: serial("rol_id").references(() => roles.rol_id),
     clerk_id: text("clerk_id").notNull(),
     created_at: timestamp("created_at", { withTimezone: true })
@@ -190,23 +169,6 @@ export const partImages = createTable("part_images", {
     .notNull(),
 });
 
-// Repair Order Table
-export const repairOrders = createTable(
-  "repair_order",
-  {
-    order_id: serial("order_id").primaryKey().notNull(),
-    name: text("name").notNull(),
-    user_id: serial("user_id").references(() => users.user_id),
-    fix_id: serial("fix_id").references(() => fixes.fix_id),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (repair_order_index) => ({
-    order_id: index("order_id_idx").on(repair_order_index.order_id),
-  }),
-);
-
 export const locations = createTable(
   "location",
   {
@@ -223,88 +185,82 @@ export const locations = createTable(
   }),
 );
 
-export const tasks = createTable(
-  "task",
+export const employees = createTable(
+  "employee",
   {
-    id: serial("id").primaryKey(),
+    employee_id: serial("employee_id").primaryKey(),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    age: integer("age").notNull(),
+    imageUrl: text("image_url"),
+    hireDate: timestamp("hire_date").notNull(),
+    phoneNumber: text("phone_number").notNull(),
+    job: text("job").notNull(),
+    bloodType: text("blood_type").notNull(),
+    imageKey: text("image_key"),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (employee_index) => ({
+    id: index("id_idx").on(employee_index.employee_id),
+  }),
+);
+
+export const workOrders = createTable(
+  "work_order",
+  {
+    order_id: serial("order_id").primaryKey().notNull(),
+    name: text("name").notNull(),
+    machine_id: serial("machine_id").references(
+      () => machineryStock.machine_id,
+    ),
+    observations: text("observations"),
+    start_date: timestamp("start_date").notNull(),
+    end_date: timestamp("end_date"),
+    assigned_user: serial("assigned_to").references(() => users.user_id),
+
+    created_at: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (workOrder_index) => ({
+    order_id: index("order_id_idx").on(workOrder_index.order_id),
+  }),
+);
+
+export const workTasks = createTable(
+  "work_task",
+  {
+    task_id: serial("task_id").primaryKey().notNull(),
     title: text("title").notNull(),
-    description: text("description").notNull(),
+    description: text("description"),
     position: integer("position").notNull(),
-    column: text("column").notNull(),
-    status: text("status").notNull(),
+    order_id: serial("order_id").references(() => workOrders.order_id),
+    start_date: timestamp("start_date").notNull(),
+    end_date: timestamp("end_date"),
+    column_id: serial("column_id").references(() => workColumns.column_id),
+    assigned_to: serial("assigned_to").references(() => employees.employee_id),
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
-  (task_index) => ({
-    idIndex: index("id_idx").on(task_index.id),
+  (workTask_index) => ({
+    task_id: index("task_id_idx").on(workTask_index.task_id),
   }),
 );
 
-export const task_machinery = createTable(
-  "task_machinery",
+export const workColumns = createTable(
+  "work_column",
   {
-    task_id: serial("task_id")
-      .references(() => tasks.id)
-      .notNull(),
-    machine_id: serial("machine_id")
-      .references(() => machineryStock.machine_id)
-      .notNull(),
-  },
-  (task_machinery_index) => ({
-    task_machinery_idx: index("task_machinery_idx").on(
-      task_machinery_index.task_id,
-      task_machinery_index.machine_id,
-    ),
-  }),
-);
-
-export const task_part = createTable(
-  "task_part",
-  {
-    task_id: serial("task_id")
-      .references(() => tasks.id)
-      .notNull(),
-    part_id: serial("part_id")
-      .references(() => partStock.part_id)
-      .notNull(),
-  },
-  (task_part_index) => ({
-    task_part_idx: index("task_part_idx").on(
-      task_part_index.task_id,
-      task_part_index.part_id,
-    ),
-  }),
-);
-
-export const task_tool = createTable(
-  "task_tool",
-  {
-    task_id: serial("task_id")
-      .references(() => tasks.id)
-      .notNull(),
-    tool_id: serial("tool_id")
-      .references(() => toolStock.tool_id)
-      .notNull(),
-  },
-  (task_tool_index) => ({
-    task_tool_idx: index("task_tool_idx").on(
-      task_tool_index.task_id,
-      task_tool_index.tool_id,
-    ),
-  }),
-);
-
-export const column_Lists = createTable(
-  "column_list",
-  {
-    column_id: serial("column_id").primaryKey(),
-    column_name: text("column_name").notNull(),
+    column_id: serial("column_id").primaryKey().notNull(),
+    title: text("title").notNull(),
+    position: integer("position").notNull(),
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
-  (column_index) => ({
-    column_id: index("column_id_idx").on(column_index.column_id),
+  (workColumn_index) => ({
+    column_id: index("column_id_idx").on(workColumn_index.column_id),
   }),
 );

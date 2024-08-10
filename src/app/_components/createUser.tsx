@@ -14,7 +14,7 @@ import {
 
 import { Button as ButtonUI } from "~/components/ui/button";
 
-import type { CreateEmployee } from "../../server/types/employee";
+import type { CreateClerkUser } from "../../server/types/IClerkUser";
 import type { Org } from "../../server/types/org";
 import React, { useEffect, useState, useMemo } from "react";
 import { Input, Button } from "@nextui-org/react";
@@ -31,7 +31,13 @@ import {
 
 import type { CreateUserResponse } from "../../server/types/api";
 
-export default function CreateUser({ orgs }: { orgs: Org[] }) {
+export default function CreateUser({
+  user,
+  orgs,
+}: {
+  user: CreateClerkUser;
+  orgs: Org[];
+}) {
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
     firstName: "",
