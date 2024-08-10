@@ -7,6 +7,10 @@ import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
 import { db } from "~/server/db";
 import { machineryImages, partImages, toolImages } from "~/server/db/schema";
+import {
+  addImageToEmployee,
+  updateEmployee,
+} from "~/server/queries/employee/queries";
 
 const f = createUploadthing();
 
@@ -123,6 +127,31 @@ export const ourFileRouter = {
         image_key: file.key,
       });
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
+      return { uploadedBy: metadata.userId };
+    }),
+
+  // EMPLOYEE IMAGE UPLOADER --------------------------------------------------------------------------------------------
+  employeeImageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 10 } })
+    .input(
+      z.object({
+        employee_id: z.number(),
+      }),
+    )
+    // Set permissions and file types for this FileRoute
+    .middleware(async ({ input }) => {
+      // This code runs on your server before upload
+
+      const user = auth();
+
+      // If you throw, the user will not be able to upload
+      if (!user.userId) throw new UploadThingError("Unauthorized");
+
+      // Whatever is returned here is accessible in onUploadComplete as `metadata`
+      return { userId: user.userId, input };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      // This code RUNS ON YOUR SERVER after upload
+      await addImageToEmployee(metadata.input.employee_id, file.url, file.key);
       return { uploadedBy: metadata.userId };
     }),
 } satisfies FileRouter;

@@ -1,7 +1,9 @@
 import { getParts } from "~/server/queries/part/queries";
 import { getTools } from "~/server/queries/tool/queries";
 import { getMachineries } from "~/server/queries/machinery/queries";
+import { getLocations } from "~/server/queries/location/queries";
 import TableComponent from "../_components/tableComponent";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 const partsColumns = [
   { key: "name", label: "Name" },
@@ -21,9 +23,6 @@ const machineryColumns = [
   { key: "serial_number", label: "Serial Number" },
   { key: "state", label: "State" },
 ];
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { getLocations } from "~/server/queries/location/queries";
 
 export default async function StockPage() {
   const machineryData = await getMachineries();

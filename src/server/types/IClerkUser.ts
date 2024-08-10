@@ -1,6 +1,6 @@
-import { Org } from "./org";
+import { type Org } from "./org";
 
-export interface BaseEmployee {
+export interface BaseClerkUser {
   firstName: string;
   lastName: string;
   username: string;
@@ -8,11 +8,11 @@ export interface BaseEmployee {
   online?: boolean;
 }
 
-export interface CreateEmployee extends BaseEmployee {
+export interface CreateClerkUser extends BaseClerkUser {
   password: string;
 }
 
-export interface UpdateEmployee {
+export interface UpdateClerkUser {
   firstName?: string;
   lastName?: string;
   username?: string;
@@ -22,12 +22,12 @@ export interface UpdateEmployee {
   password?: string;
 }
 
-export interface Employee extends BaseEmployee {
+export interface ClerkUser extends BaseClerkUser {
   id: string;
   img: string;
   org: Org;
 }
 
-export interface CreateEmployeeWithOrg extends CreateEmployee {
+export interface CreateClerkEmployeeWithOrg extends CreateClerkUser {
   organizationId: string;
 }

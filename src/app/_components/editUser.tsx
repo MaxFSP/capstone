@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import type { Employee } from "../../server/types/employee";
+import type { ClerkUser } from "../../server/types/IClerkUser";
 import React, { useEffect, useState, useMemo } from "react";
 
 import {
@@ -22,10 +22,10 @@ import type {
   UpdateUserResponse,
 } from "../../server/types/api";
 
-import type { UpdateEmployee } from "../../server/types/employee";
+import type { UpdateClerkUser } from "../../server/types/IClerkUser";
 import { DialogClose } from "@radix-ui/react-dialog";
 
-export default function EditUser({ user }: { user: Employee }) {
+export default function EditUser({ user }: { user: ClerkUser }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     firstName: user.firstName,
@@ -94,7 +94,7 @@ export default function EditUser({ user }: { user: Employee }) {
     const { password, confirmPassword, ...formValuesWithoutPassword } =
       formValues;
 
-    const changes: Partial<UpdateEmployee> = {};
+    const changes: Partial<UpdateClerkUser> = {};
 
     (
       Object.keys(

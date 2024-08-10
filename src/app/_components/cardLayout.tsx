@@ -1,4 +1,4 @@
-import { Card, CardHeader } from "@nextui-org/card";
+import { Card, CardHeader } from "@nextui-org/react";
 
 export default function CardLayout({
   children,

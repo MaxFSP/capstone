@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { Avatar } from "@nextui-org/avatar";
+import { Avatar } from "@nextui-org/react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,

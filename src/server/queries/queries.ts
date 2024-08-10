@@ -6,7 +6,7 @@ import {
   currentUser,
 } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
-import type { Employee } from "~/server/types/employee";
+import type { ClerkUser } from "~/server/types/IClerkUser";
 import type { Org, EmployeeInOrg } from "~/server/types/org";
 
 //user and auth queries
@@ -34,14 +34,14 @@ export async function getActiveOrg(): Promise<string> {
   return userOrg;
 }
 
-export async function getAllUsers(): Promise<Employee[]> {
+export async function getAllUsers(): Promise<ClerkUser[]> {
   const user = auth();
 
   if (!user.userId) throw new Error("Unauthorized");
 
   const users = await clerkClient.users.getUserList();
 
-  const transformedUsers: Employee[] = await Promise.all(
+  const transformedUsers: ClerkUser[] = await Promise.all(
     users.data.map(async (user) => {
       const id = user.id;
       const email = user.emailAddresses[0]?.emailAddress ?? "Unknown";
@@ -64,13 +64,13 @@ export async function getAllUsers(): Promise<Employee[]> {
   return transformedUsers;
 }
 
-export async function getUserByIdClerk(id: string): Promise<Employee> {
+export async function getUserByIdClerk(id: string): Promise<ClerkUser> {
   const userf = auth();
 
   if (!userf.userId) throw new Error("Unauthorized");
 
   const user = await clerkClient.users.getUser(id);
-  const transformedUser: Employee = {
+  const transformedUser: ClerkUser = {
     id: user.id,
     img: user.imageUrl,
     firstName: user.firstName ?? "Unknown",
