@@ -5,8 +5,9 @@ import { NextResponse } from "next/server";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import type { User } from "@clerk/nextjs/server";
 import type { CreateUserResponse } from "~/server/types/api";
-import type { CreateEmployeeWithOrg } from "~/server/types/employee";
+import type { CreateClerkEmployeeWithOrg } from "~/server/types/IClerkUser";
 import type { AddEmployee } from "~/server/types/org";
+import { createUser } from "~/server/queries/user/queries";
 
 export async function POST(req: NextRequest) {
   const { userId } = getAuth(req);
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const formValues: CreateEmployeeWithOrg = await req.json();
+    const formValues: CreateClerkEmployeeWithOrg = await req.json();
 
     // Create the user
     const data: User = await clerkClient.users.createUser({
@@ -39,6 +40,26 @@ export async function POST(req: NextRequest) {
       identifier: formValues.email[0]!,
       notify: false,
     });
+
+    // add the user to the db
+
+    //   username: string,
+    // firstName: string,
+    // lastName: string,
+    // imageUrl: string,
+    // imageKey: string,
+    // rol_id: number,
+    // clerk_id: string,
+
+    await createUser(
+      formValues.username,
+      formValues.firstName,
+      formValues.lastName,
+      "",
+      "",
+      formValues.organizationId,
+      data.id,
+    );
 
     return NextResponse.json({
       data: data,

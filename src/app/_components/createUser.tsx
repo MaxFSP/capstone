@@ -14,7 +14,6 @@ import {
 
 import { Button as ButtonUI } from "~/components/ui/button";
 
-import type { CreateClerkUser } from "../../server/types/IClerkUser";
 import type { Org } from "../../server/types/org";
 import React, { useEffect, useState, useMemo } from "react";
 import { Input, Button } from "@nextui-org/react";
@@ -30,14 +29,10 @@ import {
 } from "~/components/ui/dropdown-menu";
 
 import type { CreateUserResponse } from "../../server/types/api";
+import { useRouter } from "next/navigation";
 
-export default function CreateUser({
-  user,
-  orgs,
-}: {
-  user: CreateClerkUser;
-  orgs: Org[];
-}) {
+export default function CreateUser({ orgs }: { orgs: Org[] }) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
     firstName: "",
@@ -120,6 +115,15 @@ export default function CreateUser({
     const saveSuccessful = await handleSaveClick();
     if (saveSuccessful) {
       // notify the user that the changes have been saved
+      setFormValues({
+        firstName: "",
+        lastName: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      router.refresh();
     }
   };
 
@@ -287,7 +291,20 @@ export default function CreateUser({
 
               <div className="flex justify-between">
                 <DialogClose asChild>
-                  <Button type="button" variant="bordered">
+                  <Button
+                    type="button"
+                    variant="bordered"
+                    onClick={() => {
+                      setFormValues({
+                        firstName: "",
+                        lastName: "",
+                        username: "",
+                        email: "",
+                        password: "",
+                        confirmPassword: "",
+                      });
+                    }}
+                  >
                     Close
                   </Button>
                 </DialogClose>

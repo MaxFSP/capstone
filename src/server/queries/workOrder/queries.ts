@@ -4,6 +4,7 @@ import "server-only";
 import { db } from "../../db";
 import { workOrders } from "../../db/schema";
 import { eq } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 
 // Employees Table --------------------------------------------------------------------------------------------
 
@@ -41,6 +42,25 @@ export async function getWorkOrderById(orderId: number) {
   const workOrder = await db.query.workOrders.findFirst({
     where: (workOrders, { eq }) => eq(workOrders.order_id, orderId),
   });
+  return workOrder;
+}
+
+export async function getWorkOrderBySessionId() {
+  const user = auth();
+  if (!user.userId) throw new Error("Unauthorized");
+  const userId = user.userId;
+
+  const getClerkUser = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.clerk_id, userId),
+  });
+
+  if (!getClerkUser) throw new Error("The user does not exist");
+
+  const workOrder = await db.query.workOrders.findFirst({
+    where: (workOrders, { eq }) =>
+      eq(workOrders.assigned_user, getClerkUser.user_id),
+  });
+
   return workOrder;
 }
 

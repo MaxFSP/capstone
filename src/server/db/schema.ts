@@ -67,7 +67,7 @@ export const users = createTable(
     last_name: text("last_name").notNull(),
     imageUrl: text("image_url"),
     imageKey: text("image_key"),
-    rol_id: serial("rol_id").references(() => roles.rol_id),
+    clerkRole: text("clerk_role").notNull(),
     clerk_id: text("clerk_id").notNull(),
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

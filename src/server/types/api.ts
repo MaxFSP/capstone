@@ -3,6 +3,7 @@ import type { UpdateClerkUser } from "./IClerkUser";
 
 export interface UpdateUserRequest {
   userId: string;
+  orgId: string;
   formEmployee: UpdateClerkUser;
 }
 
