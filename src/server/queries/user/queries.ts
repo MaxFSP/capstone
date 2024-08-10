@@ -1,8 +1,8 @@
 import "server-only";
 
 //DB stuff
-import { db } from "./db";
-import { users } from "./db/schema";
+import { db } from "../../db";
+import { users } from "../../db/schema";
 import { eq } from "drizzle-orm";
 
 // Users Table --------------------------------------------------------------------------------------------
@@ -12,19 +12,21 @@ export async function createUser(
   username: string,
   firstName: string,
   lastName: string,
-  profileImageUrl: string,
-  rolId: number,
-  clerkId: string,
+  imageUrl: string,
+  imageKey: string,
+  rol_id: number,
+  clerk_id: string,
 ) {
   const newUser = await db
     .insert(users)
     .values({
-      username,
+      username: username,
       first_name: firstName,
       last_name: lastName,
-      profile_image_url: profileImageUrl,
-      rol_id: rolId,
-      clerk_id: clerkId,
+      imageUrl: imageUrl,
+      imageKey: imageKey,
+      rol_id: rol_id,
+      clerk_id: clerk_id,
     })
     .returning();
   return newUser;
@@ -47,25 +49,29 @@ export async function getUserById(userId: number) {
 
 // Update User
 export async function updateUser(
-  userId: number,
+  user_id: number,
   username?: string,
   firstName?: string,
   lastName?: string,
-  profileImageUrl?: string,
-  rolId?: number,
-  clerkId?: string,
+  imageUrl?: string,
+  imageKey?: string,
+  rol_id?: number,
+  clerk_id?: string,
 ) {
   const updatedUser = await db
     .update(users)
     .set({
-      username,
+      username: username,
+
       first_name: firstName,
       last_name: lastName,
-      profile_image_url: profileImageUrl,
-      rol_id: rolId,
-      clerk_id: clerkId,
+      imageUrl: imageUrl,
+      imageKey: imageKey,
+      rol_id: rol_id,
+      clerk_id: clerk_id,
     })
-    .where(eq(users.user_id, userId))
+
+    .where(eq(users.user_id, user_id))
     .returning();
   return updatedUser;
 }
@@ -77,4 +83,30 @@ export async function deleteUser(userId: number) {
     .where(eq(users.user_id, userId))
     .returning();
   return deletedUser;
+}
+
+export async function deleteImageUser(user_id: number) {
+  await db
+    .update(users)
+    .set({
+      imageUrl: null,
+      imageKey: null,
+    })
+    .where(eq(users.user_id, user_id))
+    .returning();
+}
+
+export async function addImageToUser(
+  user_id: number,
+  imageUrl: string,
+  imageKey: string,
+) {
+  await db
+    .update(users)
+    .set({
+      imageUrl: imageUrl,
+      imageKey: imageKey,
+    })
+    .where(eq(users.user_id, user_id))
+    .returning();
 }

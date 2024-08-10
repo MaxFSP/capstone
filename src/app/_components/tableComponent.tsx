@@ -16,6 +16,10 @@ import { SmallPartDialog } from "./smallPartDialog";
 import { SmallToolDialog } from "./smallToolDialog";
 import { type ILocation } from "~/server/types/ILocation";
 import { CreateNewStockDialog } from "./createNewStock";
+import { EmployeeDataViewDialog } from "./ViewEmployeeDialog";
+import { type Machinery } from "~/server/types/IMachinery";
+import { type User } from "~/server/types/IUser";
+import { WorkOrderDataViewDialog } from "./ViewWorkOrderDialog";
 
 interface TableColumn {
   key: string;
@@ -27,9 +31,11 @@ const TableComponent = (props: {
   data: any[];
   columns: TableColumn[];
   valueType: string;
-  locations: ILocation[];
+  locations?: ILocation[];
+  users?: User[];
+  machines?: Machinery[];
 }) => {
-  const { data, columns, valueType, locations } = props;
+  const { data, columns, valueType, locations, users, machines } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -75,7 +81,12 @@ const TableComponent = (props: {
           className="mb-2 w-full rounded-md border  p-2 md:mb-0 md:flex-1"
         />
         <div className="flex-1">
-          <CreateNewStockDialog locations={locations} type={valueType} />
+          <CreateNewStockDialog
+            locations={locations}
+            type={valueType}
+            users={users}
+            machines={machines}
+          />
         </div>
       </div>
       <div className="hidden p-4 md:block">
@@ -107,13 +118,13 @@ const TableComponent = (props: {
               } text-white`;
 
               return (
-                <tr key={item.id}>
+                <tr key={item.id + "Table" + index}>
                   <td className={className}>
                     {currentPage * itemsPerPage + index + 1}
                   </td>
                   {columns.map((col, colIndex) => (
                     <td
-                      key={`${col.key}-${index}-${colIndex}`}
+                      key={`${item.id}-${col.key}-${colIndex}`}
                       className={className}
                     >
                       {item[col.key].toString()}
@@ -122,24 +133,42 @@ const TableComponent = (props: {
                   <td className={className}>
                     {valueType === "Machinery" ? (
                       <MachineryDataViewDialog
-                        key={item.machine_id}
+                        key={item.model + "Machinery" + item.serial_number}
                         title="View"
                         data={item}
-                        locations={locations}
+                        locations={locations!}
                       />
                     ) : valueType === "Part" ? (
                       <PartDataViewDialog
-                        key={item.part_id}
+                        key={item.part_number + "Part" + item.part_id}
                         title="View"
                         data={item}
-                        locations={locations}
+                        locations={locations!}
                       />
                     ) : valueType === "Tool" ? (
                       <ToolDataViewDialog
-                        key={item.tool_id}
+                        key={item.name + "Tool" + item.tool_id}
                         title="View"
                         data={item}
-                        locations={locations}
+                        locations={locations!}
+                      />
+                    ) : valueType === "Employee" ? (
+                      <EmployeeDataViewDialog
+                        key={item.phone_number + "Employee" + item.employee_id}
+                        index={0}
+                        title="View"
+                        size="lg"
+                        data={item}
+                      />
+                    ) : valueType === "WorkOrder" ? (
+                      <WorkOrderDataViewDialog
+                        key={item.name + "WorkOrder" + item.order_id}
+                        title="View"
+                        data={item}
+                        size="lg"
+                        index={0}
+                        users={users!}
+                        machines={machines!}
                       />
                     ) : (
                       ""
@@ -155,24 +184,42 @@ const TableComponent = (props: {
         {paginatedData.map((item, index) =>
           valueType === "Machinery" ? (
             <SmallMachineryDialog
-              key={item.machine_id}
+              key={item.machine_id + "Small" + "Machinery"}
               index={currentPage * itemsPerPage + index + 1}
               data={item}
-              locations={locations}
+              locations={locations!}
             />
           ) : valueType === "Part" ? (
             <SmallPartDialog
-              key={item.part_id}
+              key={item.part_id + "Small" + "Part"}
               index={currentPage * itemsPerPage + index + 1}
               data={item}
-              locations={locations}
+              locations={locations!}
             />
           ) : valueType === "Tool" ? (
             <SmallToolDialog
-              key={item.tool_id}
-              locations={locations}
+              key={item.tool_id + "Small" + "Tool"}
               index={currentPage * itemsPerPage + index + 1}
               data={item}
+              locations={locations!}
+            />
+          ) : valueType === "Employee" ? (
+            <EmployeeDataViewDialog
+              key={item.employee_id + "Small" + "Employee"}
+              title="View"
+              index={currentPage * itemsPerPage + index + 1}
+              size="sm"
+              data={item}
+            />
+          ) : valueType === "WorkOrder" ? (
+            <WorkOrderDataViewDialog
+              key={item.order_id + "Small" + "WorkOrder"}
+              title="View"
+              index={currentPage * itemsPerPage + index + 1}
+              size="sm"
+              data={item}
+              users={users!}
+              machines={machines!}
             />
           ) : (
             ""

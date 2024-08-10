@@ -4,15 +4,6 @@ const rolesColumns = [
   { key: "created_at", label: "Created At" },
 ];
 
-const fixesColumns = [
-  { key: "fix_id", label: "Fix ID" },
-  { key: "name", label: "Name" },
-  { key: "part_id", label: "Part ID" },
-  { key: "tool_id", label: "Tool ID" },
-  { key: "machine_id", label: "Machine ID" },
-  { key: "created_at", label: "Created At" },
-];
-
 const machineryStockColumns = [
   { key: "machine_id", label: "Machine ID" },
   { key: "brand", label: "Brand" },
@@ -84,14 +75,6 @@ const partStockColumns = [
   { key: "created_at", label: "Created At" },
 ];
 
-const repairOrdersColumns = [
-  { key: "order_id", label: "Order ID" },
-  { key: "name", label: "Name" },
-  { key: "user_id", label: "User ID" },
-  { key: "fix_id", label: "Fix ID" },
-  { key: "created_at", label: "Created At" },
-];
-
 const locationsColumns = [
   { key: "location_id", label: "Location ID" },
   { key: "name", label: "Name" },
@@ -106,7 +89,5 @@ export {
   toolStockColumns,
   usersColumns,
   rolesColumns,
-  fixesColumns,
-  repairOrdersColumns,
   locationsColumns,
 };

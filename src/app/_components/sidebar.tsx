@@ -81,7 +81,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
                     className="block rounded px-3 py-2 hover:bg-gray-700"
                     onClick={toggleMenu}
                   >
-                    User Management
+                    General Management
                   </Link>
                 </li>
               )}

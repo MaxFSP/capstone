@@ -2,6 +2,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { UTApi } from "uploadthing/server";
+import { deleteImageEmployee } from "~/server/queries/employee/queries";
 import { deleteImageMachinery } from "~/server/queries/machinery/queries";
 import { deleteImagePart } from "~/server/queries/part/queries";
 import { deleteImageTool } from "~/server/queries/tool/queries";
@@ -25,6 +26,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ data: result }, { status: 200 });
     } else if (data.type === "Tool") {
       const result = await deleteImageTool(data.image_id);
+      const utapi = new UTApi();
+      await utapi.deleteFiles(data.image_key);
+      return NextResponse.json({ data: result }, { status: 200 });
+    } else if (data.type === "Employee") {
+      const result = await deleteImageEmployee(data.image_id);
       const utapi = new UTApi();
       await utapi.deleteFiles(data.image_key);
       return NextResponse.json({ data: result }, { status: 200 });
