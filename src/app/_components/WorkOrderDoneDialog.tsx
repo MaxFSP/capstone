@@ -58,7 +58,7 @@ export default function WorkOrderDoneDialog(props: {
       return acc + tasksOnColumns[key]!.length;
     }, 0);
 
-    if (columnsWorkOrder.length >= 2) {
+    if (columnsWorkOrder.length >= 2 && totalTasks > 0) {
       const lastColumn = columnsWorkOrder[columnsWorkOrder.length - 1];
       if (lastColumn) {
         const tasksInLastColumn = tasksOnColumns[lastColumn.title];
