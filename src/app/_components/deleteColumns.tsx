@@ -39,11 +39,13 @@ export default function DeleteColumnDialog(props: {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Delete Columns</Button>
+        <Button variant="destructive" className="w-full sm:w-auto">
+          Delete Columns
+        </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto sm:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-large">
+          <AlertDialogTitle className="text-lg sm:text-xl">
             Delete Columns
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -52,15 +54,16 @@ export default function DeleteColumnDialog(props: {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
-          <h3>Columns to be deleted:</h3>
+          <h3 className="text-lg">Columns to be deleted:</h3>
           <div>
             {columnsWorkOrder.map((column) => (
               <div key={column.column_id + "column" + column.title}>
-                <div className="mt-2 flex items-center justify-between">
+                <div className="mt-2 flex flex-col items-center justify-between sm:flex-row">
                   <p className="text-base font-semibold">{column.title}</p>
-                  <div className="flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2 sm:mt-0">
                     <Button
                       variant={"destructive"}
+                      className="w-full sm:w-auto"
                       onClick={() => deleteColumns(column.column_id)}
                     >
                       - Delete Column
@@ -73,7 +76,11 @@ export default function DeleteColumnDialog(props: {
         </div>
         <AlertDialogFooter className="flex justify-end sm:justify-start">
           <AlertDialogCancel asChild>
-            <Button type="button" variant="secondary">
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
           </AlertDialogCancel>

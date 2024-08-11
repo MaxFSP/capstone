@@ -19,15 +19,18 @@ export default function KanbanBoardHeader(props: {
   const router = useRouter();
 
   return (
-    <div className="flex flex-row items-center justify-between">
+    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
       <div>
-        <h1 className="mb-4 text-2xl font-bold">
+        <h1 className="mb-2 text-xl font-bold md:text-2xl">
           {workOrder.name + " - " + workOrder.order_id}
         </h1>
-        <h1 className="mb-4 text-2xl font-bold">{"Currently working on: "}</h1>
+        <h1 className="mb-2 text-xl font-bold md:text-2xl">
+          {"Currently working on: "}
+        </h1>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-start gap-2 md:flex-row md:items-center">
         <Button
+          className="w-full sm:w-auto"
           onClick={() => {
             triggerRefresh(); // Trigger the refresh in DashboardPage
             router.refresh(); // Optional: Keep this if you want to re-fetch data

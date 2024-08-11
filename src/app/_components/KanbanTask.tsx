@@ -355,7 +355,7 @@ export default function KanbanTask(props: {
             </p>
           </div>
         </AlertDialogTrigger>
-        <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+        <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Edit Task</AlertDialogTitle>
             <AlertDialogDescription>

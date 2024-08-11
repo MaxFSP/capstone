@@ -44,13 +44,12 @@ export default function WorkOrderDoneDialog(props: {
         body: JSON.stringify(data),
       });
       if (response.ok) {
-        // console.log("Tool updated successfully:", result);
         router.refresh();
       } else {
-        // console.error("Failed to update tool:", result.error);
+        console.error("Failed to update work order:", response.statusText);
       }
     } catch (error) {
-      console.error("Error updating tool:", error);
+      console.error("Error updating work order:", error);
     }
   };
 
@@ -75,18 +74,22 @@ export default function WorkOrderDoneDialog(props: {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant={"secondary"} disabled={isDone}>
+        <Button
+          variant={"secondary"}
+          className="w-full sm:w-auto"
+          disabled={isDone}
+        >
           Mark as done
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto sm:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-large">
+          <AlertDialogTitle className="text-lg sm:text-xl">
             Mark this work order as done
           </AlertDialogTitle>
           <AlertDialogDescription>
             Make sure you completed all the tasks before marking this work order
-            as done
+            as done.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
@@ -126,9 +129,13 @@ export default function WorkOrderDoneDialog(props: {
             </ScrollArea>
           </div>
         </div>
-        <AlertDialogFooter className="flex justify-end sm:justify-start">
+        <AlertDialogFooter className="flex flex-col justify-end gap-2 sm:flex-row sm:justify-start">
           <AlertDialogCancel asChild>
-            <Button type="button" variant="secondary">
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
           </AlertDialogCancel>
@@ -136,6 +143,7 @@ export default function WorkOrderDoneDialog(props: {
             <Button
               onClick={handleSaveAndCloseClick}
               variant="secondary"
+              className="w-full sm:w-auto"
               disabled={isDone}
             >
               Mark as done

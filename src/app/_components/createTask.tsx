@@ -228,7 +228,7 @@ export function CreateTaskDialog(props: {
           + Add Task
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-large">
             Create Task
