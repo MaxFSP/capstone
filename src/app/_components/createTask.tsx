@@ -67,9 +67,9 @@ export function CreateTaskDialog(props: {
   column_id: number;
   tools: Tool[];
   parts: Part[];
-  onTrigger: () => void;
+  triggerRefresh: () => void;
 }) {
-  const { employees, pos, column_id, tools, parts, onTrigger } = props;
+  const { employees, pos, column_id, tools, parts, triggerRefresh } = props;
   const router = useRouter();
   const [assigned_employee, setAssignedEmployee] = useState(
     employees[0]!.firstName + " " + employees[0]!.lastName,
@@ -174,8 +174,8 @@ export function CreateTaskDialog(props: {
             if (!addToolandPart.ok) {
               throw new Error("Failed to add tools and parts to task");
             }
-            onTrigger();
-            router.refresh();
+            triggerRefresh(); // Trigger the refresh in DashboardPage
+            router.refresh(); // Optional: Keep this if you want to re-fetch data
           } catch (error) {
             console.error("Failed to add tools and parts to task:", error);
           }

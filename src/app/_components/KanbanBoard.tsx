@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 export const dynamic = "force-dynamic";
 
 import {
@@ -19,7 +19,6 @@ import { CreateTaskDialog } from "./createTask";
 import { type Employee } from "~/server/types/IEmployee";
 import { type Tool } from "~/server/types/ITool";
 import { type Part } from "~/server/types/IPart";
-import { useRouter } from "next/navigation";
 
 function KanbanBoard(props: {
   workOrder: WorkOrders;
@@ -40,8 +39,10 @@ function KanbanBoard(props: {
     triggerRefresh,
   } = props;
 
-  const [refreshStuff, setRefreshStuff] = useState(0);
-  const refreshTrigger = () => setRefreshStuff((prev) => prev + 1);
+  useEffect(() => {
+    setTasks(tasksOnColumns);
+    setColumnOrder(Object.keys(tasksOnColumns));
+  }, [tasksOnColumns]);
 
   const [tasks, setTasks] = useState<TasksOnColumns>(tasksOnColumns);
   const [columnOrder, setColumnOrder] = useState<string[]>(
@@ -264,6 +265,7 @@ function KanbanBoard(props: {
                                   className="m-1 mb-4 p-1"
                                 >
                                   <KanbanTask
+                                    key={task.task_id + "KanbanTask"}
                                     task={task}
                                     employees={employees}
                                     pos={tasks[columnId]?.length ?? 0}
@@ -288,10 +290,8 @@ function KanbanBoard(props: {
                               column_id={getColumnIdByName(columnId)}
                               tools={tools}
                               parts={parts}
-                              onTrigger={() => {
+                              triggerRefresh={() => {
                                 triggerRefresh();
-                                refreshTrigger();
-                                console.log(refreshStuff);
                               }}
                             />
                           </div>

@@ -26,7 +26,9 @@ export default function DashboardView(props: {
     tools,
     parts,
   } = props;
+
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const triggerRefresh = () => setRefreshTrigger((prev) => prev + 1);
 
   return (
@@ -38,7 +40,7 @@ export default function DashboardView(props: {
             triggerRefresh={triggerRefresh}
           />
           <KanbanBoard
-            key={refreshTrigger} // Add this line to reset the component
+            key={`${refreshTrigger}-${workOrder?.order_id}`}
             workOrder={workOrder}
             tasksOnColumns={tasksOnColumns}
             allColumns={columnsWorkOrder}
