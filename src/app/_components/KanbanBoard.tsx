@@ -291,6 +291,7 @@ function KanbanBoard(props: {
                               onTrigger={() => {
                                 triggerRefresh();
                                 refreshTrigger();
+                                console.log(refreshStuff);
                               }}
                             />
                           </div>
