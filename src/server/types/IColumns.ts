@@ -3,6 +3,7 @@ export interface Column {
   title: string;
   position: number;
   order_id: number;
+  state: number;
 }
 
 export interface CreateColumn {

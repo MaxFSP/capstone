@@ -44,7 +44,7 @@ import {
 import { Label } from "~/components/ui/label";
 
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { type DateRange } from "react-day-picker";
 
 import { cn } from "~/lib/utils";
@@ -56,31 +56,41 @@ import {
 } from "~/components/ui/popover";
 
 import { type Employee } from "~/server/types/IEmployee";
-import { useRouter } from "next/navigation";
 import { Textarea } from "~/components/ui/textarea";
 import { type Tool } from "~/server/types/ITool";
 import { type Part } from "~/server/types/IPart";
 import { type Task } from "~/server/types/ITasks";
 import DeleteTaskDialog from "./deleteTaskDialog";
+import { useRouter } from "next/navigation";
 
 export default function KanbanTask(props: {
   task: Task;
   employees: Employee[];
-  pos: number;
   column_id: number;
   tools: Tool[];
   parts: Part[];
   onGone: () => void;
+  triggerRefresh: () => void;
 }) {
-  const { task, employees, pos, column_id, tools, parts, onGone } = props;
-  const router = useRouter();
+  const { task, employees, column_id, tools, parts, onGone, triggerRefresh } =
+    props;
   const [dialogOpen, setDialogOpen] = useState(false);
-  // ...
+  const router = useRouter();
 
-  const [assigned_employee, setAssignedEmployee] = useState(
-    employees[0]!.firstName + " " + employees[0]!.lastName,
+  const [isEditing, setIsEditing] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [initialFormData, setInitialFormData] = useState({ ...task });
+
+  let assigned_to = employees.find(
+    (employee) => employee.employee_id === task.assigned_to,
   );
-  const [priority, setPriority] = useState("Low");
+  if (!assigned_to) {
+    assigned_to = employees[0]!;
+  }
+  const [assigned_employee, setAssignedEmployee] = useState(
+    assigned_to.firstName + " " + assigned_to.lastName,
+  );
+  const [priority, setPriority] = useState(task.priority);
 
   const [openTool, setOpenTool] = useState(false);
   const [openPart, setOpenPart] = useState(false);
@@ -92,6 +102,96 @@ export default function KanbanTask(props: {
   const [selectedPart, setSelectedPart] = useState(
     parts[0]!.name + ": " + parts[0]!.part_number,
   );
+
+  const [partList, setPartList] = useState<Part[]>([]);
+  const [toolList, setToolList] = useState<Tool[]>([]);
+  const [initialPartList, setInitialPartList] = useState<Part[]>([]);
+  const [initialToolList, setInitialToolList] = useState<Tool[]>([]);
+
+  const [taskFormValue, setTaskFormValue] = useState({
+    task_id: task.task_id,
+    title: task.title,
+    description: task.description,
+    start_date: task.start_date,
+    end_date: task.end_date,
+    assigned_to: task.assigned_to,
+    column_id: task.column_id,
+    position: task.position,
+    priority: task.priority,
+    state: task.state,
+  });
+
+  // Calendar stuff
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: task.start_date,
+    to: task.end_date,
+  });
+
+  // Form stuff
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setTaskFormValue({ ...task });
+      setAssignedEmployee(assigned_to.firstName + " " + assigned_to.lastName);
+      setPriority(task.priority);
+      setDate({
+        from: initialFormData.start_date,
+        to: initialFormData.end_date,
+      });
+      setToolList(initialToolList);
+      setPartList(initialPartList);
+    }
+  }, [isEditing, task]);
+
+  useEffect(() => {
+    validateForm();
+    checkForChanges();
+  }, [taskFormValue, priority, date, assigned_employee, toolList, partList]);
+
+  const validateForm = () => {
+    const isNameValid = validateStringWithSpaces(taskFormValue.title);
+    const isDescriptionValid = validateStringWithSpaces(
+      taskFormValue.description,
+    );
+
+    if (isNameValid && isDescriptionValid) {
+      setIsFormValid(true);
+    }
+  };
+
+  const checkForChanges = () => {
+    const fromDate = date?.from?.toISOString().split("T")[0] ?? "";
+    const toDate = date?.to?.toISOString().split("T")[0] ?? "";
+
+    const hasChanges =
+      JSON.stringify(taskFormValue) !== JSON.stringify(task) ||
+      priority !== task.priority ||
+      fromDate != task.start_date.toISOString().split("T")[0] ||
+      toDate != task.end_date.toISOString().split("T")[0] ||
+      assigned_employee !==
+        assigned_to.firstName + " " + assigned_to.lastName ||
+      toolList.length !== initialToolList.length ||
+      partList.length !== initialPartList.length;
+    setHasChanges(hasChanges);
+  };
+
+  const handleEditClick = () => {
+    if (isEditing) {
+      setInitialFormData({ ...taskFormValue });
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTaskFormValue((prevValues) => ({ ...prevValues, [name]: value }));
+  };
+
+  const handleCancelClick = () => {
+    setTaskFormValue(initialFormData);
+    setIsEditing(false);
+  };
 
   useEffect(() => {
     fetch("/api/getToolsAndParts", {
@@ -110,45 +210,18 @@ export default function KanbanTask(props: {
         setToolList(
           tools.filter((tool: Tool) => toolIds.includes(tool.tool_id)),
         );
+        setInitialToolList(
+          tools.filter((tool: Tool) => toolIds.includes(tool.tool_id)),
+        );
         setPartList(
+          parts.filter((part: Part) => partIds.includes(part.part_id)),
+        );
+        setInitialPartList(
           parts.filter((part: Part) => partIds.includes(part.part_id)),
         );
       })
       .catch((error) => console.error(error));
   }, [task.task_id, tools, parts]);
-
-  const [partList, setPartList] = useState<Part[]>([]);
-  const [toolList, setToolList] = useState<Tool[]>([]);
-
-  const [taskFormValue, setTaskFormValue] = useState({
-    title: task.title,
-    description: task.description,
-    start_date: task.start_date,
-    end_date: task.end_date,
-    assigned_to: task.assigned_to,
-    column_id: task.column_id,
-    position: task.position,
-    priority: task.priority,
-  });
-
-  const differenceInDays = (start: Date, end: Date) => {
-    const millisecondsPerDay = 1000 * 60 * 60 * 24;
-    return Math.round(
-      Math.abs((end.getTime() - start.getTime()) / millisecondsPerDay),
-    );
-  };
-
-  // get the difference between the start and end date in days
-  const days = differenceInDays(task.end_date, task.start_date);
-
-  // Calendar stuff
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: task.start_date,
-    to: task.end_date,
-  });
-
-  // Form stuff
-  const [isOrderFormValid, setIsOrderFormValid] = useState(false);
 
   useEffect(() => {
     const isNameValid = validateStringWithSpaces(taskFormValue.title);
@@ -157,7 +230,7 @@ export default function KanbanTask(props: {
     );
 
     if (isNameValid && isDescriptionValid) {
-      setIsOrderFormValid(true);
+      setIsFormValid(true);
     }
   }, [taskFormValue]);
 
@@ -179,11 +252,10 @@ export default function KanbanTask(props: {
       taskFormValue.end_date = date!.to!;
 
       taskFormValue.column_id = column_id;
-      taskFormValue.position = pos;
       taskFormValue.priority = priority;
+      taskFormValue.state = 1;
 
-      // Set the assigned machine (only the id)
-      const response = await fetch("/api/createTask", {
+      const response = await fetch("/api/updateTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -191,16 +263,13 @@ export default function KanbanTask(props: {
         body: JSON.stringify(taskFormValue),
       }).then(async (response) => {
         if (!response.ok) {
-          throw new Error("Failed to create work order");
+          throw new Error("Failed to update task");
         } else {
-          const { data } = await response.json();
-
           const toolsAndParts = {
-            task_id: data.task_id,
+            task_id: taskFormValue.task_id,
             tools: [] as number[],
             parts: [] as number[],
           };
-
           if (toolList) {
             const toolListIds = toolList.map((tool) => tool.tool_id);
             toolsAndParts.tools = toolListIds;
@@ -210,18 +279,23 @@ export default function KanbanTask(props: {
             const partListIds = partList.map((part) => part.part_id);
             toolsAndParts.parts = partListIds;
           }
-
           try {
-            const addToolandPart = await fetch("/api/addToolsAndPartsToTask", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+            const addToolandPart = await fetch(
+              "/api/updateToolsAndPartsToTask",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(toolsAndParts),
               },
-              body: JSON.stringify(toolsAndParts),
-            });
+            );
             if (!addToolandPart.ok) {
               throw new Error("Failed to add tools and parts to task");
             }
+            triggerRefresh();
+            router.refresh();
+            setIsEditing(false);
           } catch (error) {
             console.error("Failed to add tools and parts to task:", error);
           }
@@ -238,6 +312,7 @@ export default function KanbanTask(props: {
   const handleSaveAndCloseClick = async () => {
     await handleSaveClick();
     setTaskFormValue({
+      task_id: task.task_id,
       title: task.title,
       description: task.description,
       start_date: task.start_date,
@@ -246,6 +321,7 @@ export default function KanbanTask(props: {
       column_id: task.column_id,
       position: task.position,
       priority: task.priority,
+      state: task.state,
     });
   };
 
@@ -264,7 +340,10 @@ export default function KanbanTask(props: {
   );
 
   return (
-    <div className="rounded bg-gray-800 p-4 transition-shadow duration-150 ease-in-out hover:z-10 hover:shadow-outline">
+    <div
+      className={`rounded ${task.priority === "Low" ? "bg-green-600" : task.priority === "Medium" ? "bg-yellow-600" : "bg-red-600"} p-4 transition-shadow duration-150 ease-in-out hover:z-10 hover:shadow-outline`}
+      key={task.task_id + "KanbanTask" + task.title}
+    >
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogTrigger asChild>
           <div className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
@@ -278,8 +357,11 @@ export default function KanbanTask(props: {
         </AlertDialogTrigger>
         <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>{task.title}</AlertDialogTitle>
-            <AlertDialogDescription>{task.description}</AlertDialogDescription>
+            <AlertDialogTitle>Edit Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Make sure you type the correct information before editing the
+              task.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4">
             <div className="flex space-x-4">
@@ -291,6 +373,7 @@ export default function KanbanTask(props: {
                   name="title"
                   value={taskFormValue.title}
                   onChange={handleWorkOrderChange}
+                  disabled={!isEditing}
                   color={isNameInvalid ? "danger" : "default"}
                 />
               </div>
@@ -303,6 +386,7 @@ export default function KanbanTask(props: {
                   required
                   name="observations"
                   value={taskFormValue.description}
+                  disabled={!isEditing}
                   onChange={(e) =>
                     setTaskFormValue({
                       ...taskFormValue,
@@ -318,7 +402,7 @@ export default function KanbanTask(props: {
               <div className="flex-1">
                 <Label>Assign an employee</Label>
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger asChild disabled={!isEditing}>
                     <Button className="w-full" variant="outline">
                       {assigned_employee}
                     </Button>
@@ -352,7 +436,7 @@ export default function KanbanTask(props: {
               <div className="flex-1">
                 <Label>Priority</Label>
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger asChild disabled={!isEditing}>
                     <Button className="w-full" variant="outline">
                       {priority}
                     </Button>
@@ -384,7 +468,7 @@ export default function KanbanTask(props: {
                 <Label>Select tools to use</Label>
                 {isDesktop ? (
                   <Popover open={openTool} onOpenChange={setOpenTool}>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
                         className="w-full justify-start"
@@ -404,7 +488,7 @@ export default function KanbanTask(props: {
                   </Popover>
                 ) : (
                   <Drawer open={openTool} onOpenChange={setOpenTool}>
-                    <DrawerTrigger asChild>
+                    <DrawerTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
                         className="w-full justify-start"
@@ -431,7 +515,7 @@ export default function KanbanTask(props: {
                 <Label>Select parts to use</Label>
                 {isDesktop ? (
                   <Popover open={openPart} onOpenChange={setOpenPart}>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
                         className="w-full justify-start"
@@ -451,7 +535,7 @@ export default function KanbanTask(props: {
                   </Popover>
                 ) : (
                   <Drawer open={openPart} onOpenChange={setOpenPart}>
-                    <DrawerTrigger asChild>
+                    <DrawerTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
                         className="w-full justify-start"
@@ -484,13 +568,16 @@ export default function KanbanTask(props: {
                       <div>
                         <div
                           key={
-                            tool.tool_id + "tool" + tool.name + tool.tool_type
+                            tool.tool_type + "tool" + tool.name + tool.tool_id
                           }
                           className="mt-2 flex items-center justify-between gap-2"
                         >
                           <p>{tool.brand + ": " + tool.name}</p>
-                          <a
-                            className="cursor-pointer  rounded-md bg-red-600  px-2  text-white"
+                          <Button
+                            type="button"
+                            variant={"destructive"}
+                            className=" cursor-pointer rounded-md  bg-red-600  px-4 py-0  text-white"
+                            disabled={!isEditing}
                             onClick={() => {
                               setToolList(
                                 toolList.filter(
@@ -500,7 +587,7 @@ export default function KanbanTask(props: {
                             }}
                           >
                             X
-                          </a>
+                          </Button>
                         </div>
                         <Separator className="my-2" />
                       </div>
@@ -521,11 +608,13 @@ export default function KanbanTask(props: {
                           key={
                             part.part_id + "part" + part.part_number + part.name
                           }
-                          className="mt-2 flex items-center justify-between gap-2 "
+                          className="mt-2 flex items-center justify-between gap-2"
                         >
                           <p>{part.name + ": " + part.part_number}</p>
-                          <a
-                            className="cursor-pointer  rounded-md bg-red-600  px-2  text-white"
+                          <Button
+                            type="button"
+                            disabled={!isEditing}
+                            className=" cursor-pointer rounded-md  bg-red-600  px-4 py-0  text-white"
                             onClick={() => {
                               setPartList(
                                 partList.filter(
@@ -535,7 +624,7 @@ export default function KanbanTask(props: {
                             }}
                           >
                             X
-                          </a>
+                          </Button>
                         </div>
                         <Separator className="my-2" />
                       </div>
@@ -552,7 +641,7 @@ export default function KanbanTask(props: {
                 <Label>Date Range</Label>
                 <div>
                   <Popover>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger asChild disabled={!isEditing}>
                       <Button
                         id="date"
                         variant={"outline"}
@@ -593,11 +682,45 @@ export default function KanbanTask(props: {
           </div>
 
           <AlertDialogFooter className="sm:justify-start">
-            <AlertDialogCancel asChild>
-              <Button type="button" variant="secondary">
-                Close
-              </Button>
-            </AlertDialogCancel>
+            {!isEditing && (
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="secondary">
+                  Close
+                </Button>
+              </AlertDialogCancel>
+            )}
+            <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
+              {isEditing ? "Cancel" : "Edit"}
+            </Button>
+
+            {isEditing && (
+              <>
+                <AlertDialogCancel asChild>
+                  <Button
+                    type="button"
+                    variant={"default"}
+                    className="text-white "
+                    onClick={handleSaveClick}
+                    disabled={!isFormValid || !hasChanges}
+                  >
+                    Save
+                  </Button>
+                </AlertDialogCancel>
+
+                <AlertDialogCancel asChild>
+                  <Button
+                    type="button"
+                    variant={"default"}
+                    className="text-white "
+                    onClick={handleSaveAndCloseClick}
+                    disabled={!isFormValid || !hasChanges}
+                  >
+                    Save & Close
+                  </Button>
+                </AlertDialogCancel>
+              </>
+            )}
+
             <AlertDialogCancel asChild>
               <DeleteTaskDialog
                 task={props.task}

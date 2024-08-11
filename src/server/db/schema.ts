@@ -219,6 +219,7 @@ export const workOrders = createTable(
     start_date: timestamp("start_date").notNull(),
     end_date: timestamp("end_date"),
     assigned_user: serial("assigned_to").references(() => users.user_id),
+    state: integer("state").notNull(),
 
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -282,6 +283,7 @@ export const workColumns = createTable(
     title: text("title").notNull(),
     position: integer("position").notNull(),
     order_id: serial("order_id").references(() => workOrders.order_id),
+    state: integer("state").notNull(),
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

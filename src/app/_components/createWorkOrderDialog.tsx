@@ -47,7 +47,7 @@ export function CreateWorkOrderDialog(props: {
   const [machinery, setMachine] = useState(machines[0]!.serial_number);
 
   const [orderFormValue, setOrderFormValue] = useState({
-    title: "",
+    name: "",
     machine_id: 0,
     observations: "",
     start_date: new Date(),
@@ -61,7 +61,7 @@ export function CreateWorkOrderDialog(props: {
   const [isOrderFormValid, setIsOrderFormValid] = useState(false);
 
   useEffect(() => {
-    const isNameValid = validateStringWithSpaces(orderFormValue.title);
+    const isNameValid = validateStringWithSpaces(orderFormValue.name);
     const isObservationsValid = validateStringWithSpaces(
       orderFormValue.observations,
     );
@@ -113,7 +113,7 @@ export function CreateWorkOrderDialog(props: {
   const handleSaveAndCloseClick = async () => {
     await handleSaveClick();
     setOrderFormValue({
-      title: "",
+      name: "",
       machine_id: 0,
       observations: "",
       start_date: new Date(),
@@ -124,9 +124,9 @@ export function CreateWorkOrderDialog(props: {
 
   const isNameInvalid = useMemo(
     () =>
-      orderFormValue.title !== "" &&
-      !validateStringWithSpaces(orderFormValue.title),
-    [orderFormValue.title],
+      orderFormValue.name !== "" &&
+      !validateStringWithSpaces(orderFormValue.name),
+    [orderFormValue.name],
   );
 
   const isObservationsInvalid = useMemo(
@@ -140,19 +140,19 @@ export function CreateWorkOrderDialog(props: {
     <form className="space-y-4">
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>title</Label>
+          <Label>Name</Label>
           <Input
             required
             type="text"
             name="name"
-            value={orderFormValue.title}
+            value={orderFormValue.name}
             onChange={handleWorkOrderChange}
             color={isNameInvalid ? "danger" : "default"}
           />
         </div>
         <div className="flex-1">
           <Label>Assign a Machine</Label>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button className="w-full" variant="outline">
                 {machinery}
@@ -265,7 +265,7 @@ export function CreateWorkOrderDialog(props: {
             variant="secondary"
             onClick={() => {
               setOrderFormValue({
-                title: "",
+                name: "",
                 machine_id: 0,
                 observations: "",
                 start_date: new Date(),

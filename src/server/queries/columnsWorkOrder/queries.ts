@@ -28,6 +28,7 @@ export async function createColumnTask(
       order_id: order_id,
       title: title,
       position: position,
+      state: 1,
     })
     .returning();
   return newColumnTask;

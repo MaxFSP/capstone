@@ -8,7 +8,7 @@ import { type Employee } from "~/server/types/IEmployee";
 import { type WorkOrders } from "~/server/types/IOrders";
 import { type Part } from "~/server/types/IPart";
 import { type Tool } from "~/server/types/ITool";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function DashboardView(props: {
   workOrder: WorkOrders | undefined;
@@ -29,21 +29,37 @@ export default function DashboardView(props: {
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const triggerRefresh = () => setRefreshTrigger((prev) => prev + 1);
+  const triggerRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const [kanbanData, setKanbanData] = useState({
+    tasksOnColumns,
+    columnsWorkOrder,
+  });
+  useEffect(() => {
+    setKanbanData({
+      tasksOnColumns,
+      columnsWorkOrder,
+    });
+  }, [tasksOnColumns, columnsWorkOrder]);
 
   return (
     <div>
       {workOrder ? (
         <div className="p-4">
           <KanbanBoardHeader
+            key={`${workOrder?.order_id}-${refreshTrigger}`}
             workOrder={workOrder}
             triggerRefresh={triggerRefresh}
+            tasksOnColumns={kanbanData.tasksOnColumns}
+            columnsWorkOrder={columnsWorkOrder}
           />
           <KanbanBoard
             key={`${refreshTrigger}-${workOrder?.order_id}`}
             workOrder={workOrder}
-            tasksOnColumns={tasksOnColumns}
-            allColumns={columnsWorkOrder}
+            tasksOnColumns={kanbanData.tasksOnColumns}
+            allColumns={kanbanData.columnsWorkOrder}
             employees={employees}
             tools={tools}
             parts={parts}

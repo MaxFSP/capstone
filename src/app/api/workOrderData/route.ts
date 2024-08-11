@@ -1,23 +1,24 @@
+import { NextResponse } from "next/server";
 import { getColumnTasksByWorkOrderId } from "~/server/queries/columnsWorkOrder/queries";
 import { getWorkOrderBySessionId } from "~/server/queries/workOrder/queries";
-import { type Task, type TasksOnColumns } from "~/server/types/ITasks";
 import { getTasksByColumnId } from "~/server/queries/columnTasks/queries";
-import { type Column } from "~/server/types/IColumns";
 import { getEmployees } from "~/server/queries/employee/queries";
 import { getTools } from "~/server/queries/tool/queries";
 import { getParts } from "~/server/queries/part/queries";
-import DashboardView from "../_components/dashboardView";
+import { type TasksOnColumns } from "~/server/types/ITasks";
+import { type Column } from "~/server/types/IColumns";
+import { type Task } from "~/server/types/ITasks";
 
-export default async function DashboardPage() {
-  let workOrder = await getWorkOrderBySessionId();
-  const tasksOnColumns: TasksOnColumns = {};
-  let columnsWorkOrder: Column[] = [];
-  const employees = await getEmployees();
-  const tools = await getTools();
-  const parts = await getParts();
+export async function GET() {
+  try {
+    const workOrder = await getWorkOrderBySessionId();
+    const tasksOnColumns: TasksOnColumns = {};
+    let columnsWorkOrder: Column[] = [];
+    const employees = await getEmployees();
+    const tools = await getTools();
+    const parts = await getParts();
 
-  if (workOrder) {
-    if (workOrder.state === 1) {
+    if (workOrder) {
       columnsWorkOrder = await getColumnTasksByWorkOrderId(workOrder.order_id);
       columnsWorkOrder = columnsWorkOrder.filter(
         (column) => column.state !== 0,
@@ -30,22 +31,18 @@ export default async function DashboardPage() {
         });
 
         const columnIds = columnsWorkOrder.map((column) => column.column_id);
-
         const columnTasks = await getTasksByColumnId(columnIds);
 
         columnTasks.forEach((task) => {
           const column = columnsWorkOrder.find(
             (col) => col.column_id === task.column_id,
           );
-          if (column) {
-            if (task.state === 1) {
-              const columnTitle = column.title;
-              tasksOnColumns[columnTitle]!.push(task as Task);
-            }
+          if (column && task.state === 1) {
+            tasksOnColumns[column.title]!.push(task as Task);
           }
         });
 
-        // Sort the tasks by position in the column
+        // Ordenar las tareas por posición en la columna
         Object.keys(tasksOnColumns).forEach((key) => {
           if (tasksOnColumns[key]) {
             tasksOnColumns[key] = tasksOnColumns[key]!.sort(
@@ -54,19 +51,18 @@ export default async function DashboardPage() {
           }
         });
       }
-    } else {
-      workOrder = undefined;
     }
-  }
 
-  return (
-    <DashboardView
-      workOrder={workOrder}
-      tasksOnColumns={tasksOnColumns}
-      columnsWorkOrder={columnsWorkOrder}
-      employees={employees}
-      tools={tools}
-      parts={parts}
-    />
-  );
+    return NextResponse.json({
+      workOrder,
+      tasksOnColumns,
+      columnsWorkOrder,
+      employees,
+      tools,
+      parts,
+    });
+  } catch (error) {
+    console.error("Error fetching work order data:", error);
+    return NextResponse.error();
+  }
 }

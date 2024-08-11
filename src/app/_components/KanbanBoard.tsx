@@ -19,6 +19,7 @@ import { CreateTaskDialog } from "./createTask";
 import { type Employee } from "~/server/types/IEmployee";
 import { type Tool } from "~/server/types/ITool";
 import { type Part } from "~/server/types/IPart";
+import { useRouter } from "next/navigation";
 
 function KanbanBoard(props: {
   workOrder: WorkOrders;
@@ -38,11 +39,13 @@ function KanbanBoard(props: {
     parts,
     triggerRefresh,
   } = props;
+  const router = useRouter();
 
   useEffect(() => {
     setTasks(tasksOnColumns);
     setColumnOrder(Object.keys(tasksOnColumns));
-  }, [tasksOnColumns]);
+    setColumnList(allColumns);
+  }, [tasksOnColumns, triggerRefresh, allColumns]);
 
   const [tasks, setTasks] = useState<TasksOnColumns>(tasksOnColumns);
   const [columnOrder, setColumnOrder] = useState<string[]>(
@@ -50,6 +53,7 @@ function KanbanBoard(props: {
   );
 
   const [newColumnName, setNewColumnName] = useState<string>("");
+  const [columnList, setColumnList] = useState<Column[]>(allColumns);
   const [isAddingColumn, setIsAddingColumn] = useState<boolean>(false);
 
   const addColumn = async () => {
@@ -75,6 +79,11 @@ function KanbanBoard(props: {
         });
         if (response.ok) {
           console.log("Column added successfully:", newColumnName);
+          const responseData = await response.json();
+          if (responseData.data) {
+            const newColumnData = responseData.data;
+            setColumnList([...columnList, newColumnData[0]]);
+          }
         } else {
           console.error("Failed to add column:", response.statusText);
         }
@@ -90,7 +99,7 @@ function KanbanBoard(props: {
   };
 
   const getColumnIdByName = (name: string): number => {
-    const column = allColumns.find((col) => col.title === name);
+    const column = columnList.find((col) => col.title === name);
     return column ? column.column_id : 0;
   };
 
@@ -206,6 +215,7 @@ function KanbanBoard(props: {
         if (!response.ok) {
           throw new Error("Failed to move task");
         }
+        router.refresh();
       } catch (error) {
         console.error("Error moving task:", error);
       }
@@ -268,7 +278,6 @@ function KanbanBoard(props: {
                                     key={task.task_id + "KanbanTask"}
                                     task={task}
                                     employees={employees}
-                                    pos={tasks[columnId]?.length ?? 0}
                                     column_id={getColumnIdByName(columnId)}
                                     tools={tools}
                                     parts={parts}
@@ -276,6 +285,9 @@ function KanbanBoard(props: {
                                       const newTasks = { ...tasks };
                                       delete newTasks[columnId]![index];
                                       setTasks(newTasks);
+                                    }}
+                                    triggerRefresh={() => {
+                                      triggerRefresh();
                                     }}
                                   />
                                 </div>

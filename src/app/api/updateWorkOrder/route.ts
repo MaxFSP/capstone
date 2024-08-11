@@ -15,9 +15,10 @@ export async function POST(req: NextRequest) {
       workOrderData.order_id,
       workOrderData.name,
       +workOrderData.machine_id,
-      workOrderData.observations,
+      workOrderData.observations ?? "",
       new Date(workOrderData.start_date),
       +workOrderData.assigned_user,
+      workOrderData.state,
     );
 
     return NextResponse.json({ data: result }, { status: 200 });

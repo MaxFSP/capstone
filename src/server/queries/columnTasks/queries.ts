@@ -41,6 +41,36 @@ export async function createTask(
   return newTask;
 }
 
+export async function updateTask(
+  task_id: number,
+  title: string,
+  description: string,
+  position: number,
+  start_date: Date,
+  end_date: Date,
+  column_id: number,
+  assigned_to: number,
+  priority: string,
+  state: number,
+) {
+  const updatedTask = await db
+    .update(workTasks)
+    .set({
+      title: title,
+      description: description,
+      position: position,
+      start_date: start_date,
+      end_date: end_date,
+      column_id: column_id,
+      assigned_to: assigned_to,
+      priority: priority,
+      state: state,
+    })
+    .where(eq(workTasks.task_id, task_id))
+    .returning();
+  return updatedTask;
+}
+
 export async function addToolsToTask(task_id: number, tool_id: number) {
   const newToolInTask = await db
     .insert(toolsInTasks)
@@ -125,4 +155,18 @@ export async function updateTaskPositions(tasks: Task[]) {
       .where(eq(workTasks.task_id, task.task_id))
       .returning();
   }
+}
+
+export async function deleteAllToolsInTask(task_id: number) {
+  await db
+    .delete(toolsInTasks)
+    .where(eq(toolsInTasks.task_id, task_id))
+    .returning();
+}
+
+export async function deleteAllPartsInTask(task_id: number) {
+  const deleteParts = await db
+    .delete(partsInTasks)
+    .where(eq(partsInTasks.task_id, task_id))
+    .returning();
 }
