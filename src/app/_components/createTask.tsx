@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -421,11 +423,8 @@ export function CreateTaskDialog(props: {
                 <Label className="p-2">Selected tools to use</Label>
                 <div className="p-2">
                   {toolList.map((tool) => (
-                    <div>
-                      <div
-                        key={tool.tool_id + "tool" + tool.name}
-                        className="mt-2 flex items-center justify-between gap-2"
-                      >
+                    <div key={tool.tool_id + "tool" + tool.name}>
+                      <div className="mt-2 flex items-center justify-between gap-2">
                         <p>{tool.brand + ": " + tool.name}</p>
                         <a
                           className="cursor-pointer  rounded-md bg-red-600  px-2  text-white"
@@ -454,11 +453,11 @@ export function CreateTaskDialog(props: {
                 <Label className="p-2">Selected parts to use</Label>
                 <div className="p-2">
                   {partList.map((part) => (
-                    <div className="">
-                      <div
-                        key={part.part_id + "part" + part.part_number}
-                        className="mt-2 flex items-center justify-between gap-2 "
-                      >
+                    <div
+                      className=""
+                      key={part.part_id + "part" + part.part_number}
+                    >
+                      <div className="mt-2 flex items-center justify-between gap-2 ">
                         <p>{part.name + ": " + part.part_number}</p>
                         <a
                           className="cursor-pointer  rounded-md bg-red-600  px-2  text-white"
@@ -593,7 +592,7 @@ function PartList({
           {parts.map((part) => (
             <CommandItem
               key={part.part_id}
-              value={part.part_id}
+              value={part.name}
               onSelect={(value: string) => {
                 setSelectedPart(part.name + ": " + part.part_number);
                 if (!partList.some((p) => p.part_id === part.part_id)) {
@@ -633,7 +632,7 @@ function ToolList({
           {tools.map((tool) => (
             <CommandItem
               key={tool.tool_id}
-              value={tool.tool_id}
+              value={tool.name}
               onSelect={(value: string) => {
                 setSelectedTool(tool.brand + ": " + tool.name);
                 if (!toolList.some((t) => t.tool_id === tool.tool_id)) {
