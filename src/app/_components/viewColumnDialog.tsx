@@ -24,9 +24,7 @@ export default function EditColumnDialog(props: {
   const router = useRouter();
 
   const { triggerRefresh, columnsWorkOrder } = props;
-  const [columnTitles, setColumnTitles] = useState<{ [key: number]: string }>(
-    {},
-  );
+  const [columnTitles, setColumnTitles] = useState<Record<number, string>>({});
 
   const initialValue = columnsWorkOrder;
 
