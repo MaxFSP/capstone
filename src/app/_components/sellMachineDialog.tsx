@@ -268,7 +268,22 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
 
         <AlertDialogFooter className="sm:justify-start">
           <AlertDialogCancel asChild>
-            <Button type="button" variant="secondary">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setFormValues({
+                  machine_id: data.machine_id,
+                  brand: data.brand,
+                  model: data.model,
+                  year: data.year,
+                  serial_number: data.serial_number,
+                  sold_price: data.sold_price.toString(), // Initialize as string
+                  sold_to: data.sold_to,
+                  sold_date: data.sold_date,
+                });
+              }}
+            >
               Close
             </Button>
           </AlertDialogCancel>

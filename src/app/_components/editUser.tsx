@@ -16,16 +16,38 @@ import {
 } from "~/components/ui/dialog";
 
 import { Input, Button, Checkbox } from "@nextui-org/react";
+import { Button as ButtonTwo } from "~/components/ui/button";
 
 import type {
   UpdateUserRequest,
   UpdateUserResponse,
 } from "../../server/types/api";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import type { UpdateClerkUser } from "../../server/types/IClerkUser";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { useRouter } from "next/navigation";
+import { Label } from "~/components/ui/label";
+import { type Org } from "~/server/types/org";
 
-export default function EditUser({ user }: { user: ClerkUser }) {
+export default function EditUser({
+  user,
+  orgs,
+}: {
+  user: ClerkUser;
+  orgs: Org[];
+}) {
+  const router = useRouter();
+  const current_role = user.org.name;
+  const [role, setRole] = useState(current_role);
+
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     firstName: user.firstName,
@@ -48,7 +70,7 @@ export default function EditUser({ user }: { user: ClerkUser }) {
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formValues]);
+  }, [formValues, role]);
 
   const validateForm = () => {
     const email = formValues.email ?? "";
@@ -73,7 +95,8 @@ export default function EditUser({ user }: { user: ClerkUser }) {
   const checkForChanges = () => {
     const hasChanges =
       JSON.stringify({ ...formValues, confirmPassword: "" }) !==
-      JSON.stringify({ ...initialFormValues, confirmPassword: "" });
+        JSON.stringify({ ...initialFormValues, confirmPassword: "" }) ||
+      role !== current_role;
     setHasChanges(hasChanges);
   };
 
@@ -115,8 +138,12 @@ export default function EditUser({ user }: { user: ClerkUser }) {
       changes.email = [formValues.email!];
     }
 
+    const selectedDepartment = orgs.find((org) => org.name === role);
+    const orgVal = selectedDepartment ? selectedDepartment.id : "";
+
     const finalChanges: UpdateUserRequest = {
       userId: user.id,
+      orgId: orgVal,
       formEmployee: {
         ...changes,
         email: changes.email,
@@ -159,6 +186,7 @@ export default function EditUser({ user }: { user: ClerkUser }) {
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
     if (saveSuccessful) {
+      router.refresh();
       // notify the user that the changes have been saved
     }
   };
@@ -316,6 +344,31 @@ export default function EditUser({ user }: { user: ClerkUser }) {
                     : undefined
                 }
               />
+              <div className="flex-1">
+                <Label>Role</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild disabled={!isEditing}>
+                    <ButtonTwo className="w-full" variant="outline">
+                      {role}
+                    </ButtonTwo>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full">
+                    <DropdownMenuLabel>Serial Number</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup
+                      value={role}
+                      onValueChange={(value: string) => setRole(value)}
+                    >
+                      <DropdownMenuRadioItem value="Administrador">
+                        Administrador
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="Jefes">
+                        Jefes
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <Checkbox
                 name="online"
                 isSelected={formValues.online}

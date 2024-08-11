@@ -5,7 +5,7 @@ export interface User {
   last_name: string;
   imageUrl: string | null;
   imageKey: string | null;
-  rol_id: number;
+  clerkRole: string;
   clerk_id: string;
 }
 
@@ -15,7 +15,7 @@ export interface CreateUser {
   last_name: string;
   imageUrl: string;
   imageKey: string;
-  rol_id: string;
+  clerkRole: string;
   clerk_id: string;
 }
 
@@ -26,6 +26,6 @@ export interface UpdateUser {
   last_name?: string;
   imageUrl?: string;
   imageKey?: string;
-  rol_id?: string;
+  clerkRole?: string;
   clerk_id?: string;
 }

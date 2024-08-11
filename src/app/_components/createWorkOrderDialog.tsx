@@ -152,7 +152,7 @@ export function CreateWorkOrderDialog(props: {
         </div>
         <div className="flex-1">
           <Label>Assign a Machine</Label>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button className="w-full" variant="outline">
                 {machinery}

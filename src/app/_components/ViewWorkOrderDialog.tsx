@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -38,6 +38,7 @@ import { useRouter } from "next/navigation";
 import { type WorkOrdersWithUser } from "~/server/types/IOrders";
 import { type User } from "~/server/types/IUser";
 import { type Machinery } from "~/server/types/IMachinery";
+import { Switch } from "~/components/ui/switch";
 
 export function WorkOrderDataViewDialog(props: {
   title: string;
@@ -53,6 +54,7 @@ export function WorkOrderDataViewDialog(props: {
   const current_date = data.start_date;
   const current_machine = data.machine_id;
   const current_user = data.userName;
+  const current_state = data.state;
 
   const [assigned_user, setAssignedUser] = useState(data.userName);
   const [machinery, setMachine] = useState(data.machine_serial);
@@ -64,6 +66,10 @@ export function WorkOrderDataViewDialog(props: {
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const [currentStateBoolean, setCurrentStateBoolean] = useState<boolean>(
+    data.state === 1,
+  );
 
   useEffect(() => {
     if (!isEditing) {
@@ -77,7 +83,7 @@ export function WorkOrderDataViewDialog(props: {
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formData, , machinery, assigned_user, dateValue]);
+  }, [formData, , machinery, assigned_user, dateValue, currentStateBoolean]);
 
   const validateForm = () => {
     const isDataValid =
@@ -95,11 +101,13 @@ export function WorkOrderDataViewDialog(props: {
       (machine) => machine.serial_number === machinery,
     )!.machine_id;
 
+    const currentState = current_state === 1;
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
       assigned_user !== current_user ||
       machine_id !== current_machine ||
-      dateWithoutTime !== dateWithoutTimeCurrent;
+      dateWithoutTime !== dateWithoutTimeCurrent ||
+      currentStateBoolean !== currentState;
     setHasChanges(hasChanges);
   };
 
@@ -117,6 +125,7 @@ export function WorkOrderDataViewDialog(props: {
 
   const handleCancelClick = () => {
     setFormData(initialFormData);
+    setCurrentStateBoolean(current_state === 1);
     setIsEditing(false);
   };
 
@@ -132,6 +141,12 @@ export function WorkOrderDataViewDialog(props: {
         )!.machine_id;
 
         formData.start_date = dateValue;
+
+        if (currentStateBoolean) {
+          formData.state = 1;
+        } else {
+          formData.state = 0;
+        }
 
         const response = await fetch("/api/updateWorkOrder", {
           method: "POST",
@@ -208,6 +223,7 @@ export function WorkOrderDataViewDialog(props: {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                disabled={!isEditing}
               />
             </div>
             <div className="flex space-x-4">
@@ -248,8 +264,9 @@ export function WorkOrderDataViewDialog(props: {
                 required
                 type="text"
                 name="age"
-                value={formData.observations}
+                value={formData.observations ?? " "}
                 onChange={handleChange}
+                disabled={!isEditing}
               />
             </div>
           </div>
@@ -318,6 +335,25 @@ export function WorkOrderDataViewDialog(props: {
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
+          </div>
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="enableWorkOrder"
+                  disabled={!isEditing}
+                  checked={currentStateBoolean}
+                  onCheckedChange={() => {
+                    if (currentStateBoolean) {
+                      setCurrentStateBoolean(false);
+                    } else {
+                      setCurrentStateBoolean(true);
+                    }
+                  }}
+                />
+                <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
+              </div>
             </div>
           </div>
         </div>

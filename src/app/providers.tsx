@@ -6,7 +6,7 @@ import { dark } from "@clerk/themes";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider appearance={{ baseTheme: dark }} localization={esMX}>
-      <NextUIProvider>{children}</NextUIProvider>{" "}
+      <NextUIProvider>{children}</NextUIProvider>
     </ClerkProvider>
   );
 }

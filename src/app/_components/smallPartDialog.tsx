@@ -173,7 +173,7 @@ export function SmallPartDialog(props: {
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Test</DialogTitle>
+          <DialogTitle className="text-large">Edit Part</DialogTitle>
           <DialogDescription>
             Anyone who has this link will be able to view this.
           </DialogDescription>

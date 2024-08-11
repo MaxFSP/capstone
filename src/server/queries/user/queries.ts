@@ -14,7 +14,7 @@ export async function createUser(
   lastName: string,
   imageUrl: string,
   imageKey: string,
-  rol_id: number,
+  clerkRole: string,
   clerk_id: string,
 ) {
   const newUser = await db
@@ -25,7 +25,7 @@ export async function createUser(
       last_name: lastName,
       imageUrl: imageUrl,
       imageKey: imageKey,
-      rol_id: rol_id,
+      clerkRole: clerkRole,
       clerk_id: clerk_id,
     })
     .returning();
@@ -55,7 +55,7 @@ export async function updateUser(
   lastName?: string,
   imageUrl?: string,
   imageKey?: string,
-  rol_id?: number,
+  clerkRole?: string,
   clerk_id?: string,
 ) {
   const updatedUser = await db
@@ -67,7 +67,7 @@ export async function updateUser(
       last_name: lastName,
       imageUrl: imageUrl,
       imageKey: imageKey,
-      rol_id: rol_id,
+      clerkRole: clerkRole,
       clerk_id: clerk_id,
     })
 

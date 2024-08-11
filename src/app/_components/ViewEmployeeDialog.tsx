@@ -199,7 +199,7 @@ export function EmployeeDataViewDialog(props: {
                 <DeleteImageDialog
                   imageInfo={{
                     image_id: data.employee_id,
-                    image_key: data.imageKey,
+                    image_key: data.imageKey!,
                     type: "Employee",
                   }}
                 />

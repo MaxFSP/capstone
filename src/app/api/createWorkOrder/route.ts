@@ -9,13 +9,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // Type assertion
     const WorkOrderData: CreateWorkOrder = body;
-    WorkOrderData;
+    console.log(WorkOrderData);
     const result = await createWorkOrder(
       WorkOrderData.name,
       +WorkOrderData.machine_id,
       WorkOrderData.observations,
       new Date(WorkOrderData.start_date),
       +WorkOrderData.assigned_user,
+      1,
     );
     return NextResponse.json({ data: result }, { status: 200 });
   } catch (error) {

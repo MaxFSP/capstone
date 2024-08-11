@@ -265,7 +265,7 @@ export function ToolDataViewDialog(props: {
               />
             </div>
             <div className="flex-1">
-              <Label>Qauntity</Label>
+              <Label>Quantity</Label>
               <Input
                 name="quantity"
                 value={formData.quantity}

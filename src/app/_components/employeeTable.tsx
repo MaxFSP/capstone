@@ -4,9 +4,13 @@ import { Avatar } from "@nextui-org/react";
 import { type ClerkUser } from "../../server/types/IClerkUser";
 import EditUser from "./editUser";
 import SmallEditUser from "./smallEditUser";
+import { type Org } from "../../server/types/org";
 
-export default function EmployeeTable(props: { users: ClerkUser[] }) {
-  const { users } = props;
+export default function EmployeeTable(props: {
+  users: ClerkUser[];
+  orgs: Org[];
+}) {
+  const { users, orgs } = props;
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [showDisabled, setShowDisabled] = useState(false);
@@ -129,6 +133,7 @@ export default function EmployeeTable(props: { users: ClerkUser[] }) {
                     </td>
                     <td className={className}>
                       <EditUser
+                        orgs={orgs}
                         user={{
                           id,
                           img,
