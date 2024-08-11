@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -183,11 +185,6 @@ export default function KanbanTask(props: {
     setIsEditing(!isEditing);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTaskFormValue((prevValues) => ({ ...prevValues, [name]: value }));
-  };
-
   const handleCancelClick = () => {
     setTaskFormValue(initialFormData);
     setIsEditing(false);
@@ -255,7 +252,7 @@ export default function KanbanTask(props: {
       taskFormValue.priority = priority;
       taskFormValue.state = 1;
 
-      const response = await fetch("/api/updateTask", {
+      await fetch("/api/updateTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -565,13 +562,10 @@ export default function KanbanTask(props: {
                   <Label className="p-2">Selected tools to use</Label>
                   <div className="p-2">
                     {toolList.map((tool) => (
-                      <div>
-                        <div
-                          key={
-                            tool.tool_type + "tool" + tool.name + tool.tool_id
-                          }
-                          className="mt-2 flex items-center justify-between gap-2"
-                        >
+                      <div
+                        key={tool.tool_type + "tool" + tool.name + tool.tool_id}
+                      >
+                        <div className="mt-2 flex items-center justify-between gap-2">
                           <p>{tool.brand + ": " + tool.name}</p>
                           <Button
                             type="button"
@@ -603,7 +597,7 @@ export default function KanbanTask(props: {
                   <Label className="p-2">Selected parts to use</Label>
                   <div className="p-2">
                     {partList.map((part) => (
-                      <div className="">
+                      <div className="" key={part.part_id + "part" + part.name}>
                         <div
                           key={
                             part.part_id + "part" + part.part_number + part.name
@@ -758,9 +752,9 @@ function PartList({
         <CommandGroup>
           {parts.map((part) => (
             <CommandItem
-              key={part.part_id + "part" + part.name}
-              value={part.part_id}
-              onSelect={(value: string) => {
+              key={part.part_id + "part" + part.name + part.part_number}
+              value={part.name}
+              onSelect={(_value: string) => {
                 setSelectedPart(part.name + ": " + part.part_number);
                 if (!partList.some((p) => p.part_id === part.part_id)) {
                   setPartList([...partList, part]);
@@ -799,8 +793,8 @@ function ToolList({
           {tools.map((tool) => (
             <CommandItem
               key={tool.tool_id + "tool" + tool.tool_type}
-              value={tool.tool_id}
-              onSelect={(value: string) => {
+              value={tool.name}
+              onSelect={(_value: string) => {
                 setSelectedTool(tool.brand + ": " + tool.name);
                 if (!toolList.some((t) => t.tool_id === tool.tool_id)) {
                   setToolList([...toolList, tool]);
