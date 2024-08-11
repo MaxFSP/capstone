@@ -16,9 +16,19 @@ export default async function DashboardPage() {
   const tools = await getTools();
   const parts = await getParts();
 
-  if (workOrder) {
-    if (workOrder.state === 1) {
-      columnsWorkOrder = await getColumnTasksByWorkOrderId(workOrder.order_id);
+  // check what work order state is 1 its an array of workOrders now
+  const enabledWorkOrders = workOrder.filter(
+    (workOrders) => workOrders.state === 1,
+  );
+
+  // HERE CHECK IF THERE IS MULTIPLE AND THEN MAYBE DO SOMETHING ABOUT IT
+  let currentWorkOrder = enabledWorkOrders[0];
+
+  if (currentWorkOrder) {
+    if (currentWorkOrder.state === 1) {
+      columnsWorkOrder = await getColumnTasksByWorkOrderId(
+        currentWorkOrder.order_id,
+      );
       columnsWorkOrder = columnsWorkOrder.filter(
         (column) => column.state !== 0,
       );
@@ -55,13 +65,13 @@ export default async function DashboardPage() {
         });
       }
     } else {
-      workOrder = undefined;
+      currentWorkOrder = undefined;
     }
   }
 
   return (
     <DashboardView
-      workOrder={workOrder}
+      workOrder={currentWorkOrder}
       tasksOnColumns={tasksOnColumns}
       columnsWorkOrder={columnsWorkOrder}
       employees={employees}

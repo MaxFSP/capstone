@@ -60,7 +60,7 @@ export async function getWorkOrderBySessionId() {
 
   if (!getClerkUser) throw new Error("The user does not exist");
 
-  const workOrder = await db.query.workOrders.findFirst({
+  const workOrder = await db.query.workOrders.findMany({
     where: (workOrders, { eq }) =>
       eq(workOrders.assigned_user, getClerkUser.user_id),
   });
