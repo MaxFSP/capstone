@@ -3,12 +3,12 @@ export interface Employee {
   firstName: string;
   lastName: string;
   age: number;
-  imageUrl: string;
+  imageUrl: string | null;
   hireDate: Date;
   phoneNumber: string;
   job: string;
   bloodType: string;
-  imageKey: string;
+  imageKey: string | null;
 }
 
 export interface CreateEmployee {

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // Type assertion
     const EmployeeData: CreateEmployee = body;
-    EmployeeData;
+
     const result = await createEmployee(
       EmployeeData.firstName,
       EmployeeData.lastName,

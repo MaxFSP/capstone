@@ -1,25 +1,56 @@
-import KanbanBoard from "../_components/KanbanBoard";
+import { getColumnTasksByWorkOrderId } from "~/server/queries/columnsWorkOrder/queries";
 import { getWorkOrderBySessionId } from "~/server/queries/workOrder/queries";
+import { type Task, type TasksOnColumns } from "~/server/types/ITasks";
+import { getTasksByColumnId } from "~/server/queries/columnTasks/queries";
+import { type Column } from "~/server/types/IColumns";
+import { getEmployees } from "~/server/queries/employee/queries";
+import { getTools } from "~/server/queries/tool/queries";
+import { getParts } from "~/server/queries/part/queries";
+import DashboardView from "../_components/dashboardView";
 
 export default async function DashboardPage() {
   const workOrder = await getWorkOrderBySessionId();
+  const tasksOnColumns: TasksOnColumns = {};
+  let columnsWorkOrder: Column[] = [];
+  const employees = await getEmployees();
+  const tools = await getTools();
+  const parts = await getParts();
+
+  if (workOrder) {
+    columnsWorkOrder = await getColumnTasksByWorkOrderId(workOrder.order_id);
+    columnsWorkOrder.sort((a, b) => a.position - b.position);
+
+    if (columnsWorkOrder.length > 0) {
+      columnsWorkOrder.forEach((column) => {
+        tasksOnColumns[column.title] = [];
+      });
+
+      const columnIds = columnsWorkOrder.map((column) => column.column_id);
+
+      const columnTasks = await getTasksByColumnId(columnIds);
+
+      columnTasks.forEach((task) => {
+        const column = columnsWorkOrder.find(
+          (col) => col.column_id === task.column_id,
+        );
+        if (column) {
+          if (task.state === 1) {
+            const columnTitle = column.title;
+            tasksOnColumns[columnTitle]!.push(task as Task);
+          }
+        }
+      });
+    }
+  }
+
   return (
-    <div>
-      {workOrder ? (
-        <div className="p-4">
-          <h1 className="mb-4 text-2xl font-bold">Kanban Board</h1>
-          <KanbanBoard />
-        </div>
-      ) : (
-        <div className="flex h-screen w-screen flex-col items-center justify-center">
-          <h1 className="w-full text-center text-2xl font-bold">
-            No work order found
-          </h1>
-          <p className="w-full overflow-ellipsis text-center">
-            Sit back and relax, we will create a work order for you
-          </p>
-        </div>
-      )}
-    </div>
+    <DashboardView
+      workOrder={workOrder}
+      tasksOnColumns={tasksOnColumns}
+      columnsWorkOrder={columnsWorkOrder}
+      employees={employees}
+      tools={tools}
+      parts={parts}
+    />
   );
 }

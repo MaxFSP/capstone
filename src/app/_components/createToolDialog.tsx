@@ -45,7 +45,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
   // initialize values with use memo]
 
   const [toolFormValues, setToolFormValues] = useState({
-    name: "",
+    title: "",
     brand: "",
     category: "",
     tool_type: "",
@@ -141,7 +141,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
   const handleSaveAndCloseClick = async () => {
     await handleSaveClick();
     setToolFormValues({
-      name: "",
+      title: "",
       brand: "",
       category: "",
       tool_type: "",
@@ -391,7 +391,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             variant="secondary"
             onClick={() => {
               setToolFormValues({
-                name: "",
+                title: "",
                 brand: "",
                 category: "",
                 tool_type: "",

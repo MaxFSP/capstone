@@ -47,7 +47,7 @@ export function CreateWorkOrderDialog(props: {
   const [machinery, setMachine] = useState(machines[0]!.serial_number);
 
   const [orderFormValue, setOrderFormValue] = useState({
-    name: "",
+    title: "",
     machine_id: 0,
     observations: "",
     start_date: new Date(),
@@ -61,7 +61,7 @@ export function CreateWorkOrderDialog(props: {
   const [isOrderFormValid, setIsOrderFormValid] = useState(false);
 
   useEffect(() => {
-    const isNameValid = validateStringWithSpaces(orderFormValue.name);
+    const isNameValid = validateStringWithSpaces(orderFormValue.title);
     const isObservationsValid = validateStringWithSpaces(
       orderFormValue.observations,
     );
@@ -113,7 +113,7 @@ export function CreateWorkOrderDialog(props: {
   const handleSaveAndCloseClick = async () => {
     await handleSaveClick();
     setOrderFormValue({
-      name: "",
+      title: "",
       machine_id: 0,
       observations: "",
       start_date: new Date(),
@@ -124,9 +124,9 @@ export function CreateWorkOrderDialog(props: {
 
   const isNameInvalid = useMemo(
     () =>
-      orderFormValue.name !== "" &&
-      !validateStringWithSpaces(orderFormValue.name),
-    [orderFormValue.name],
+      orderFormValue.title !== "" &&
+      !validateStringWithSpaces(orderFormValue.title),
+    [orderFormValue.title],
   );
 
   const isObservationsInvalid = useMemo(
@@ -140,12 +140,12 @@ export function CreateWorkOrderDialog(props: {
     <form className="space-y-4">
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Name</Label>
+          <Label>title</Label>
           <Input
             required
             type="text"
             name="name"
-            value={orderFormValue.name}
+            value={orderFormValue.title}
             onChange={handleWorkOrderChange}
             color={isNameInvalid ? "danger" : "default"}
           />
@@ -265,7 +265,7 @@ export function CreateWorkOrderDialog(props: {
             variant="secondary"
             onClick={() => {
               setOrderFormValue({
-                name: "",
+                title: "",
                 machine_id: 0,
                 observations: "",
                 start_date: new Date(),

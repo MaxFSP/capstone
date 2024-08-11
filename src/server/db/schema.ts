@@ -236,11 +236,12 @@ export const workTasks = createTable(
     title: text("title").notNull(),
     description: text("description"),
     position: integer("position").notNull(),
-    order_id: serial("order_id").references(() => workOrders.order_id),
     start_date: timestamp("start_date").notNull(),
-    end_date: timestamp("end_date"),
+    end_date: timestamp("end_date").notNull(),
     column_id: serial("column_id").references(() => workColumns.column_id),
     assigned_to: serial("assigned_to").references(() => employees.employee_id),
+    priority: text("priority").notNull(),
+    state: integer("state").notNull(),
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -250,12 +251,37 @@ export const workTasks = createTable(
   }),
 );
 
+export const toolsInTasks = createTable(
+  "tools_in_tasks",
+  {
+    tool_task_id: serial("tool_task_id").primaryKey(),
+    task_id: serial("task_id").references(() => workTasks.task_id),
+    tool_id: serial("tool_id").references(() => toolStock.tool_id),
+  },
+  (toolsInTasks_index) => ({
+    tool_task_id: index("tool_task_id_idx").on(toolsInTasks_index.tool_task_id),
+  }),
+);
+
+export const partsInTasks = createTable(
+  "parts_in_tasks",
+  {
+    part_task_id: serial("part_task_id").primaryKey(),
+    task_id: serial("task_id").references(() => workTasks.task_id),
+    part_id: serial("part_id").references(() => partStock.part_id),
+  },
+  (partsInTasks_index) => ({
+    part_task_id: index("part_task_id_idx").on(partsInTasks_index.part_task_id),
+  }),
+);
+
 export const workColumns = createTable(
   "work_column",
   {
     column_id: serial("column_id").primaryKey().notNull(),
     title: text("title").notNull(),
     position: integer("position").notNull(),
+    order_id: serial("order_id").references(() => workOrders.order_id),
     created_at: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

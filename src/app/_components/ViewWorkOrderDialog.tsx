@@ -248,7 +248,7 @@ export function WorkOrderDataViewDialog(props: {
                 required
                 type="text"
                 name="age"
-                value={formData.observations}
+                value={formData.observations ?? " "}
                 onChange={handleChange}
               />
             </div>
