@@ -695,7 +695,7 @@ export default function KanbanTask(props: {
                     variant={"default"}
                     className="text-white "
                     onClick={handleSaveClick}
-                    disabled={!isFormValid || !hasChanges}
+                    disabled={isFormValid || !hasChanges}
                   >
                     Save
                   </Button>
@@ -707,7 +707,7 @@ export default function KanbanTask(props: {
                     variant={"default"}
                     className="text-white "
                     onClick={handleSaveAndCloseClick}
-                    disabled={!isFormValid || !hasChanges}
+                    disabled={isFormValid || !hasChanges}
                   >
                     Save & Close
                   </Button>

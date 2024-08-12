@@ -143,6 +143,7 @@ export const partStock = createTable(
 export const partMachinery = createTable(
   "part_machinery",
   {
+    part_machinery_id: serial("part_machinery_id").primaryKey(),
     part_id: serial("part_id")
       .references(() => partStock.part_id)
       .notNull(),
