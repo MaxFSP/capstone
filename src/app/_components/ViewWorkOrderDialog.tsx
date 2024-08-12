@@ -190,7 +190,9 @@ export function WorkOrderDataViewDialog(props: {
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Serial</p>
+              <p className="text-sm font-medium text-gray-400">
+                Machine Serial
+              </p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-200">
                   {data.machine_serial}
@@ -198,7 +200,7 @@ export function WorkOrderDataViewDialog(props: {
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Serial Number</p>
+              <p className="text-sm font-medium text-gray-400">Username</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-200">{data.userName}</span>
               </div>

@@ -158,19 +158,19 @@ export function EmployeeDataViewDialog(props: {
               <div className="flex items-center gap-2">{index}</div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Brand</p>
+              <p className="text-sm font-medium text-gray-400">Firs Name</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-200">{data.firstName}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Model</p>
+              <p className="text-sm font-medium text-gray-400">Last Name</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-200">{data.lastName}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Serial Number</p>
+              <p className="text-sm font-medium text-gray-400">Job</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-200">{data.job}</span>
               </div>
