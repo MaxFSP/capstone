@@ -24,7 +24,7 @@ export default async function HomePage() {
 
   const currentWorkOrder = enabledWorkOrders[0];
 
-  const userName = user ?? "";
+  const userName = user;
   let machineName = "";
   let machineSerial = "";
   let workOrderDescription = "";
@@ -82,7 +82,7 @@ export default async function HomePage() {
       }
     }
   } else {
-    return <HomeView currentWorkOrder={false} />;
+    return <HomeView currentWorkOrder={false} userName={user} />;
   }
 
   return (

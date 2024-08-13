@@ -19,7 +19,7 @@ interface KeyMetrics {
 
 export default function HomeView(props: {
   currentWorkOrder: boolean;
-  userName?: string;
+  userName: string;
   machineName?: string;
   machineSerial?: string;
   workOrderDescription?: string;
@@ -38,12 +38,17 @@ export default function HomeView(props: {
       <div className="flex min-h-screen items-center justify-center bg-black text-white">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-[#ECB365]">
-            No Current Work Order
+            Welcome back, {props.userName}!
           </h1>
-          <p className="mt-4 text-lg">
-            There are no ongoing work orders at the moment. Please check back
-            later.
-          </p>
+          <div className="mt-8">
+            <h2 className="text-3xl font-extrabold text-[#ECB365]">
+              No Current Work Order
+            </h2>
+            <p className="mt-4 text-lg">
+              There are no ongoing work orders at the moment. Please check back
+              later.
+            </p>
+          </div>
         </div>
       </div>
     );
