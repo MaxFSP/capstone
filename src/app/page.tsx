@@ -61,7 +61,7 @@ export default async function HomePage() {
               .filter((task) => task.column_id === lastColumn.column_id)
               .map((task) => ({
                 ...task,
-                description: task.description ?? "", // Provide default empty string
+                description: task.description ?? "",
               }));
             completedTasks = tasksInLastColumn.length;
             totalOngoingTasks = totalTasks - completedTasks;

@@ -10,6 +10,7 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { type Task } from "~/server/types/ITasks";
 import { type Employee } from "~/server/types/IEmployee";
 import { type Column } from "~/server/types/IColumns";
+import RedirectButton from "./redirectButton";
 
 interface KeyMetrics {
   totalMachines: number;
@@ -184,9 +185,7 @@ export default function HomeView(props: {
                 Total Tools: {keyMetrics.totalTool}
               </div>
             </div>
-            <button className="w-full rounded-md bg-[#ECB365] py-2 font-bold text-black">
-              Go to Dashboard
-            </button>
+            <RedirectButton />
           </div>
         </div>
         <div className="space-y-4 rounded-lg bg-[#041C32] p-6 shadow-md">
