@@ -2,7 +2,7 @@ import "server-only";
 
 //DB stuff
 import { db } from "../../db";
-import { asc, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { toolStock, locations, toolImages } from "../../db/schema";
 import { type Tool } from "~/server/types/ITool";
 
@@ -132,4 +132,16 @@ export async function deleteImageTool(imageId: number) {
     .where(eq(toolImages.image_id, imageId))
     .returning();
   return deletedImage;
+}
+
+export async function totalTools() {
+  const totalTools = await db.select({ count: count() }).from(toolStock);
+
+  if (totalTools.length > 0) {
+    const numberOfTools: number = totalTools[0]!.count;
+    return numberOfTools;
+  }
+  const numberOfTools = 0;
+
+  return numberOfTools;
 }

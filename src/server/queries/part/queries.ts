@@ -3,7 +3,7 @@ import "server-only";
 //DB stuff
 import { db } from "../../db";
 import { locations, partImages, partStock } from "../../db/schema";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, count } from "drizzle-orm";
 import { type Part } from "~/server/types/IPart";
 
 // Part Stock Table --------------------------------------------------------------------------------------------
@@ -151,4 +151,15 @@ export async function deleteImagePart(imageId: number) {
     .where(eq(partImages.image_id, imageId))
     .returning();
   return deletedImage;
+}
+
+export async function totalParts() {
+  const totalParts = await db.select({ count: count() }).from(partStock);
+  if (totalParts.length > 0) {
+    const numberOfParts: number = totalParts[0]!.count;
+    return numberOfParts;
+  }
+  const numberOfParts = 0;
+
+  return numberOfParts;
 }

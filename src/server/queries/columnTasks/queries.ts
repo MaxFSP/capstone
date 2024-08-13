@@ -4,7 +4,7 @@ import "server-only";
 import { db } from "../../db";
 import { partsInTasks, toolsInTasks, workTasks } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
-import { Task } from "~/server/types/ITasks";
+import { type Task } from "~/server/types/ITasks";
 
 export async function getTasksByColumnId(columnIds: number[]) {
   const tasks = await db.query.workTasks.findMany({
