@@ -37,7 +37,7 @@ export default async function HomePage() {
     totalTool: 0,
   };
   let employees: Employee[] = [];
-  const columns: Column[] = [];
+  let columns: Column[] = [];
 
   if (currentWorkOrder) {
     const machine = await getMachineryById(currentWorkOrder.machine_id);
@@ -45,9 +45,7 @@ export default async function HomePage() {
       machineName = `${machine.brand} ${machine.model}`;
       machineSerial = machine.serial_number;
       workOrderDescription = currentWorkOrder.observations ?? "";
-      const columns = await getColumnTasksByWorkOrderId(
-        currentWorkOrder.order_id,
-      );
+      columns = await getColumnTasksByWorkOrderId(currentWorkOrder.order_id);
       if (columns) {
         const columnIds = columns.map((column) => column.column_id);
         const tasks = await getTasksByColumnId(columnIds);
@@ -65,8 +63,12 @@ export default async function HomePage() {
               }));
             completedTasks = tasksInLastColumn.length;
             totalOngoingTasks = totalTasks - completedTasks;
-            latestTasks = tasksInLastColumn
+            latestTasks = tasks
               .filter((task) => task.state === 1)
+              .map((task) => ({
+                ...task,
+                description: task.description ?? "",
+              }))
               .sort(
                 (a, b) =>
                   new Date(b.created_at).getTime() -
