@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { type Task } from "~/server/types/ITasks";
 
 export async function getTasksByColumnId(columnIds: number[]) {
+  if (columnIds.length === 0) return [];
   const tasks = await db.query.workTasks.findMany({
     where: (workTasks, { inArray }) => inArray(workTasks.column_id, columnIds),
   });
