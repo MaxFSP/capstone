@@ -23,6 +23,19 @@ export async function getUserName(): Promise<string> {
   return userName;
 }
 
+export async function getFullName(): Promise<string> {
+  const user = auth();
+
+  if (!user.userId) throw new Error("Unauthorized");
+
+  const userData = await currentUser();
+  if (!userData) throw new Error("User not found");
+
+  const userName: string = userData.firstName + " " + userData.lastName;
+
+  return userName;
+}
+
 export async function getActiveOrg(): Promise<string> {
   const user = auth();
 

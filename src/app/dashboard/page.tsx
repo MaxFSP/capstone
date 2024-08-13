@@ -9,7 +9,7 @@ import { getParts } from "~/server/queries/part/queries";
 import DashboardView from "../_components/dashboardView";
 
 export default async function DashboardPage() {
-  let workOrder = await getWorkOrderBySessionId();
+  const workOrder = await getWorkOrderBySessionId();
   const tasksOnColumns: TasksOnColumns = {};
   let columnsWorkOrder: Column[] = [];
   const employees = await getEmployees();

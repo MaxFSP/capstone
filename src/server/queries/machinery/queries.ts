@@ -3,7 +3,7 @@ import "server-only";
 //DB stuff
 import { db } from "../../db";
 import { machineryStock, locations, machineryImages } from "../../db/schema";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, count } from "drizzle-orm";
 import { type Machinery } from "../../types/IMachinery";
 
 // Machinery Stock Table --------------------------------------------------------------------------------------------
@@ -151,4 +151,17 @@ export async function deleteImageMachinery(imageId: number) {
     .where(eq(machineryImages.image_id, imageId))
     .returning();
   return deletedImage;
+}
+
+export async function totalMachines() {
+  const totalMachines = await db
+    .select({ count: count() })
+    .from(machineryStock);
+  if (totalMachines.length > 0) {
+    const numberOfMachines: number = totalMachines[0]!.count;
+    return numberOfMachines;
+  }
+  const numberOfMachines = 0;
+
+  return numberOfMachines;
 }
