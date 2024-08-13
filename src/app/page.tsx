@@ -49,9 +49,8 @@ export default async function HomePage() {
       if (columns) {
         const columnIds = columns.map((column) => column.column_id);
         const tasks = await getTasksByColumnId(columnIds);
-
         const totalTasks = tasks.length;
-        if (totalTasks > 1) {
+        if (totalTasks >= 1) {
           const sortedColumns = columns.sort((a, b) => a.position - b.position);
           const lastColumn = sortedColumns[sortedColumns.length - 1];
           if (lastColumn) {
