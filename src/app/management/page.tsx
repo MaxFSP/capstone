@@ -22,7 +22,7 @@ const workOrderColumns = [
   { key: "userName", label: "Assigned User" },
 ];
 
-async function UserMaganement() {
+async function UserManagement() {
   const users = await getAllUsers();
   const orgs = await getAllOrgs();
   const locations = await getLocations();
@@ -31,8 +31,7 @@ async function UserMaganement() {
   const userData = await getUsers();
   const workOrders = await getWorkOrders();
 
-  //find the serial and the username of the ids in workOrders
-
+  // Find the serial and the username of the ids in workOrders
   const workOrdersWithSerial = workOrders.map((workOrder) => {
     const machine = machines.find(
       (machine) => machine.machine_id === workOrder.machine_id,
@@ -46,20 +45,37 @@ async function UserMaganement() {
     );
     return {
       ...workOrder,
-      userName: user?.first_name + " " + user?.last_name,
+      userName: `${user?.first_name} ${user?.last_name}`,
     };
   });
 
   return (
     <Tabs defaultValue="users">
-      <TabsList className="m-4 grid grid-cols-3 sm:w-full md:w-1/2">
-        <TabsTrigger value="users">Users</TabsTrigger>
-        <TabsTrigger value="employees">Employees</TabsTrigger>
-        <TabsTrigger value="workOrders">Work Orders</TabsTrigger>
+      <TabsList className="m-4 grid grid-cols-3 rounded-lg border border-border bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] dark:bg-[hsl(var(--accent))] dark:text-[hsl(var(--accent-foreground))] sm:w-full md:w-1/2">
+        <TabsTrigger
+          value="users"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Users
+        </TabsTrigger>
+        <TabsTrigger
+          value="employees"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Employees
+        </TabsTrigger>
+        <TabsTrigger
+          value="workOrders"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Work Orders
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="users">
         <CardLayout>
-          <p className="text-l text-white">Users</p>
+          <p className="text-l text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--accent-foreground))]">
+            Users
+          </p>
           <CreateUser orgs={orgs} />
         </CardLayout>
         <EmployeeTable users={users} orgs={orgs} />
@@ -72,7 +88,6 @@ async function UserMaganement() {
           locations={locations}
         />
       </TabsContent>
-
       <TabsContent value="workOrders">
         <TableComponent
           data={workOrdersWithUsername}
@@ -86,4 +101,4 @@ async function UserMaganement() {
   );
 }
 
-export default UserMaganement;
+export default UserManagement;

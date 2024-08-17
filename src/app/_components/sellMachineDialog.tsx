@@ -1,16 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
-
 import { Button } from "~/components/ui/button";
-
-import { Input as InputUI } from "@nextui-org/react";
-
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,10 +12,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { cn } from "~/lib/utils";
@@ -34,16 +23,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-
 import { type SellDataValues } from "~/server/types/IMachinery";
 
 export function SellDataViewDialog(props: { data: SellDataValues }) {
   const { data } = props;
-
-  // Calendar stuff
-  const [date, setDate] = useState<Date>(new Date());
-
-  // Form stuff
+  const [date, setDate] = useState<Date>(
+    new Date(data.sold_date || Date.now()),
+  );
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
     machine_id: data.machine_id,
@@ -51,10 +37,11 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
     model: data.model,
     year: data.year,
     serial_number: data.serial_number,
-    sold_price: data.sold_price.toString(), // Initialize as string
+    sold_price: data.sold_price.toString(),
     sold_to: data.sold_to,
     sold_date: data.sold_date,
   });
+
   const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
@@ -70,7 +57,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
     return !isNaN(price) && price > 0;
   };
 
-  const validateSoldTo = (sold_to: string) => /^[A-Za-z\s]+$/.test(sold_to); // Only letters and spaces
+  const validateSoldTo = (sold_to: string) => /^[A-Za-z\s]+$/.test(sold_to);
 
   const validateSoldDate = (sold_date: Date | null) => sold_date !== null;
 
@@ -95,7 +82,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
         body: JSON.stringify({
           machine_id: formValuesNew.machine_id,
           sold_price: parseFloat(formValuesNew.sold_price),
-          sold_date: date, // Use the state date here
+          sold_date: date,
           sold_to: formValuesNew.sold_to,
         }),
       });
@@ -125,14 +112,16 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Sell Machine</Button>
+        <Button className="bg-primary text-primary-foreground hover:bg-opacity-90">
+          Sell Machine
+        </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto rounded-lg border border-border bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-large">
+          <AlertDialogTitle className="text-lg font-semibold text-primary">
             Sell Machine
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="text-muted-foreground">
             Make sure you type the correct information before selling the
             machine.
           </AlertDialogDescription>
@@ -147,7 +136,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
                 value={data.machine_id}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -157,7 +146,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
                 value={data.brand}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
           </div>
@@ -170,7 +159,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
                 value={data.model}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -180,7 +169,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
                 value={data.year}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -190,87 +179,81 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
                 value={data.serial_number}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
           </div>
+
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Sold Price (USD)</Label>
-              <InputUI
+              <Input
                 required
                 type="text"
-                label="Sold Price"
                 name="sold_price"
                 value={formValues.sold_price}
                 onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={!isSoldPriceValid}
-                color={isSoldPriceValid ? "default" : "danger"}
-                errorMessage={
-                  !isSoldPriceValid
-                    ? "Sold Price must be a valid number"
-                    : undefined
-                }
+                className={`${
+                  isSoldPriceValid ? "text-foreground" : "text-destructive"
+                } border border-border bg-background`}
               />
             </div>
             <div className="flex-1">
               <Label>Sold To</Label>
-              <InputUI
+              <Input
                 required
                 type="text"
-                label="Sold To"
                 name="sold_to"
                 value={formValues.sold_to}
                 onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={!isSoldToValid}
-                color={isSoldToValid ? "default" : "danger"}
-                errorMessage={
-                  !isSoldToValid
-                    ? "Sold To must contain only letters"
-                    : undefined
-                }
+                className={`${
+                  isSoldToValid ? "text-foreground" : "text-destructive"
+                } border border-border bg-background`}
               />
             </div>
           </div>
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className={cn(
-                "w-[240px] justify-start text-left font-normal",
-                !date && "text-muted-foreground",
-              )}
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
+                  !date && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 text-foreground" />
+                {date ? format(date, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto border border-border bg-background p-0 text-foreground"
+              align="start"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(date) => {
-                if (date) {
-                  setDate(date);
-                  setFormValues((prev) => ({
-                    ...prev,
-                    sold_date: date,
-                  }));
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(date) => {
+                  if (date) {
+                    setDate(date);
+                    setFormValues((prev) => ({
+                      ...prev,
+                      sold_date: date,
+                    }));
+                  }
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
 
         <AlertDialogFooter className="sm:justify-start">
           <AlertDialogCancel asChild>
             <Button
               type="button"
               variant="secondary"
+              className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               onClick={() => {
                 setFormValues({
                   machine_id: data.machine_id,
@@ -278,7 +261,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
                   model: data.model,
                   year: data.year,
                   serial_number: data.serial_number,
-                  sold_price: data.sold_price.toString(), // Initialize as string
+                  sold_price: data.sold_price.toString(),
                   sold_to: data.sold_to,
                   sold_date: data.sold_date,
                 });
@@ -292,6 +275,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
               onClick={handleSaveAndCloseClick}
               variant="destructive"
               disabled={!isFormValid}
+              className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
             >
               Save & Close
             </Button>

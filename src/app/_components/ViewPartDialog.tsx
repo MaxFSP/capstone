@@ -51,7 +51,7 @@ export function PartDataViewDialog(props: {
     (location) => data.location_name === location.name,
   )!.name;
 
-  const curret_condition = data.condition;
+  const current_condition = data.condition;
 
   const [conditionValue, setConditionValue] = useState<PartCondition>(
     data.condition as PartCondition,
@@ -88,7 +88,6 @@ export function PartDataViewDialog(props: {
   const validateForm = () => {
     const isDataValid =
       formData.part_id !== null && formData.part_id !== undefined;
-    formData;
     setIsFormValid(isDataValid);
   };
 
@@ -96,7 +95,7 @@ export function PartDataViewDialog(props: {
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
       locationValue !== current_location ||
-      conditionValue !== curret_condition;
+      conditionValue !== current_condition;
     setHasChanges(hasChanges);
   };
 
@@ -132,12 +131,12 @@ export function PartDataViewDialog(props: {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // console.log("Tool updated successfully:", result);
+          router.refresh();
         } else {
-          // console.error("Failed to update tool:", result.error);
+          console.error("Failed to update part");
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error("Error updating part:", error);
       }
     }
   };
@@ -152,7 +151,7 @@ export function PartDataViewDialog(props: {
       <DialogTrigger asChild>
         <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
@@ -166,11 +165,11 @@ export function PartDataViewDialog(props: {
               <Carousel className="w-full max-w-xs">
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
-                    <CarouselItem key={index} className=" p-0">
-                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                    <CarouselItem key={index} className="p-0">
+                      <div className="flex h-full w-full flex-col items-center justify-center">
                         <img
                           src={image.image_url}
-                          className="h-full w-full object-scale-down "
+                          className="h-full w-full object-scale-down"
                           alt="Part Images"
                         />
                         <DeleteImageDialog
@@ -198,7 +197,7 @@ export function PartDataViewDialog(props: {
                 value={formData.part_id}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="text-muted-background bg-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -209,7 +208,7 @@ export function PartDataViewDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -223,7 +222,7 @@ export function PartDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -237,7 +236,7 @@ export function PartDataViewDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -247,12 +246,12 @@ export function PartDataViewDialog(props: {
                 value={formData.created_at.toLocaleDateString()}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="text-muted-background bg-muted-foreground"
               />
             </div>
           </div>
 
-          <div className="flex items-center space-x-4 ">
+          <div className="flex items-center space-x-4">
             <div className="flex flex-col items-center">
               <Label>Dimensions</Label>
               <Label>(L x W x H)</Label>
@@ -265,16 +264,19 @@ export function PartDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="m-2 w-1/6 border border-gray-300"
+                className="m-2 w-1/6 border border-border bg-background text-foreground"
               />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="m-2 w-1/6" variant="outline">
+                  <Button
+                    className="m-2 w-1/6 border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {length}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Unit</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -284,8 +286,18 @@ export function PartDataViewDialog(props: {
                       setFormData((prev) => ({ ...prev, length_unit: e }));
                     }}
                   >
-                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="cm"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
+                      cm
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="mm"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
+                      mm
+                    </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -296,15 +308,18 @@ export function PartDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="m-2  w-1/6 border border-gray-300"
+                className="m-2 w-1/6 border border-border bg-background text-foreground"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="m-2 w-1/6" variant="outline">
+                  <Button
+                    className="m-2 w-1/6 border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {width}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Unit</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -314,8 +329,18 @@ export function PartDataViewDialog(props: {
                       setFormData((prev) => ({ ...prev, width_unit: e }));
                     }}
                   >
-                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="cm"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
+                      cm
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="mm"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
+                      mm
+                    </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -325,15 +350,18 @@ export function PartDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="m-2 w-1/6 border border-gray-300"
+                className="m-2 w-1/6 border border-border bg-background text-foreground"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="m-2 w-1/6" variant="outline">
+                  <Button
+                    className="m-2 w-1/6 border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {height}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Unit</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -343,8 +371,18 @@ export function PartDataViewDialog(props: {
                       setFormData((prev) => ({ ...prev, height_unit: e }));
                     }}
                   >
-                    <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="cm"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
+                      cm
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem
+                      value="mm"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
+                      mm
+                    </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -356,11 +394,14 @@ export function PartDataViewDialog(props: {
               <Label>Location</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {locationValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -371,6 +412,7 @@ export function PartDataViewDialog(props: {
                       <DropdownMenuRadioItem
                         key={location.name}
                         value={location.name}
+                        className="hover:bg-muted-background hover:text-foreground"
                       >
                         {location.name}
                       </DropdownMenuRadioItem>
@@ -383,11 +425,14 @@ export function PartDataViewDialog(props: {
               <Label>Condition</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {conditionValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Condition</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -396,16 +441,28 @@ export function PartDataViewDialog(props: {
                       setConditionValue(value as PartCondition)
                     }
                   >
-                    <DropdownMenuRadioItem value="Good">
+                    <DropdownMenuRadioItem
+                      value="Good"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Good
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Bad">
+                    <DropdownMenuRadioItem
+                      value="Bad"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Bad
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Excellent">
+                    <DropdownMenuRadioItem
+                      value="Excellent"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Excellent
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Poor">
+                    <DropdownMenuRadioItem
+                      value="Poor"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Poor
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
@@ -417,14 +474,16 @@ export function PartDataViewDialog(props: {
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
-                <Input readOnly disabled className="bg-zinc-700"></Input>
+                <Input
+                  readOnly
+                  disabled
+                  className="text-muted-background bg-muted-foreground"
+                ></Input>
                 <UploadButton
                   disabled={!isEditing}
                   input={{ part_id: data.part_id }}
                   endpoint="partImageUploader"
-                  onClientUploadComplete={() => {
-                    handleUploadComplete();
-                  }}
+                  onClientUploadComplete={handleUploadComplete}
                 />
               </div>
             </div>

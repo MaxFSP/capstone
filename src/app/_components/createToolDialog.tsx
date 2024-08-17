@@ -42,8 +42,6 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
   const [locationValue, setLocationValue] = useState(locations[0]!.name);
   const [conditionValue, setConditionValue] = useState<ToolCondition>("Good");
 
-  // initialize values with use memo]
-
   const [toolFormValues, setToolFormValues] = useState({
     name: "",
     brand: "",
@@ -56,10 +54,8 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
     observations: "",
   });
 
-  // Calendar stuff
   const [date, setDate] = useState<Date>(new Date());
 
-  // Form stuff
   const [isEditing, setIsEditing] = useState(true);
   const [isToolFormValid, setIsToolFormValid] = useState(false);
 
@@ -76,7 +72,6 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
       toolFormValues.acquisition_date,
     );
 
-    // remember location Id will be in a dropdown same with state
     setIsToolFormValid(
       isNameValid &&
         isBrandValid &&
@@ -88,28 +83,23 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
     );
   }, [toolFormValues]);
 
-  const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name); // Only letters and spaces
-  const validateBrand = (brand: string) => /^[A-Za-z\s]+$/.test(brand); // Only letters and spaces
+  const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name);
+  const validateBrand = (brand: string) => /^[A-Za-z\s]+$/.test(brand);
   const validateToolType = (tool_type: string) =>
-    /^[A-Za-z\s]+$/.test(tool_type); // Only letters and spaces
-  const validateCategory = (category: string) => /^[A-Za-z\s]+$/.test(category); // Only letters and spaces
+    /^[A-Za-z\s]+$/.test(tool_type);
+  const validateCategory = (category: string) => /^[A-Za-z\s]+$/.test(category);
   const validateQuantity = (quantity: string) => /^[0-9]+$/.test(quantity);
   const validateAquisitionDate = (aquisition_date: Date) =>
     aquisition_date !== null;
   const validateObservations = (observations: string) =>
-    /^[A-Za-z\s]+$/.test(observations); // Only letters and spaces
+    /^[A-Za-z\s]+$/.test(observations);
 
-  //MAKE ONE FOR EACH TYPE
   const handleToolInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setToolFormValues((prevValues) => ({ ...prevValues, [name]: value }));
   };
 
   const handleSaveClick = async (): Promise<boolean> => {
-    // get the id of the location from the dropdown it should be in the locations array
-    // i have the name from the location dropdown that comes from the locations array
-    // i need to get the id from the locations array
-
     try {
       const locationId = locations.find(
         (location) => location.name === locationValue,
@@ -125,7 +115,6 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         body: JSON.stringify(toolFormValues),
       });
 
-      //TODO: ADD A TOAST FOR SUCCESS AND FOR ERRORS TOO
       if (!response.ok) {
         throw new Error("Failed to create tool");
       }
@@ -202,7 +191,8 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             isDisabled={!isEditing}
             isInvalid={isNameInvalid}
             color={isNameInvalid ? "danger" : "default"}
-            errorMessage={isNameInvalid && "brand can only contain letters"}
+            errorMessage={isNameInvalid && "Name can only contain letters"}
+            className="border border-border bg-background text-foreground"
           />
         </div>
         <div className="flex-1">
@@ -217,7 +207,8 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             isDisabled={!isEditing}
             isInvalid={isBrandInvalid}
             color={isBrandInvalid ? "danger" : "default"}
-            errorMessage={isBrandInvalid && "brand can only contain letters"}
+            errorMessage={isBrandInvalid && "Brand can only contain letters"}
+            className="border border-border bg-background text-foreground"
           />
         </div>
       </div>
@@ -228,14 +219,17 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Input
             required
             type="text"
-            label="category"
+            label="Category"
             name="category"
             value={toolFormValues.category}
             onChange={handleToolInputChange}
             isDisabled={!isEditing}
             isInvalid={isCategoryInvalid}
             color={isCategoryInvalid ? "danger" : "default"}
-            errorMessage={isCategoryInvalid && "Year must be a number"}
+            errorMessage={
+              isCategoryInvalid && "Category can only contain letters"
+            }
+            className="border border-border bg-background text-foreground"
           />
         </div>
         <div className="flex-1">
@@ -251,9 +245,9 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             isInvalid={isToolTypeInvalid}
             color={isToolTypeInvalid ? "danger" : "default"}
             errorMessage={
-              isToolTypeInvalid &&
-              "Serial Number can only contain letters, numbers and spaces"
+              isToolTypeInvalid && "Tool Type can only contain letters"
             }
+            className="border border-border bg-background text-foreground"
           />
         </div>
       </div>
@@ -273,6 +267,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
               isObservationsInvalid &&
               "Observations can only contain letters and spaces"
             }
+            className="border border-border bg-background text-foreground"
           />
         </div>
         <div className="w-[100px]">
@@ -289,6 +284,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             errorMessage={
               isQuantityInvalid && "Quantity can only contain numbers"
             }
+            className="border border-border bg-background text-foreground"
           />
         </div>
       </div>
@@ -298,11 +294,14 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Label>Location</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button
+                className="w-full border border-border bg-background text-foreground"
+                variant="outline"
+              >
                 {locationValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-background text-foreground">
               <DropdownMenuLabel>Locations</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -325,11 +324,14 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Label>Condition</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button
+                className="w-full border border-border bg-background text-foreground"
+                variant="outline"
+              >
                 {conditionValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full">
+            <DropdownMenuContent className="w-full bg-background text-foreground">
               <DropdownMenuLabel>Condition</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -357,7 +359,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
                 !date && "text-muted-foreground",
               )}
             >
@@ -365,7 +367,10 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
               {date ? format(date, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent
+            className="w-auto bg-background p-0 text-foreground"
+            align="start"
+          >
             <Calendar
               mode="single"
               selected={date}
@@ -389,6 +394,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Button
             type="button"
             variant="secondary"
+            className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             onClick={() => {
               setToolFormValues({
                 name: "",
@@ -411,6 +417,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           onClick={handleSaveAndCloseClick}
           variant="secondary"
           disabled={!isToolFormValid}
+          className="hover:bg-primary-dark bg-primary text-primary-foreground"
         >
           Save & Close
         </Button>

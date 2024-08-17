@@ -69,8 +69,8 @@ const TableComponent = (props: {
   );
 
   return (
-    <div className="px-0 pb-2 pt-0">
-      <div className="px-4 py-4 md:flex md:items-center md:space-x-4">
+    <div className="px-4 pb-2 pt-0">
+      <div className="rounded-lg  px-4 py-4 shadow-lg md:flex md:items-center md:space-x-4">
         <input
           type="text"
           placeholder="Search"
@@ -78,7 +78,7 @@ const TableComponent = (props: {
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setSearchTerm(e.target.value)
           }
-          className="mb-2 w-full rounded-md border  p-2 md:mb-0 md:flex-1"
+          className="mb-2 w-full rounded-md border border-border bg-background p-2 text-foreground md:mb-0 md:flex-1"
         />
         <div className="flex-1">
           <CreateNewStockDialog
@@ -89,33 +89,32 @@ const TableComponent = (props: {
           />
         </div>
       </div>
-      <div className="hidden p-4 md:block">
-        <table className="w-full table-auto">
-          <thead>
+      <div className="hidden rounded-lg bg-background p-4 shadow-lg md:block">
+        <table className="w-full table-auto rounded-lg border border-border shadow-md">
+          <thead className="bg-primary text-primary-foreground">
             <tr>
-              <th className="border-b border-gray-700 px-5 py-3 text-left">
-                <p className="text-s text-[11px] font-bold uppercase text-gray-400">
-                  ID
-                </p>
+              <th className="border-b border-border px-5 py-3 text-left">
+                <p className="text-s text-[11px] font-bold uppercase">ID</p>
               </th>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className="border-b border-gray-700 px-5 py-3 text-left"
+                  className="border-b border-border px-5 py-3 text-left"
                 >
-                  <p className="text-s text-[11px] font-bold uppercase text-gray-400">
+                  <p className="text-s text-[11px] font-bold uppercase">
                     {col.label}
                   </p>
                 </th>
               ))}
-              <th className="border-b border-gray-700 px-5 py-3 text-left"></th>
+              <th className="border-b border-border px-5 py-3 text-left"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-card">
             {paginatedData.map((item, index) => {
+              const rowBgColor = index % 2 === 0 ? "bg-card" : "bg-muted";
               const className = `py-3 px-5 ${
-                index === data.length - 1 ? "" : "border-b border-gray-700"
-              } text-white`;
+                index === data.length - 1 ? "" : "border-b border-border"
+              } text-card-foreground ${rowBgColor}`;
 
               return (
                 <tr key={item.id + "Table" + index}>
@@ -180,7 +179,7 @@ const TableComponent = (props: {
           </tbody>
         </table>
       </div>
-      <div className="block md:hidden">
+      <div className="block rounded-lg bg-background p-4 shadow-lg md:hidden">
         {paginatedData.map((item, index) =>
           valueType === "Machinery" ? (
             <SmallMachineryDialog
@@ -227,33 +226,35 @@ const TableComponent = (props: {
         )}
       </div>
       <div className="flex justify-between px-4 py-2">
-        <button
-          onClick={handlePrevPage}
-          disabled={currentPage === 0}
-          className={`rounded px-4 py-2 ${
-            currentPage === 0
-              ? "cursor-not-allowed bg-gray-600 text-gray-400"
-              : "bg-blue-500 text-white"
-          }`}
-        >
-          Previous
-        </button>
+        <div></div>
         <div className="flex items-center">
-          <span className="text-sm font-medium text-white">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+            className={`rounded px-4 py-2 ${
+              currentPage === 0
+                ? "cursor-not-allowed bg-muted text-muted-foreground"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            ⮜
+          </button>
+          <span className="ml-2 mr-2 text-sm font-medium text-foreground">
             Page {currentPage + 1} of {totalPages}
           </span>
+          <button
+            onClick={handleNextPage}
+            disabled={(currentPage + 1) * itemsPerPage >= filteredData.length}
+            className={`rounded px-4 py-2 ${
+              (currentPage + 1) * itemsPerPage >= filteredData.length
+                ? "cursor-not-allowed bg-muted text-muted-foreground"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            ➤
+          </button>
         </div>
-        <button
-          onClick={handleNextPage}
-          disabled={(currentPage + 1) * itemsPerPage >= filteredData.length}
-          className={`rounded px-4 py-2 ${
-            (currentPage + 1) * itemsPerPage >= filteredData.length
-              ? "cursor-not-allowed bg-gray-600 text-gray-400"
-              : "bg-blue-500 text-white"
-          }`}
-        >
-          Next
-        </button>
+        <div></div>
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ import SidebarContainer from "./_components/sidebarContainer";
 
 export const metadata: Metadata = {
   title: "Capstone",
-  description: "Kanban like progressive web app",
+  description: "Kanban-like progressive web app",
   generator: "Next.js",
   manifest: "/manifest.json",
   keywords: ["nextjs", "nextjs13", "next13", "pwa", "next-pwa"],
@@ -39,26 +39,21 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const themeClass = getInitialTheme(); // Custom server-side function to determine initial theme
+
   return (
     <html
       lang="es"
-      className={`${GeistSans.variable} flex flex-col gap-4 dark`}
+      className={`${themeClass} ${GeistSans.variable} flex flex-col gap-4`}
     >
-      <body className="bg-black">
+      <body className="bg-background text-foreground">
         <Providers>
           <SignedIn>
             <div className="flex flex-col lg:flex-row">
               <SidebarContainer />
               <NextSSRPlugin
-                /**
-                 * The `extractRouterConfig` will extract **only** the route configs
-                 * from the router to prevent additional information from being
-                 * leaked to the client. The data passed to the client is the same
-                 * as if you were to fetch `/api/uploadthing` directly.
-                 */
                 routerConfig={extractRouterConfig(ourFileRouter)}
               />
-
               <main className="mt-14 w-screen flex-grow transition-all duration-300 ease-in-out">
                 {children}
               </main>
@@ -66,7 +61,32 @@ export default function RootLayout({
           </SignedIn>
           <SignedOut>{children}</SignedOut>
         </Providers>
+        {/* Script to handle client-side theme switching */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme) {
+                  document.documentElement.classList.add(storedTheme);
+                }
+                document.getElementById('theme-toggle').addEventListener('click', function() {
+                  document.documentElement.classList.toggle('dark');
+                  const isDark = document.documentElement.classList.contains('dark');
+                  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+              })();
+              `,
+          }}
+        ></script>
       </body>
     </html>
   );
+}
+
+// Server-side function to determine initial theme
+function getInitialTheme() {
+  // Example logic to determine theme (you can adjust this)
+  const prefersDarkMode = false; // Replace with actual logic, e.g., based on cookies, user settings, etc.
+  return prefersDarkMode ? "dark" : "";
 }

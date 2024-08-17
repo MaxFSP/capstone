@@ -45,9 +45,9 @@ export default function DashboardView(props: {
   }, [tasksOnColumns, columnsWorkOrder]);
 
   return (
-    <div>
+    <div className="min-h-screen p-6">
       {workOrder ? (
-        <div className="p-4">
+        <div className="rounded-lg bg-background p-4 shadow-md">
           <KanbanBoardHeader
             key={`${workOrder?.order_id}-${refreshTrigger}`}
             workOrder={workOrder}
@@ -67,12 +67,12 @@ export default function DashboardView(props: {
           />
         </div>
       ) : (
-        <div className="flex h-screen w-screen flex-col items-center justify-center">
-          <h1 className="w-full text-center text-2xl font-bold">
+        <div className="flex h-full w-full flex-col items-center justify-center">
+          <h1 className="mb-4 text-center text-3xl font-extrabold text-primary">
             No work order found
           </h1>
-          <p className="w-full overflow-ellipsis text-center">
-            Sit back and relax, we will create a work order for you
+          <p className="w-full max-w-lg text-center text-lg text-muted-foreground">
+            Sit back and relax, we will create a work order for you soon.
           </p>
         </div>
       )}

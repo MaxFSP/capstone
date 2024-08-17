@@ -160,41 +160,41 @@ export function SmallToolDialog(props: {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
+        <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-base font-semibold">ID</p>
             <div className="flex items-center gap-2">{index}</div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Name</p>
+            <p className="text-sm font-medium text-muted-foreground">Name</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.name}</span>
+              <span className="text-sm text-foreground">{data.name}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Condition</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Condition
+            </p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.condition}</span>
+              <span className="text-sm text-foreground">{data.condition}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Quantity</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Quantity
+            </p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.quantity}</span>
-            </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Condition</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.condition}</span>
+              <span className="text-sm text-foreground">{data.quantity}</span>
             </div>
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto rounded-lg border border-border bg-background lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Edit Tool</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-large text-primary">
+            Edit Tool
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Anyone who has this link will be able to view this.
           </DialogDescription>
         </DialogHeader>
@@ -241,7 +241,7 @@ export function SmallToolDialog(props: {
                 value={data.tool_id}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -252,7 +252,7 @@ export function SmallToolDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -266,7 +266,7 @@ export function SmallToolDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -277,7 +277,7 @@ export function SmallToolDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -288,7 +288,7 @@ export function SmallToolDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -302,7 +302,7 @@ export function SmallToolDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -312,11 +312,11 @@ export function SmallToolDialog(props: {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
                       !dateValue && "text-muted-foreground",
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-4 w-4 text-foreground" />
                     {dateValue ? (
                       format(dateValue, "PPP")
                     ) : (
@@ -324,7 +324,10 @@ export function SmallToolDialog(props: {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent
+                  className="w-auto border border-border bg-background p-0 text-foreground"
+                  align="start"
+                >
                   <Calendar
                     mode="single"
                     selected={dateValue}
@@ -353,7 +356,7 @@ export function SmallToolDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -363,11 +366,11 @@ export function SmallToolDialog(props: {
               <Label>Location</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button className="w-full border border-border bg-background text-foreground">
                     {locationValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -390,11 +393,11 @@ export function SmallToolDialog(props: {
               <Label>Condition</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button className="w-full border border-border bg-background text-foreground">
                     {conditionValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Condition</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -423,7 +426,11 @@ export function SmallToolDialog(props: {
           <div className="flex-1">
             <Label>Upload Images</Label>
             <div className="flex items-center gap-2">
-              <Input readOnly disabled></Input>
+              <Input
+                readOnly
+                disabled
+                className="border border-border bg-muted text-muted-foreground"
+              ></Input>
               <UploadButton
                 disabled={!isEditing}
                 input={{ tool_id: data.tool_id }}
@@ -438,12 +445,19 @@ export function SmallToolDialog(props: {
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button
+                type="button"
+                variant="secondary"
+                className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
                 Close
               </Button>
             </DialogClose>
           )}
-          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
+          <Button
+            onClick={isEditing ? handleCancelClick : handleEditClick}
+            className="bg-primary text-primary-foreground"
+          >
             {isEditing ? "Cancel" : "Edit"}
           </Button>
           {isEditing && (
@@ -452,6 +466,7 @@ export function SmallToolDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="hover:bg-accent-dark bg-accent text-accent-foreground"
                 >
                   Save
                 </Button>
@@ -461,6 +476,7 @@ export function SmallToolDialog(props: {
                 <Button
                   onClick={handleSaveAndCloseClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
                 >
                   Save & Close
                 </Button>

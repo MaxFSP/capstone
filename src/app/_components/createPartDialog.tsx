@@ -54,12 +54,11 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
   const [isPartFormValid, setIsPartFormValid] = useState(false);
   const [isEditing, setIsEditing] = useState(true);
 
-  // REMEMBER TO ADD THIS TO THE FORM BEFORE SENDING IT
   const [locationValue, setLocationValue] = useState(locations[0]!.name);
   const [conditionValue, setConditionValue] = useState<PartCondition>("Good");
 
   useEffect(() => {
-    const isNameValid = validateName(partFormValues.name); // Added type annotation
+    const isNameValid = validateName(partFormValues.name);
     const isPartNumberValid = validatePartNumber(partFormValues.part_number);
     const isQuantityValid = validateQuantity(partFormValues.quantity);
     const isLengthValid = validateLength(partFormValues.length);
@@ -80,16 +79,15 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
     );
   }, [partFormValues]);
 
-  const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name); // Only letters and spaces
+  const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name);
   const validatePartNumber = (part_number: string) =>
-    /^[A-Za-z0-9\s]+$/.test(part_number); // Only letters, numbers and spaces
+    /^[A-Za-z0-9\s]+$/.test(part_number);
   const validateQuantity = (quantity: string) => /^[0-9]+$/.test(quantity);
   const validateLength = (length: string) => /^[0-9]+$/.test(length);
   const validateWidth = (width: string) => /^[0-9]+$/.test(width);
-  // WIDTH AND HEIGHT AND LENGTH UNITS ARE DROPDOWNS
   const validateHeight = (height: string) => /^[0-9]+$/.test(height);
   const validateCompatibleMachines = (compatible_machines: string) =>
-    /^[A-Za-z0-9\s]+$/.test(compatible_machines); // Only letters and spaces
+    /^[A-Za-z0-9\s]+$/.test(compatible_machines);
 
   const isNameValid = useMemo(
     () => partFormValues.name !== "" && !validateName(partFormValues.name),
@@ -158,7 +156,6 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
         body: JSON.stringify(partFormValues),
       });
 
-      //TODO: ADD A TOAST FOR SUCCESS AND FOR ERRORS TOO
       if (!response.ok) {
         throw new Error("Failed to create part");
       }
@@ -188,11 +185,12 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
       compatible_machines: "",
     });
   };
+
   return (
     <form className="space-y-4">
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Name</Label>
+          <Label className="text-muted-foreground">Name</Label>
           <Input
             type="text"
             label="Name"
@@ -201,12 +199,15 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             onChange={handlePartInputChange}
             isDisabled={!isEditing}
             isInvalid={isNameValid}
-            color={isNameValid ? "danger" : "default"}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isNameValid && "border-destructive text-destructive",
+            )}
             errorMessage={isNameValid && "Name can only contain letters"}
           />
         </div>
         <div className="flex-1">
-          <Label>Part Number</Label>
+          <Label className="text-muted-foreground">Part Number</Label>
           <Input
             type="text"
             label="Part Number"
@@ -215,7 +216,10 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             onChange={handlePartInputChange}
             isDisabled={!isEditing}
             isInvalid={isPartNumberValid}
-            color={isPartNumberValid ? "danger" : "default"}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isPartNumberValid && "border-destructive text-destructive",
+            )}
             errorMessage={
               isPartNumberValid && "Part Number can only contain letters"
             }
@@ -224,7 +228,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
       </div>
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Compatible Machines</Label>
+          <Label className="text-muted-foreground">Compatible Machines</Label>
           <Input
             type="text"
             label="Compatible Machines"
@@ -233,7 +237,11 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             onChange={handlePartInputChange}
             isDisabled={!isEditing}
             isInvalid={isCompatibleMachinesValid}
-            color={isCompatibleMachinesValid ? "danger" : "default"}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isCompatibleMachinesValid &&
+                "border-destructive text-destructive",
+            )}
             errorMessage={
               isCompatibleMachinesValid &&
               "Compatible Machines can only contain letters and spaces"
@@ -241,7 +249,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           />
         </div>
         <div className="w-[100px]">
-          <Label>Quantity</Label>
+          <Label className="text-muted-foreground">Quantity</Label>
           <Input
             type="text"
             label="Quantity"
@@ -250,7 +258,10 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             onChange={handlePartInputChange}
             isDisabled={!isEditing}
             isInvalid={isQuantityValid}
-            color={isQuantityValid ? "danger" : "default"}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isQuantityValid && "border-destructive text-destructive",
+            )}
             errorMessage={
               isQuantityValid && "Quantity can only contain numbers"
             }
@@ -261,14 +272,14 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
       <div className="flex space-x-4 ">
         <div className="flex-1">
           <div className="flex flex-col">
-            <Label>Dimensions</Label>
-            <Label>(L x W x H)</Label>
+            <Label className="text-muted-foreground">Dimensions</Label>
+            <Label className="text-muted-foreground">(L x W x H)</Label>
           </div>
           <div className="flex ">
             <Input
               type="text"
               name="length"
-              className="h-[19px]"
+              className="h-[19px] border border-border bg-background text-foreground"
               value={partFormValues.length}
               onChange={handlePartInputChange}
               isDisabled={!isEditing}
@@ -279,12 +290,17 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="m-2 w-1/6" variant="outline">
+                <Button
+                  className="m-2 w-1/6 border border-border bg-background text-foreground"
+                  variant="outline"
+                >
                   {length}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Unit</DropdownMenuLabel>
+              <DropdownMenuContent className="bg-background text-foreground">
+                <DropdownMenuLabel className="text-muted-foreground">
+                  Unit
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={partFormValues.length_unit}
@@ -307,20 +323,24 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               name="width"
               value={partFormValues.width}
               onChange={handlePartInputChange}
-              className="h-[19px]"
+              className="h-[19px] border border-border bg-background text-foreground"
               isDisabled={!isEditing}
               isInvalid={isWidthValid}
-              color={isWidthValid ? "danger" : "default"}
               errorMessage={isWidthValid && "Width must be a number"}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="m-2 w-1/6" variant="outline">
+                <Button
+                  className="m-2 w-1/6 border border-border bg-background text-foreground"
+                  variant="outline"
+                >
                   {width}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Unit</DropdownMenuLabel>
+              <DropdownMenuContent className="bg-background text-foreground">
+                <DropdownMenuLabel className="text-muted-foreground">
+                  Unit
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={partFormValues.width_unit}
@@ -338,21 +358,25 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               type="text"
               name="height"
               value={partFormValues.height}
-              className="h-[19px]"
+              className="h-[19px] border border-border bg-background text-foreground"
               onChange={handlePartInputChange}
               isDisabled={!isEditing}
               isInvalid={isHeightValid}
-              color={isHeightValid ? "danger" : "default"}
               errorMessage={isHeightValid && "Height must be a number"}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="m-2 w-1/6" variant="outline">
+                <Button
+                  className="m-2 w-1/6 border border-border bg-background text-foreground"
+                  variant="outline"
+                >
                   {height}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Unit</DropdownMenuLabel>
+              <DropdownMenuContent className="bg-background text-foreground">
+                <DropdownMenuLabel className="text-muted-foreground">
+                  Unit
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={partFormValues.height_unit}
@@ -372,15 +396,20 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
 
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Location</Label>
+          <Label className="text-muted-foreground">Location</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button
+                className="w-full border border-border bg-background text-foreground"
+                variant="outline"
+              >
                 {locationValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Locations</DropdownMenuLabel>
+            <DropdownMenuContent className="bg-background text-foreground">
+              <DropdownMenuLabel className="text-muted-foreground">
+                Locations
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={locationValue}
@@ -390,6 +419,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
                   <DropdownMenuRadioItem
                     key={location.name}
                     value={location.name}
+                    className="text-foreground"
                   >
                     {location.name}
                   </DropdownMenuRadioItem>
@@ -399,16 +429,20 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           </DropdownMenu>
         </div>
         <div className="flex-1">
-          {/* CONDITION */}
-          <Label>Condition</Label>
+          <Label className="text-muted-foreground">Condition</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button
+                className="w-full border border-border bg-background text-foreground"
+                variant="outline"
+              >
                 {conditionValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Locations</DropdownMenuLabel>
+            <DropdownMenuContent className="bg-background text-foreground">
+              <DropdownMenuLabel className="text-muted-foreground">
+                Condition
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={conditionValue}
@@ -429,13 +463,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
       </div>
 
       <div className="flex flex-col">
-        <Label>Acquisition Date</Label>
+        <Label className="text-muted-foreground">Acquisition Date</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
                 !date && "text-muted-foreground",
               )}
             >
@@ -443,7 +477,10 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               {date ? format(date, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent
+            className="w-auto bg-background p-0 text-foreground"
+            align="start"
+          >
             <Calendar
               mode="single"
               selected={date}
@@ -466,6 +503,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           <Button
             type="button"
             variant="secondary"
+            className="bg-secondary text-secondary-foreground"
             onClick={() => {
               setPartFormValues({
                 name: "",
@@ -489,6 +527,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
         <Button
           onClick={handleSaveAndCloseClick}
           variant="secondary"
+          className="bg-primary text-primary-foreground"
           disabled={!isPartFormValid}
         >
           Save & Close

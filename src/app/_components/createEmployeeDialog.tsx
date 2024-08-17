@@ -3,9 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 
 import { Button } from "~/components/ui/button";
-
 import { Input } from "~/components/ui/input";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,14 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-
 import {
   AlertDialogCancel,
   AlertDialogFooter,
 } from "~/components/ui/alert-dialog";
-
 import { Label } from "~/components/ui/label";
-
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { cn } from "~/lib/utils";
@@ -53,7 +48,7 @@ export function CreateEmployeeDialog() {
   // Calendar stuff
   const [date, setDate] = useState<Date>(new Date());
 
-  // Form stuff
+  // Form validation state
   const [isEmployeeFormValid, setIsEmployeeFormValid] = useState(false);
 
   useEffect(() => {
@@ -70,7 +65,7 @@ export function CreateEmployeeDialog() {
   const validateStringWithSpaces = (name: string) => /^[A-Za-z\s]+$/.test(name);
   const validateOnlyNumbers = (age: string) => /^[0-9]+$/.test(age);
 
-  const handleToolInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEmployeeFormValue((prevValues) => ({ ...prevValues, [name]: value }));
   };
@@ -88,7 +83,6 @@ export function CreateEmployeeDialog() {
         body: JSON.stringify(employeeFormValue),
       });
 
-      //TODO: ADD A TOAST FOR SUCCESS AND FOR ERRORS TOO
       if (!response.ok) {
         throw new Error("Failed to create employee");
       }
@@ -152,8 +146,11 @@ export function CreateEmployeeDialog() {
             type="text"
             name="firstName"
             value={employeeFormValue.firstName}
-            onChange={handleToolInputChange}
-            color={isFirstNameInvalid ? "danger" : "default"}
+            onChange={handleInputChange}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isFirstNameInvalid && "border-destructive",
+            )}
           />
         </div>
         <div className="flex-1">
@@ -163,8 +160,11 @@ export function CreateEmployeeDialog() {
             type="text"
             name="lastName"
             value={employeeFormValue.lastName}
-            onChange={handleToolInputChange}
-            color={isLastNameInvalid ? "danger" : "default"}
+            onChange={handleInputChange}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isLastNameInvalid && "border-destructive",
+            )}
           />
         </div>
       </div>
@@ -177,8 +177,11 @@ export function CreateEmployeeDialog() {
             type="text"
             name="age"
             value={employeeFormValue.age}
-            onChange={handleToolInputChange}
-            color={isAgeInvalid ? "danger" : "default"}
+            onChange={handleInputChange}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isAgeInvalid && "border-destructive",
+            )}
           />
         </div>
         <div className="flex-1">
@@ -188,8 +191,11 @@ export function CreateEmployeeDialog() {
             type="text"
             name="phoneNumber"
             value={employeeFormValue.phoneNumber}
-            onChange={handleToolInputChange}
-            color={isPhoneNumberInvalid ? "danger" : "default"}
+            onChange={handleInputChange}
+            className={cn(
+              "border border-border bg-background text-foreground",
+              isPhoneNumberInvalid && "border-destructive",
+            )}
           />
         </div>
       </div>
@@ -199,11 +205,11 @@ export function CreateEmployeeDialog() {
           <Label>Blood Type</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {bloodType}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full">
+            <DropdownMenuContent className="w-full bg-background text-foreground">
               <DropdownMenuLabel>Blood Type</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -226,11 +232,11 @@ export function CreateEmployeeDialog() {
           <Label>Job</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {job}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full">
+            <DropdownMenuContent className="w-full bg-background text-foreground">
               <DropdownMenuLabel>Job</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -240,13 +246,12 @@ export function CreateEmployeeDialog() {
                 <DropdownMenuRadioItem value="Mechanic">
                   Mechanic
                 </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Doctor">
+                <DropdownMenuRadioItem value="Painter">
                   Painter
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Engineer">
                   Engineer
                 </DropdownMenuRadioItem>
-
                 <DropdownMenuRadioItem value="Parts Specialist">
                   Parts Specialist
                 </DropdownMenuRadioItem>
@@ -266,7 +271,7 @@ export function CreateEmployeeDialog() {
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
+                "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
                 !date && "text-muted-foreground",
               )}
             >
@@ -274,7 +279,7 @@ export function CreateEmployeeDialog() {
               {date ? format(date, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto bg-background p-0 text-foreground">
             <Calendar
               mode="single"
               selected={date}
@@ -309,6 +314,7 @@ export function CreateEmployeeDialog() {
                 bloodType: "A+",
               });
             }}
+            className="bg-secondary text-secondary-foreground"
           >
             Close
           </Button>
@@ -317,8 +323,8 @@ export function CreateEmployeeDialog() {
         <AlertDialogCancel asChild>
           <Button
             onClick={handleSaveAndCloseClick}
-            variant="secondary"
             disabled={!isEmployeeFormValid}
+            className="bg-primary text-primary-foreground"
           >
             Save & Close
           </Button>

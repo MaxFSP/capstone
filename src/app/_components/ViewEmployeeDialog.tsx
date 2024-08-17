@@ -131,13 +131,12 @@ export function EmployeeDataViewDialog(props: {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // console.log("Tool updated successfully:", result);
           router.refresh();
         } else {
-          // console.error("Failed to update tool:", result.error);
+          console.error("Failed to update employee");
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error("Error updating employee:", error);
       }
     }
   };
@@ -146,33 +145,40 @@ export function EmployeeDataViewDialog(props: {
     await handleSaveClick();
     setIsEditing(false);
   };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         {size === "lg" ? (
           <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
         ) : (
-          <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
+          <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-base font-semibold">ID</p>
               <div className="flex items-center gap-2">{index}</div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Firs Name</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                First Name
+              </p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-200">{data.firstName}</span>
+                <span className="text-sm text-foreground">
+                  {data.firstName}
+                </span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Last Name</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Last Name
+              </p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-200">{data.lastName}</span>
+                <span className="text-sm text-foreground">{data.lastName}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Job</p>
+              <p className="text-sm font-medium text-muted-foreground">Job</p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-200">{data.job}</span>
+                <span className="text-sm text-foreground">{data.job}</span>
               </div>
             </div>
           </div>
@@ -187,7 +193,6 @@ export function EmployeeDataViewDialog(props: {
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex space-x-4">
-            {/* add image here its in formData.imageUrl just a simple image in a circle if possible */}
             {data.imageUrl && (
               <div>
                 <img
@@ -195,7 +200,6 @@ export function EmployeeDataViewDialog(props: {
                   alt="Profile Image"
                   className="h-24 w-24 rounded-full object-cover"
                 />
-
                 <DeleteImageDialog
                   imageInfo={{
                     image_id: data.employee_id,
@@ -217,7 +221,7 @@ export function EmployeeDataViewDialog(props: {
                     readOnly={!isEditing}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className="border border-gray-300"
+                    className="border border-border bg-background text-foreground"
                   />
                 </div>
                 <div className="flex-1">
@@ -230,7 +234,7 @@ export function EmployeeDataViewDialog(props: {
                     readOnly={!isEditing}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className="border border-gray-300"
+                    className="border border-border bg-background text-foreground"
                   />
                 </div>
               </div>
@@ -245,7 +249,7 @@ export function EmployeeDataViewDialog(props: {
                     readOnly={!isEditing}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className="border border-gray-300"
+                    className="border border-border bg-background text-foreground"
                   />
                 </div>
                 <div className="flex-1">
@@ -258,7 +262,7 @@ export function EmployeeDataViewDialog(props: {
                     readOnly={!isEditing}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className="border border-gray-300"
+                    className="border border-border bg-background text-foreground"
                   />
                 </div>
               </div>
@@ -268,11 +272,14 @@ export function EmployeeDataViewDialog(props: {
                   <Label>Blood Type</Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className="w-full" variant="outline">
+                      <Button
+                        variant="outline"
+                        className="w-full bg-background text-foreground"
+                      >
                         {bloodTypeValue}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-full">
+                    <DropdownMenuContent className="w-full bg-white text-black">
                       <DropdownMenuLabel>Blood Type</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
@@ -313,11 +320,14 @@ export function EmployeeDataViewDialog(props: {
                   <Label>Job</Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className="w-full" variant="outline">
+                      <Button
+                        variant="outline"
+                        className="w-full bg-background text-foreground"
+                      >
                         {jobValue}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-full">
+                    <DropdownMenuContent className="w-full bg-white text-black">
                       <DropdownMenuLabel>Job</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
@@ -333,7 +343,6 @@ export function EmployeeDataViewDialog(props: {
                         <DropdownMenuRadioItem value="Engineer">
                           Engineer
                         </DropdownMenuRadioItem>
-
                         <DropdownMenuRadioItem value="Parts Specialist">
                           Parts Specialist
                         </DropdownMenuRadioItem>
@@ -353,7 +362,7 @@ export function EmployeeDataViewDialog(props: {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] justify-start text-left font-normal",
+                        "w-[240px] justify-start bg-background text-left font-normal text-foreground",
                         !dateValue && "text-muted-foreground",
                       )}
                     >
@@ -365,7 +374,10 @@ export function EmployeeDataViewDialog(props: {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent
+                    className="w-auto bg-white p-0 text-black"
+                    align="start"
+                  >
                     <Calendar
                       mode="single"
                       selected={dateValue}

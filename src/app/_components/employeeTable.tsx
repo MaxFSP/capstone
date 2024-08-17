@@ -42,19 +42,19 @@ export default function EmployeeTable(props: {
   );
 
   return (
-    <div className="px-0 pb-2 pt-0">
-      <div className="px-4 py-4 md:flex md:items-center md:space-x-4">
+    <div className="px-4 pb-2 pt-0">
+      <div className="rounded-lg bg-background px-4 py-4 shadow-lg md:flex md:items-center md:space-x-4">
         <input
           type="text"
           placeholder="Search by name or email"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-2 w-full rounded-md border p-2 md:mb-0 md:flex-1"
+          className="mb-2 w-full rounded-md border border-border bg-background p-2 text-foreground md:mb-0 md:flex-1"
         />
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="mb-2 w-full rounded-md border p-2 md:mb-0 md:flex-1"
+          className="mb-2 w-full rounded-md border border-border bg-background p-2 text-foreground md:mb-0 md:flex-1"
         >
           <option value="">All Roles</option>
           {[...new Set(users.map((user) => user.org.name))].map((role) => (
@@ -65,38 +65,35 @@ export default function EmployeeTable(props: {
         </select>
         <button
           onClick={() => setShowDisabled(!showDisabled)}
-          className="mb-2 w-full rounded-md border p-2 md:mb-0 md:flex-1"
+          className="mb-2 w-full rounded-md border border-border bg-primary p-2 text-primary-foreground hover:bg-accent hover:text-accent-foreground md:mb-0 md:flex-1"
         >
           {showDisabled ? "Hide Disabled" : "Show Disabled"}
         </button>
       </div>
-      <div className="hidden p-4 md:block">
-        <table className="w-full table-auto">
-          <thead>
+      <div className="hidden rounded-lg bg-background p-4 shadow-lg md:block">
+        <table className="w-full table-auto rounded-lg border border-border shadow-md">
+          <thead className="bg-primary text-primary-foreground">
             <tr>
               {["ID", "User", "Role", "Status", ""].map((el) => (
                 <th
                   key={el}
-                  className="border-blue-gray-50 border-b px-5 py-3 text-left"
+                  className="border-b border-border px-5 py-3 text-left"
                 >
-                  <p className="text-blue-gray-400 text-s text-[11px] font-bold uppercase">
-                    {el}
-                  </p>
+                  <p className="text-[11px] font-bold uppercase">{el}</p>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-card">
             {paginatedUsers.map(
               (
                 { id, img, firstName, lastName, username, email, org, online },
                 index,
               ) => {
+                const rowBgColor = index % 2 === 0 ? "bg-card" : "bg-muted";
                 const className = `py-3 px-5 ${
-                  index === users.length - 1
-                    ? ""
-                    : "border-b border-blue-gray-50"
-                }`;
+                  index === users.length - 1 ? "" : "border-b border-border"
+                } text-card-foreground ${rowBgColor}`;
                 const statusClass = online ? "bg-green-500" : "bg-red-500";
                 const statusText = online ? "Enabled" : "Disabled";
 
@@ -109,15 +106,17 @@ export default function EmployeeTable(props: {
                       <div className="flex items-center gap-4">
                         <Avatar src={img} alt={firstName} size="sm" />
                         <div>
-                          <p color="blue-gray" className="text-s font-semibold">
+                          <p className="text-s font-semibold text-foreground">
                             {firstName}
                           </p>
-                          <p className="text-blue-gray-400 text-xs">{email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {email}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className={className}>
-                      <p className="text-blue-gray-600 text-xs font-semibold">
+                      <p className="text-xs font-semibold text-foreground">
                         {org.name}
                       </p>
                     </td>
@@ -126,7 +125,7 @@ export default function EmployeeTable(props: {
                         <div
                           className={`h-3 w-3 rounded-full ${statusClass}`}
                         ></div>
-                        <p className="text-blue-gray-600 text-xs font-semibold">
+                        <p className="text-xs font-semibold text-foreground">
                           {statusText}
                         </p>
                       </div>
@@ -153,12 +152,13 @@ export default function EmployeeTable(props: {
           </tbody>
         </table>
       </div>
-      <div className="block md:hidden">
+      <div className="block rounded-lg bg-background p-4 shadow-lg md:hidden">
         {paginatedUsers.map(
           ({ id, img, firstName, lastName, username, email, org, online }) => {
             return (
               <SmallEditUser
                 key={id}
+                orgs={orgs}
                 user={{
                   id,
                   img,
@@ -175,25 +175,35 @@ export default function EmployeeTable(props: {
         )}
       </div>
       <div className="flex justify-between px-4 py-2">
-        <button
-          onClick={handlePrevPage}
-          disabled={currentPage === 0}
-          className={`rounded px-4 py-2 ${currentPage === 0 ? "cursor-not-allowed bg-gray-300 text-gray-900" : "bg-blue-500 text-white"}`}
-        >
-          Previous
-        </button>
+        <div></div>
         <div className="flex items-center">
-          <span className="text-sm font-medium">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+            className={`rounded px-4 py-2 ${
+              currentPage === 0
+                ? "cursor-not-allowed bg-muted text-muted-foreground"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            ⮜
+          </button>
+          <span className="ml-2 mr-2 text-sm font-medium text-foreground">
             Page {currentPage + 1} of {totalPages}
           </span>
+          <button
+            onClick={handleNextPage}
+            disabled={(currentPage + 1) * itemsPerPage >= filteredUsers.length}
+            className={`rounded px-4 py-2 ${
+              (currentPage + 1) * itemsPerPage >= filteredUsers.length
+                ? "cursor-not-allowed bg-muted text-muted-foreground"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            ➤
+          </button>
         </div>
-        <button
-          onClick={handleNextPage}
-          disabled={(currentPage + 1) * itemsPerPage >= filteredUsers.length}
-          className={`rounded px-4 py-2 ${(currentPage + 1) * itemsPerPage >= filteredUsers.length ? "cursor-not-allowed bg-gray-300 text-gray-900" : "bg-blue-500 text-white"}`}
-        >
-          Next
-        </button>
+        <div></div>
       </div>
     </div>
   );

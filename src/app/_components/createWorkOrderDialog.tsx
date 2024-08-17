@@ -3,9 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 
 import { Button } from "~/components/ui/button";
-
 import { Input } from "~/components/ui/input";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,14 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-
 import {
   AlertDialogCancel,
   AlertDialogFooter,
 } from "~/components/ui/alert-dialog";
-
 import { Label } from "~/components/ui/label";
-
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { cn } from "~/lib/utils";
@@ -54,10 +49,8 @@ export function CreateWorkOrderDialog(props: {
     assigned_user: 0,
   });
 
-  // Calendar stuff
   const [date, setDate] = useState<Date>(new Date());
 
-  // Form stuff
   const [isOrderFormValid, setIsOrderFormValid] = useState(false);
 
   useEffect(() => {
@@ -80,12 +73,10 @@ export function CreateWorkOrderDialog(props: {
 
   const handleSaveClick = async (): Promise<boolean> => {
     try {
-      // Set the assigned user (only the id)
       orderFormValue.assigned_user = users.find(
         (user) => user.first_name + " " + user.last_name === assigned_user,
       )!.user_id;
 
-      // Set the assigned machine (only the id)
       orderFormValue.machine_id = machines.find(
         (machine) => machine.serial_number === machinery,
       )!.machine_id;
@@ -98,7 +89,6 @@ export function CreateWorkOrderDialog(props: {
         body: JSON.stringify(orderFormValue),
       });
 
-      //TODO: ADD A TOAST FOR SUCCESS AND FOR ERRORS TOO
       if (!response.ok) {
         throw new Error("Failed to create work order");
       }
@@ -152,13 +142,13 @@ export function CreateWorkOrderDialog(props: {
         </div>
         <div className="flex-1">
           <Label>Assign a Machine</Label>
-          <DropdownMenu modal={false}>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="w-full" variant="outline">
                 {machinery}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full">
+            <DropdownMenuContent className="w-full bg-white text-black">
               <DropdownMenuLabel>Machine</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -201,7 +191,7 @@ export function CreateWorkOrderDialog(props: {
               <Button
                 variant={"outline"}
                 className={cn(
-                  "w-[240px] justify-start text-left font-normal",
+                  "w-[240px] justify-start bg-white text-left font-normal text-black",
                   !date && "text-muted-foreground",
                 )}
               >
@@ -209,7 +199,10 @@ export function CreateWorkOrderDialog(props: {
                 {date ? format(date, "PPP") : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent
+              className="w-auto bg-white p-0 text-black"
+              align="start"
+            >
               <Calendar
                 mode="single"
                 selected={date}
@@ -235,7 +228,7 @@ export function CreateWorkOrderDialog(props: {
                 {assigned_user}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full">
+            <DropdownMenuContent className="w-full bg-white text-black">
               <DropdownMenuLabel>User</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -262,7 +255,6 @@ export function CreateWorkOrderDialog(props: {
         <AlertDialogCancel asChild>
           <Button
             type="button"
-            variant="secondary"
             onClick={() => {
               setOrderFormValue({
                 name: "",
@@ -280,7 +272,6 @@ export function CreateWorkOrderDialog(props: {
         <AlertDialogCancel asChild>
           <Button
             onClick={handleSaveAndCloseClick}
-            variant="secondary"
             disabled={!isOrderFormValid}
           >
             Save & Close

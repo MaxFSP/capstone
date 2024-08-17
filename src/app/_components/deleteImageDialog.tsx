@@ -30,18 +30,21 @@ export default function DeleteImageDialog(props: { imageInfo: DeleteImage }) {
       if (response.ok) {
         router.refresh();
       } else {
-        // console.error("Failed to update tool:", result.error);
+        console.error("Failed to delete image");
       }
     } catch (error) {
-      console.error("Error updating tool:", error);
+      console.error("Error deleting image:", error);
     }
   };
+
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild key={imageInfo.image_id} className="mt-4">
-        <Button variant="destructive">Delete</Button>
+      <AlertDialogTrigger asChild key={imageInfo.image_id}>
+        <Button variant="destructive" className="mt-4">
+          Delete
+        </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-large">
             Delete Image
@@ -52,12 +55,14 @@ export default function DeleteImageDialog(props: { imageInfo: DeleteImage }) {
         </AlertDialogHeader>
         <AlertDialogFooter className="flex justify-end sm:justify-start">
           <AlertDialogCancel asChild>
-            <Button type="button" variant="secondary">
+            <Button type="button" variant="default">
               Cancel
             </Button>
           </AlertDialogCancel>
-          <AlertDialogAction asChild onClick={handleDelete}>
-            <Button variant="destructive">Delete</Button>
+          <AlertDialogAction asChild>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect, SetStateAction } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -83,7 +83,7 @@ export function WorkOrderDataViewDialog(props: {
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formData, , machinery, assigned_user, dateValue, currentStateBoolean]);
+  }, [formData, machinery, assigned_user, dateValue, currentStateBoolean]);
 
   const validateForm = () => {
     const isDataValid =
@@ -142,11 +142,7 @@ export function WorkOrderDataViewDialog(props: {
 
         formData.start_date = dateValue;
 
-        if (currentStateBoolean) {
-          formData.state = 1;
-        } else {
-          formData.state = 0;
-        }
+        formData.state = currentStateBoolean ? 1 : 0;
 
         const response = await fetch("/api/updateWorkOrder", {
           method: "POST",
@@ -156,13 +152,12 @@ export function WorkOrderDataViewDialog(props: {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // console.log("Tool updated successfully:", result);
           router.refresh();
         } else {
-          // console.error("Failed to update tool:", result.error);
+          console.error("Failed to update work order");
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error("Error updating work order:", error);
       }
     }
   };
@@ -176,43 +171,45 @@ export function WorkOrderDataViewDialog(props: {
     <Dialog>
       <DialogTrigger asChild>
         {size === "lg" ? (
-          <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
+          <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">
+            {title}
+          </p>
         ) : (
-          <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
+          <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-base font-semibold">ID</p>
               <div className="flex items-center gap-2">{index}</div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Name</p>
+              <p className="text-sm font-medium text-muted-foreground">Name</p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-200">{data.name}</span>
+                <span className="text-sm">{data.name}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">
+              <p className="text-sm font-medium text-muted-foreground">
                 Machine Serial
               </p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-200">
-                  {data.machine_serial}
-                </span>
+                <span className="text-sm">{data.machine_serial}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-400">Username</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Username
+              </p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-200">{data.userName}</span>
+                <span className="text-sm">{data.userName}</span>
               </div>
             </div>
           </div>
         )}
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">{title}</DialogTitle>
+          <DialogTitle className="text-lg">Edit {title}</DialogTitle>
           <DialogDescription>
-            Anyone who has this link will be able to view this.
+            Make sure all the information is correct before saving changes.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -228,34 +225,32 @@ export function WorkOrderDataViewDialog(props: {
                 disabled={!isEditing}
               />
             </div>
-            <div className="flex space-x-4">
-              <div className="flex-1">
-                <Label>Assigned Machine</Label>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild disabled={!isEditing}>
-                    <Button className="w-full" variant="outline">
-                      {machinery}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
-                    <DropdownMenuLabel>Serial Number</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuRadioGroup
-                      value={machinery}
-                      onValueChange={(value: string) => setMachine(value)}
-                    >
-                      {machines.map((machine) => (
-                        <DropdownMenuRadioItem
-                          key={machine.serial_number}
-                          value={machine.serial_number}
-                        >
-                          {machine.serial_number}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+            <div className="flex-1">
+              <Label>Assigned Machine</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full" variant="outline">
+                    {machinery}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full bg-white text-black">
+                  <DropdownMenuLabel>Serial Number</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={machinery}
+                    onValueChange={(value: string) => setMachine(value)}
+                  >
+                    {machines.map((machine) => (
+                      <DropdownMenuRadioItem
+                        key={machine.serial_number}
+                        value={machine.serial_number}
+                      >
+                        {machine.serial_number}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -281,19 +276,15 @@ export function WorkOrderDataViewDialog(props: {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-[240px] justify-start bg-white text-left font-normal text-black",
                       !dateValue && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? (
-                      format(dateValue, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {dateValue ? format(dateValue, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto bg-white p-0 text-black">
                   <Calendar
                     mode="single"
                     selected={dateValue}
@@ -319,7 +310,7 @@ export function WorkOrderDataViewDialog(props: {
                     {assigned_user}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="w-full bg-white text-black">
                   <DropdownMenuLabel>User</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -346,13 +337,9 @@ export function WorkOrderDataViewDialog(props: {
                   id="enableWorkOrder"
                   disabled={!isEditing}
                   checked={currentStateBoolean}
-                  onCheckedChange={() => {
-                    if (currentStateBoolean) {
-                      setCurrentStateBoolean(false);
-                    } else {
-                      setCurrentStateBoolean(true);
-                    }
-                  }}
+                  onCheckedChange={() =>
+                    setCurrentStateBoolean(!currentStateBoolean)
+                  }
                 />
                 <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
               </div>

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -30,6 +32,7 @@ import {
 
 import type { CreateUserResponse } from "../../server/types/api";
 import { useRouter } from "next/navigation";
+import { cn } from "~/lib/utils";
 
 export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const router = useRouter();
@@ -42,11 +45,9 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
     password: "",
     confirmPassword: "",
   });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   const [isFormValid, setIsFormValid] = useState(false);
-
-  const [role, setRole] = React.useState(orgs[0]!.name);
+  const [role, setRole] = useState(orgs[0]!.name);
 
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
@@ -72,7 +73,6 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   };
 
   const handleSaveClick = async (): Promise<boolean> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...formValuesWithoutConfirm } = formValues;
     const { email, ...formValuesCrop } = formValuesWithoutConfirm;
     const emails = [email];
@@ -81,7 +81,6 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
     const selectedDepartment = orgs.find((org) => org.name === role);
     const organizationId = selectedDepartment ? selectedDepartment.id : "";
 
-    // Add organizationId to the form values
     const formValuesWithOrg = { ...formValuesF, organizationId };
 
     try {
@@ -97,7 +96,6 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
         throw new Error("Failed to process user");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const data: CreateUserResponse = await response.json();
       if (data.error) {
         throw new Error(data.error);
@@ -114,7 +112,6 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
     if (saveSuccessful) {
-      // notify the user that the changes have been saved
       setFormValues({
         firstName: "",
         lastName: "",
@@ -165,11 +162,13 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Create User</Button>
+        <ButtonUI className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+          Create User
+        </ButtonUI>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
+          <DialogTitle className="text-primary">Create User</DialogTitle>
           <DialogDescription>
             This will create a new user in the system.
           </DialogDescription>
@@ -194,7 +193,11 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isNameInvalid}
-                color={isNameInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isNameInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={isNameInvalid && "Name can only contain letters"}
               />
               <Input
@@ -206,7 +209,11 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isLastNameInvalid}
-                color={isLastNameInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isLastNameInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isLastNameInvalid && "Last Name can only contain letters"
                 }
@@ -221,7 +228,11 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isUsernameInvalid}
-                color={isUsernameInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isUsernameInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isUsernameInvalid &&
                   "Username can only contain letters and numbers"
@@ -236,7 +247,11 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isEmailInvalid}
-                color={isEmailInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isEmailInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={isEmailInvalid && "Please enter a valid email"}
               />
               <Input
@@ -248,7 +263,11 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isPasswordInvalid}
-                color={isPasswordInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isPasswordInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isPasswordInvalid &&
                   "Password must contain at least 8 characters, one uppercase letter, and one number"
@@ -263,7 +282,11 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isConfirmPasswordInvalid}
-                color={isConfirmPasswordInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isConfirmPasswordInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isConfirmPasswordInvalid && "Passwords do not match"
                 }
@@ -271,12 +294,17 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <ButtonUI className="" variant="outline">
+                  <ButtonUI
+                    variant="outline"
+                    className="w-full border border-border bg-background text-foreground"
+                  >
                     {role}
                   </ButtonUI>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel>Roles</DropdownMenuLabel>
+                <DropdownMenuContent className="bg-background text-foreground">
+                  <DropdownMenuLabel className="text-primary">
+                    Roles
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup value={role} onValueChange={setRole}>
                     <DropdownMenuRadioItem value="Administrador">
@@ -294,6 +322,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   <Button
                     type="button"
                     variant="bordered"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary"
                     onClick={() => {
                       setFormValues({
                         firstName: "",
@@ -312,6 +341,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 <Button
                   onClick={handleSaveAndCloseClick}
                   disabled={!isFormValid}
+                  className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
                 >
                   Save & Close
                 </Button>
