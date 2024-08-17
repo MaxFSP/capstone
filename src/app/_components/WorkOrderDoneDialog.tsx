@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from "~/components/ui/button";
 import {
   AlertDialog,
@@ -12,8 +13,8 @@ import {
 import { type Column } from "~/server/types/IColumns";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { WorkOrders } from "~/server/types/IOrders";
-import { TasksOnColumns } from "~/server/types/ITasks";
+import { type WorkOrders } from "~/server/types/IOrders";
+import { type TasksOnColumns } from "~/server/types/ITasks";
 import { Label } from "~/components/ui/label";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
@@ -75,19 +76,19 @@ export default function WorkOrderDoneDialog(props: {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          variant={"secondary"}
-          className="w-full sm:w-auto"
+          variant="secondary"
+          className="w-full bg-secondary text-secondary-foreground sm:w-auto"
           disabled={isDone}
         >
           Mark as done
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto sm:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-lg sm:text-xl">
+          <AlertDialogTitle className="text-lg text-primary sm:text-xl">
             Mark this work order as done
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="text-muted-foreground">
             Make sure you completed all the tasks before marking this work order
             as done.
           </AlertDialogDescription>
@@ -95,14 +96,14 @@ export default function WorkOrderDoneDialog(props: {
         <div className="space-y-4">
           <div className="flex-1">
             <Label>You have completed all these tasks</Label>
-            <ScrollArea className="mt-1 h-32 w-full flex-1 rounded-md border">
+            <ScrollArea className="mt-1 h-32 w-full flex-1 rounded-md border border-border">
               <div className="space-y-2 p-2">
                 {Object.keys(tasksOnColumns).map((key) => {
                   if (tasksOnColumns[key]!.length > 0) {
                     return (
                       <div key={key} className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <p className="text-base font-semibold">
+                          <p className="text-base font-semibold text-primary">
                             Total tasks done: {tasksOnColumns[key]!.length}
                           </p>
                         </div>
@@ -110,12 +111,12 @@ export default function WorkOrderDoneDialog(props: {
                           {tasksOnColumns[key]!.map((task) => (
                             <div
                               key={task.task_id + "task"}
-                              className="rounded-md bg-gray-100 p-2"
+                              className="rounded-md bg-muted p-2"
                             >
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-foreground">
                                 {task.title}
                               </p>
-                              <p className="mt-1 text-xs text-gray-600">
+                              <p className="mt-1 text-xs text-muted-foreground">
                                 {task.end_date.toDateString()}
                               </p>
                             </div>
@@ -134,7 +135,7 @@ export default function WorkOrderDoneDialog(props: {
             <Button
               type="button"
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="w-full bg-secondary text-secondary-foreground sm:w-auto"
             >
               Cancel
             </Button>
@@ -143,7 +144,7 @@ export default function WorkOrderDoneDialog(props: {
             <Button
               onClick={handleSaveAndCloseClick}
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="w-full bg-primary text-primary-foreground sm:w-auto"
               disabled={isDone}
             >
               Mark as done

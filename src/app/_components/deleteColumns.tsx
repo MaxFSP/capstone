@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from "~/components/ui/button";
 import {
   AlertDialog,
@@ -31,7 +32,7 @@ export default function DeleteColumnDialog(props: {
     if (response.ok) {
       router.refresh();
     } else {
-      // console.error("Failed to delete columns:", result.error);
+      console.error("Failed to delete columns:", response.statusText);
     }
   };
 
@@ -39,31 +40,36 @@ export default function DeleteColumnDialog(props: {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="w-full sm:w-auto">
+        <Button
+          variant="destructive"
+          className="w-full bg-destructive text-destructive-foreground sm:w-auto"
+        >
           Delete Columns
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto sm:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-lg sm:text-xl">
+          <AlertDialogTitle className="text-lg text-foreground sm:text-xl">
             Delete Columns
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            Make sure you are not deleting any column with tasks. If you are
+          <AlertDialogDescription className="text-muted-foreground">
+            Make sure you are not deleting any column with tasks. If you are,
             they will be deleted as well.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
-          <h3 className="text-lg">Columns to be deleted:</h3>
+          <h3 className="text-lg text-primary">Columns to be deleted:</h3>
           <div>
             {columnsWorkOrder.map((column) => (
               <div key={column.column_id + "column" + column.title}>
-                <div className="mt-2 flex flex-col items-center justify-between sm:flex-row">
-                  <p className="text-base font-semibold">{column.title}</p>
+                <div className="mt-2 flex flex-col items-center justify-between border-b border-border pb-2 sm:flex-row">
+                  <p className="text-base font-semibold text-foreground">
+                    {column.title}
+                  </p>
                   <div className="mt-2 flex items-center gap-2 sm:mt-0">
                     <Button
                       variant={"destructive"}
-                      className="w-full sm:w-auto"
+                      className="w-full bg-destructive text-destructive-foreground sm:w-auto"
                       onClick={() => deleteColumns(column.column_id)}
                     >
                       - Delete Column
@@ -79,7 +85,7 @@ export default function DeleteColumnDialog(props: {
             <Button
               type="button"
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="w-full bg-secondary text-secondary-foreground sm:w-auto"
             >
               Cancel
             </Button>

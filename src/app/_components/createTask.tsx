@@ -5,7 +5,6 @@
 import { useState, useEffect, useMemo } from "react";
 
 import { Button } from "~/components/ui/button";
-
 import { Input } from "~/components/ui/input";
 
 import {
@@ -103,13 +102,11 @@ export function CreateTaskDialog(props: {
     priority: priority,
   });
 
-  // Calendar stuff
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 20),
   });
 
-  // Form stuff
   const [isOrderFormValid, setIsOrderFormValid] = useState(false);
 
   useEffect(() => {
@@ -144,7 +141,6 @@ export function CreateTaskDialog(props: {
       taskFormValue.position = pos;
       taskFormValue.priority = priority;
 
-      // Set the assigned machine (only the id)
       const response = await fetch("/api/createTask", {
         method: "POST",
         headers: {
@@ -176,8 +172,8 @@ export function CreateTaskDialog(props: {
             if (!addToolandPart.ok) {
               throw new Error("Failed to add tools and parts to task");
             }
-            triggerRefresh(); // Trigger the refresh in DashboardPage
-            router.refresh(); // Optional: Keep this if you want to re-fetch data
+            triggerRefresh();
+            router.refresh();
           } catch (error) {
             console.error("Failed to add tools and parts to task:", error);
           }
@@ -226,11 +222,11 @@ export function CreateTaskDialog(props: {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="h-full min-w-[300px] max-w-[400px] p-4">
+        <Button className="hover:bg-primary-dark h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground">
           + Add Task
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-large">
             Create Task
@@ -250,7 +246,9 @@ export function CreateTaskDialog(props: {
                 name="title"
                 value={taskFormValue.title}
                 onChange={handleWorkOrderChange}
-                color={isNameInvalid ? "danger" : "default"}
+                className={`border bg-background text-foreground ${
+                  isNameInvalid ? "border-danger" : "border-border"
+                }`}
               />
             </div>
           </div>
@@ -268,7 +266,9 @@ export function CreateTaskDialog(props: {
                     description: e.target.value,
                   })
                 }
-                color={isObservationsInvalid ? "danger" : "default"}
+                className={`border bg-background text-foreground ${
+                  isObservationsInvalid ? "border-danger" : "border-border"
+                }`}
               />
             </div>
           </div>
@@ -278,11 +278,14 @@ export function CreateTaskDialog(props: {
               <Label>Assign an employee</Label>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {assigned_employee}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Employee</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -307,11 +310,14 @@ export function CreateTaskDialog(props: {
               <Label>Priority</Label>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {priority}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Priority</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -339,11 +345,17 @@ export function CreateTaskDialog(props: {
               {isDesktop ? (
                 <Popover open={openTool} onOpenChange={setOpenTool}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border border-border bg-background text-foreground"
+                    >
                       <>+ Tools</>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
+                  <PopoverContent
+                    className="w-full bg-background p-0 text-foreground"
+                    align="start"
+                  >
                     <ToolList
                       setOpenTool={setOpenTool}
                       setSelectedTool={setSelectedTool}
@@ -356,11 +368,14 @@ export function CreateTaskDialog(props: {
               ) : (
                 <Drawer open={openTool} onOpenChange={setOpenTool}>
                   <DrawerTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border border-border bg-background text-foreground"
+                    >
                       <>+ Tools</>
                     </Button>
                   </DrawerTrigger>
-                  <DrawerContent>
+                  <DrawerContent className="bg-background text-foreground">
                     <div className="mt-4 border-t">
                       <ToolList
                         setOpenTool={setOpenTool}
@@ -380,11 +395,17 @@ export function CreateTaskDialog(props: {
               {isDesktop ? (
                 <Popover open={openPart} onOpenChange={setOpenPart}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border border-border bg-background text-foreground"
+                    >
                       <>+ Parts</>
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
+                  <PopoverContent
+                    className="w-full bg-background p-0 text-foreground"
+                    align="start"
+                  >
                     <PartList
                       setOpenPart={setOpenPart}
                       setSelectedPart={setSelectedPart}
@@ -397,11 +418,14 @@ export function CreateTaskDialog(props: {
               ) : (
                 <Drawer open={openPart} onOpenChange={setOpenPart}>
                   <DrawerTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start border border-border bg-background text-foreground"
+                    >
                       <>+ Parts</>
                     </Button>
                   </DrawerTrigger>
-                  <DrawerContent>
+                  <DrawerContent className="bg-background text-foreground">
                     <div className="mt-4 border-t">
                       <PartList
                         setOpenPart={setOpenPart}
@@ -419,7 +443,7 @@ export function CreateTaskDialog(props: {
 
           <div className="flex space-x-4">
             {toolList.length > 0 ? (
-              <ScrollArea className="h-32 w-full flex-1 rounded-md border">
+              <ScrollArea className="h-32 w-full flex-1 rounded-md border border-border bg-background text-foreground">
                 <Label className="p-2">Selected tools to use</Label>
                 <div className="p-2">
                   {toolList.map((tool) => (
@@ -427,7 +451,7 @@ export function CreateTaskDialog(props: {
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <p>{tool.brand + ": " + tool.name}</p>
                         <a
-                          className="cursor-pointer  rounded-md bg-red-600  px-2  text-white"
+                          className="cursor-pointer rounded-md bg-red-600 px-2 text-white"
                           onClick={() => {
                             setToolList(
                               toolList.filter(
@@ -439,7 +463,7 @@ export function CreateTaskDialog(props: {
                           X
                         </a>
                       </div>
-                      <Separator className="my-2" />
+                      <Separator className="my-2 bg-border" />
                     </div>
                   ))}
                 </div>
@@ -449,7 +473,7 @@ export function CreateTaskDialog(props: {
             )}
 
             {partList.length > 0 ? (
-              <ScrollArea className="h-32 w-full flex-1 rounded-md border">
+              <ScrollArea className="h-32 w-full flex-1 rounded-md border border-border bg-background text-foreground">
                 <Label className="p-2">Selected parts to use</Label>
                 <div className="p-2">
                   {partList.map((part) => (
@@ -460,7 +484,7 @@ export function CreateTaskDialog(props: {
                       <div className="mt-2 flex items-center justify-between gap-2 ">
                         <p>{part.name + ": " + part.part_number}</p>
                         <a
-                          className="cursor-pointer  rounded-md bg-red-600  px-2  text-white"
+                          className="cursor-pointer rounded-md bg-red-600 px-2 text-white"
                           onClick={() => {
                             setPartList(
                               partList.filter(
@@ -472,7 +496,7 @@ export function CreateTaskDialog(props: {
                           X
                         </a>
                       </div>
-                      <Separator className="my-2" />
+                      <Separator className="my-2 bg-border" />
                     </div>
                   ))}
                 </div>
@@ -492,7 +516,7 @@ export function CreateTaskDialog(props: {
                       id="date"
                       variant={"outline"}
                       className={cn(
-                        "w-[300px] justify-start text-left font-normal",
+                        "w-[300px] justify-start border border-border bg-background text-left font-normal text-foreground",
                         !date && "text-muted-foreground",
                       )}
                     >
@@ -511,7 +535,10 @@ export function CreateTaskDialog(props: {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent
+                    className="w-auto border border-border bg-background p-0 text-foreground"
+                    align="start"
+                  >
                     <Calendar
                       initialFocus
                       mode="range"
@@ -532,6 +559,7 @@ export function CreateTaskDialog(props: {
             <Button
               type="button"
               variant="secondary"
+              className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               onClick={() => {
                 setTaskFormValue({
                   title: "",
@@ -559,6 +587,7 @@ export function CreateTaskDialog(props: {
             <Button
               onClick={handleSaveAndCloseClick}
               variant="secondary"
+              className="hover:bg-primary-dark bg-primary text-primary-foreground"
               disabled={!isOrderFormValid}
             >
               Save & Close
@@ -584,7 +613,7 @@ function PartList({
   partList: Part[];
 }) {
   return (
-    <Command>
+    <Command className="bg-background text-foreground">
       <CommandInput placeholder="Filter part..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
@@ -624,7 +653,7 @@ function ToolList({
   toolList: Tool[];
 }) {
   return (
-    <Command>
+    <Command className="bg-background text-foreground">
       <CommandInput placeholder="Filter tool..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>

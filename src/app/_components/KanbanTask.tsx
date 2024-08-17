@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
@@ -165,7 +167,6 @@ export default function KanbanTask(props: {
   const checkForChanges = () => {
     const fromDate = date?.from?.toISOString().split("T")[0] ?? "";
     const toDate = date?.to?.toISOString().split("T")[0] ?? "";
-
     const hasChanges =
       JSON.stringify(taskFormValue) !== JSON.stringify(task) ||
       priority !== task.priority ||
@@ -352,7 +353,7 @@ export default function KanbanTask(props: {
             </p>
           </div>
         </AlertDialogTrigger>
-        <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+        <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto bg-background text-foreground lg:max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Edit Task</AlertDialogTitle>
             <AlertDialogDescription>
@@ -371,7 +372,10 @@ export default function KanbanTask(props: {
                   value={taskFormValue.title}
                   onChange={handleWorkOrderChange}
                   disabled={!isEditing}
-                  color={isNameInvalid ? "danger" : "default"}
+                  className={cn(
+                    "w-full",
+                    isNameInvalid ? "border-red-600" : "",
+                  )}
                 />
               </div>
             </div>
@@ -390,7 +394,10 @@ export default function KanbanTask(props: {
                       description: e.target.value,
                     })
                   }
-                  color={isObservationsInvalid ? "danger" : "default"}
+                  className={cn(
+                    "w-full",
+                    isObservationsInvalid ? "border-red-600" : "",
+                  )}
                 />
               </div>
             </div>
@@ -400,11 +407,11 @@ export default function KanbanTask(props: {
                 <Label>Assign an employee</Label>
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild disabled={!isEditing}>
-                    <Button className="w-full" variant="outline">
+                    <Button className="w-full border border-border bg-background text-foreground">
                       {assigned_employee}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
+                  <DropdownMenuContent className="w-full bg-background text-foreground">
                     <DropdownMenuLabel>Employee</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup
@@ -434,11 +441,11 @@ export default function KanbanTask(props: {
                 <Label>Priority</Label>
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild disabled={!isEditing}>
-                    <Button className="w-full" variant="outline">
+                    <Button className="w-full border border-border bg-background text-foreground">
                       {priority}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
+                  <DropdownMenuContent className="w-full bg-background text-foreground">
                     <DropdownMenuLabel>Priority</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup
@@ -468,12 +475,15 @@ export default function KanbanTask(props: {
                     <PopoverTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start border border-border bg-background text-foreground"
                       >
                         <>+ Tools</>
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
+                    <PopoverContent
+                      className="w-full bg-background p-0 text-foreground"
+                      align="start"
+                    >
                       <ToolList
                         setOpenTool={setOpenTool}
                         setSelectedTool={setSelectedTool}
@@ -488,12 +498,12 @@ export default function KanbanTask(props: {
                     <DrawerTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start border border-border bg-background text-foreground"
                       >
                         <>+ Tools</>
                       </Button>
                     </DrawerTrigger>
-                    <DrawerContent>
+                    <DrawerContent className="bg-background text-foreground">
                       <div className="mt-4 border-t">
                         <ToolList
                           setOpenTool={setOpenTool}
@@ -515,12 +525,15 @@ export default function KanbanTask(props: {
                     <PopoverTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start border border-border bg-background text-foreground"
                       >
                         <>+ Parts</>
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
+                    <PopoverContent
+                      className="w-full bg-background p-0 text-foreground"
+                      align="start"
+                    >
                       <PartList
                         setOpenPart={setOpenTool}
                         setSelectedPart={setSelectedPart}
@@ -535,12 +548,12 @@ export default function KanbanTask(props: {
                     <DrawerTrigger asChild disabled={!isEditing}>
                       <Button
                         variant="outline"
-                        className="w-full justify-start"
+                        className="w-full justify-start border border-border bg-background text-foreground"
                       >
                         <>+ Parts</>
                       </Button>
                     </DrawerTrigger>
-                    <DrawerContent>
+                    <DrawerContent className="bg-background text-foreground">
                       <div className="mt-4 border-t">
                         <PartList
                           setOpenPart={setOpenTool}
@@ -640,7 +653,7 @@ export default function KanbanTask(props: {
                         id="date"
                         variant={"outline"}
                         className={cn(
-                          "w-[300px] justify-start text-left font-normal",
+                          "w-[300px] justify-start border border-border bg-background text-left font-normal text-foreground",
                           !date && "text-muted-foreground",
                         )}
                       >
@@ -659,7 +672,10 @@ export default function KanbanTask(props: {
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent
+                      className="w-auto bg-background p-0 text-foreground"
+                      align="start"
+                    >
                       <Calendar
                         initialFocus
                         mode="range"
@@ -678,9 +694,7 @@ export default function KanbanTask(props: {
           <AlertDialogFooter className="sm:justify-start">
             {!isEditing && (
               <AlertDialogCancel asChild>
-                <Button type="button" variant="secondary">
-                  Close
-                </Button>
+                <Button type="button">Close</Button>
               </AlertDialogCancel>
             )}
             <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
@@ -693,9 +707,8 @@ export default function KanbanTask(props: {
                   <Button
                     type="button"
                     variant={"default"}
-                    className="text-white "
                     onClick={handleSaveClick}
-                    disabled={isFormValid || !hasChanges}
+                    disabled={!isFormValid || !hasChanges}
                   >
                     Save
                   </Button>
@@ -705,9 +718,8 @@ export default function KanbanTask(props: {
                   <Button
                     type="button"
                     variant={"default"}
-                    className="text-white "
                     onClick={handleSaveAndCloseClick}
-                    disabled={isFormValid || !hasChanges}
+                    disabled={!isFormValid || !hasChanges}
                   >
                     Save & Close
                   </Button>
@@ -745,9 +757,12 @@ function PartList({
   partList: Part[];
 }) {
   return (
-    <Command>
-      <CommandInput placeholder="Filter part..." />
-      <CommandList>
+    <Command className="bg-background text-foreground">
+      <CommandInput
+        placeholder="Filter part..."
+        className="bg-background text-foreground"
+      />
+      <CommandList className="bg-background text-foreground">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
           {parts.map((part) => (
@@ -785,9 +800,12 @@ function ToolList({
   toolList: Tool[];
 }) {
   return (
-    <Command>
-      <CommandInput placeholder="Filter tool..." />
-      <CommandList>
+    <Command className="bg-background text-foreground">
+      <CommandInput
+        placeholder="Filter tool..."
+        className="bg-background text-foreground"
+      />
+      <CommandList className="bg-background text-foreground">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
           {tools.map((tool) => (

@@ -29,37 +29,71 @@ export default async function StockPage() {
   const partData = await getParts();
   const toolData = await getTools();
   const locations = await getLocations();
+
   return (
     <Tabs defaultValue="machines">
-      <TabsList className="m-4 grid grid-cols-3 sm:w-full md:w-1/2">
-        <TabsTrigger value="machines">Machines</TabsTrigger>
-        <TabsTrigger value="parts">Parts</TabsTrigger>
-        <TabsTrigger value="tools">Tools</TabsTrigger>
+      <TabsList className="m-4 grid grid-cols-3 rounded-lg border border-border bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] dark:bg-[hsl(var(--accent))] dark:text-[hsl(var(--accent-foreground))] sm:w-full md:w-1/2">
+        <TabsTrigger
+          value="machines"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Machines
+        </TabsTrigger>
+        <TabsTrigger
+          value="parts"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Parts
+        </TabsTrigger>
+        <TabsTrigger
+          value="tools"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Tools
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="machines">
-        <TableComponent
-          data={machineryData}
-          columns={machineryColumns}
-          valueType="Machinery"
-          locations={locations}
-        />
+        {machineryData.length > 0 ? (
+          <TableComponent
+            data={machineryData}
+            columns={machineryColumns}
+            valueType="Machinery"
+            locations={locations}
+          />
+        ) : (
+          <div className="flex min-h-[50vh] items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--primary))]">
+            <p className="text-xl font-bold">No machines available.</p>
+          </div>
+        )}
       </TabsContent>
       <TabsContent value="parts">
-        <TableComponent
-          data={partData}
-          columns={partsColumns}
-          valueType="Part"
-          locations={locations}
-        />
+        {partData.length > 0 ? (
+          <TableComponent
+            data={partData}
+            columns={partsColumns}
+            valueType="Part"
+            locations={locations}
+          />
+        ) : (
+          <div className="flex min-h-[50vh] items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--primary))]">
+            <p className="text-xl font-bold">No parts available.</p>
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="tools">
-        <TableComponent
-          data={toolData}
-          columns={toolsColumns}
-          valueType="Tool"
-          locations={locations}
-        />
+        {toolData.length > 0 ? (
+          <TableComponent
+            data={toolData}
+            columns={toolsColumns}
+            valueType="Tool"
+            locations={locations}
+          />
+        ) : (
+          <div className="flex min-h-[50vh] items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--primary))]">
+            <p className="text-xl font-bold">No tools available.</p>
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );

@@ -147,12 +147,12 @@ export function MachineryDataViewDialog(props: {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // console.log("Tool updated successfully:", result);
+          router.refresh();
         } else {
-          // console.error("Failed to update tool:", result.error);
+          console.error("Failed to update machinery");
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error("Error updating machinery:", error);
       }
     }
   };
@@ -166,7 +166,9 @@ export function MachineryDataViewDialog(props: {
     readOnly: data.state === "Sold",
     disabled: data.state === "Sold",
     className:
-      data.state === "Sold" ? "bg-zinc-700 " : "border border-gray-300",
+      data.state === "Sold"
+        ? "bg-muted-foreground text-muted-background"
+        : "border border-border bg-background text-foreground",
   };
 
   return (
@@ -174,7 +176,7 @@ export function MachineryDataViewDialog(props: {
       <DialogTrigger asChild>
         <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
@@ -189,10 +191,10 @@ export function MachineryDataViewDialog(props: {
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
-                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                      <div className="flex h-full w-full flex-col items-center justify-center">
                         <img
                           src={image.image_url}
-                          className="h-full w-full object-scale-down "
+                          className="h-full w-full object-scale-down"
                           alt="Machinery Images"
                         />
                         <DeleteImageDialog
@@ -220,7 +222,7 @@ export function MachineryDataViewDialog(props: {
                 value={formData.machine_id}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -231,11 +233,7 @@ export function MachineryDataViewDialog(props: {
                 onChange={handleChange}
                 readOnly={!isEditing && inputProps.readOnly}
                 disabled={!isEditing}
-                className={
-                  inputProps.readOnly
-                    ? inputProps.className
-                    : "border border-gray-300"
-                }
+                className={inputProps.className}
               />
             </div>
           </div>
@@ -249,11 +247,7 @@ export function MachineryDataViewDialog(props: {
                 onChange={handleChange}
                 readOnly={!isEditing && inputProps.readOnly}
                 disabled={!isEditing}
-                className={
-                  inputProps.readOnly
-                    ? inputProps.className
-                    : "border border-gray-300"
-                }
+                className={inputProps.className}
               />
             </div>
             <div className="flex-1">
@@ -264,11 +258,7 @@ export function MachineryDataViewDialog(props: {
                 onChange={handleChange}
                 readOnly={!isEditing && inputProps.readOnly}
                 disabled={!isEditing}
-                className={
-                  inputProps.readOnly
-                    ? inputProps.className
-                    : "border border-gray-300"
-                }
+                className={inputProps.className}
               />
             </div>
           </div>
@@ -282,11 +272,7 @@ export function MachineryDataViewDialog(props: {
                 onChange={handleChange}
                 readOnly={!isEditing && inputProps.readOnly}
                 disabled={!isEditing}
-                className={
-                  inputProps.readOnly
-                    ? inputProps.className
-                    : "border border-gray-300"
-                }
+                className={inputProps.className}
               />
             </div>
             <div className="flex-1">
@@ -322,6 +308,7 @@ export function MachineryDataViewDialog(props: {
                       }
                     }}
                     initialFocus
+                    className="border border-border bg-background text-foreground"
                   />
                 </PopoverContent>
               </Popover>
@@ -337,11 +324,7 @@ export function MachineryDataViewDialog(props: {
                 onChange={handleChange}
                 readOnly={!isEditing}
                 disabled={!isEditing}
-                className={
-                  inputProps.readOnly
-                    ? inputProps.className
-                    : "border border-gray-300"
-                }
+                className={inputProps.className}
               />
             </div>
             <div className="flex-1">
@@ -349,14 +332,9 @@ export function MachineryDataViewDialog(props: {
               <Input
                 name="created_at"
                 value={formData.created_at.toLocaleDateString()}
-                onChange={handleChange}
-                readOnly={!isEditing}
+                readOnly
                 disabled
-                className={
-                  inputProps.readOnly
-                    ? inputProps.className
-                    : "border border-gray-300"
-                }
+                className={inputProps.className}
               />
             </div>
           </div>
@@ -366,24 +344,36 @@ export function MachineryDataViewDialog(props: {
               <Label>State</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {stateValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>State</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={stateValue}
                     onValueChange={(value) => setStateValue(value as States)}
                   >
-                    <DropdownMenuRadioItem value="Available">
+                    <DropdownMenuRadioItem
+                      value="Available"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Available
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Sold">
+                    <DropdownMenuRadioItem
+                      value="Sold"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Sold
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Under Maintenance">
+                    <DropdownMenuRadioItem
+                      value="Under Maintenance"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Under Maintenance
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
@@ -394,11 +384,14 @@ export function MachineryDataViewDialog(props: {
               <Label>Location</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {locationValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -409,6 +402,7 @@ export function MachineryDataViewDialog(props: {
                       <DropdownMenuRadioItem
                         key={location.name}
                         value={location.name}
+                        className="hover:bg-muted-background hover:text-foreground"
                       >
                         {location.name}
                       </DropdownMenuRadioItem>
@@ -430,11 +424,7 @@ export function MachineryDataViewDialog(props: {
                       value={data.sold_price}
                       readOnly={!isEditing}
                       disabled={!isEditing}
-                      className={
-                        inputProps.readOnly
-                          ? inputProps.className
-                          : "border border-gray-300"
-                      }
+                      className={inputProps.className}
                     />
                   </div>
 
@@ -444,11 +434,7 @@ export function MachineryDataViewDialog(props: {
                       value={data.sold_to}
                       readOnly={!isEditing}
                       disabled={!isEditing}
-                      className={
-                        inputProps.readOnly
-                          ? inputProps.className
-                          : "border border-gray-300"
-                      }
+                      className={inputProps.className}
                     />
                   </div>
                 </div>
@@ -464,11 +450,7 @@ export function MachineryDataViewDialog(props: {
                       }
                       readOnly={!isEditing && inputProps.readOnly}
                       disabled={!isEditing}
-                      className={
-                        inputProps.readOnly
-                          ? inputProps.className
-                          : "border border-gray-300"
-                      }
+                      className={inputProps.className}
                     />
                   </div>
                 </div>
@@ -478,7 +460,11 @@ export function MachineryDataViewDialog(props: {
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
-                <Input readOnly disabled></Input>
+                <Input
+                  readOnly
+                  disabled
+                  className="border border-border bg-muted text-muted-foreground"
+                ></Input>
                 <UploadButton
                   disabled={!isEditing}
                   input={{ machine_id: data.machine_id }}

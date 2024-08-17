@@ -2,7 +2,6 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect } from "react";
-
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -57,11 +56,11 @@ export function ToolDataViewDialog(props: {
 
   const router = useRouter();
   const current_date = data.acquisition_date;
-
   const current_location: string = locations.find(
     (location) => data.location_name === location.name,
   )!.name;
-  const curret_condition = data.condition;
+  const current_condition = data.condition;
+
   const [conditionValue, setConditionValue] = useState<ToolCondition>(
     data.condition as ToolCondition,
   );
@@ -108,7 +107,7 @@ export function ToolDataViewDialog(props: {
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
       locationValue !== current_location ||
-      conditionValue !== curret_condition ||
+      conditionValue !== current_condition ||
       dateWithoutTime !== dateWithoutTimeCurrent;
     setHasChanges(hasChanges);
   };
@@ -146,9 +145,9 @@ export function ToolDataViewDialog(props: {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // console.log("Tool updated successfully:", result);
+          router.refresh();
         } else {
-          // console.error("Failed to update tool:", result.error);
+          console.error("Failed to update tool");
         }
       } catch (error) {
         console.error("Error updating tool:", error);
@@ -160,12 +159,13 @@ export function ToolDataViewDialog(props: {
     await handleSaveClick();
     setIsEditing(false);
   };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
         <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
           <DialogDescription>
@@ -180,10 +180,10 @@ export function ToolDataViewDialog(props: {
                 <CarouselContent>
                   {data.images.map((image: Image, index: number) => (
                     <CarouselItem key={index} className="p-0">
-                      <div className=" flex h-full w-full flex-col items-center justify-center">
+                      <div className="flex h-full w-full flex-col items-center justify-center">
                         <img
                           src={image.image_url}
-                          className="h-full w-full object-scale-down "
+                          className="h-full w-full object-scale-down"
                           alt="Tool Images"
                         />
                         <DeleteImageDialog
@@ -211,7 +211,7 @@ export function ToolDataViewDialog(props: {
                 value={data.tool_id}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="text-muted-background bg-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -222,7 +222,7 @@ export function ToolDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -236,7 +236,7 @@ export function ToolDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -247,7 +247,7 @@ export function ToolDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -261,7 +261,7 @@ export function ToolDataViewDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -272,7 +272,7 @@ export function ToolDataViewDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -282,7 +282,7 @@ export function ToolDataViewDialog(props: {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
+                      "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
                       !dateValue && "text-muted-foreground",
                     )}
                   >
@@ -294,7 +294,7 @@ export function ToolDataViewDialog(props: {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto border border-border bg-background p-0 text-foreground">
                   <Calendar
                     mode="single"
                     selected={dateValue}
@@ -323,7 +323,7 @@ export function ToolDataViewDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -333,11 +333,14 @@ export function ToolDataViewDialog(props: {
               <Label>Location</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {locationValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -348,6 +351,7 @@ export function ToolDataViewDialog(props: {
                       <DropdownMenuRadioItem
                         key={location.name}
                         value={location.name}
+                        className="hover:bg-muted-background hover:text-foreground"
                       >
                         {location.name}
                       </DropdownMenuRadioItem>
@@ -360,11 +364,14 @@ export function ToolDataViewDialog(props: {
               <Label>Condition</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {conditionValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Condition</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -373,16 +380,28 @@ export function ToolDataViewDialog(props: {
                       setConditionValue(value as ToolCondition)
                     }
                   >
-                    <DropdownMenuRadioItem value="Good">
+                    <DropdownMenuRadioItem
+                      value="Good"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Good
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Bad">
+                    <DropdownMenuRadioItem
+                      value="Bad"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Bad
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Excellent">
+                    <DropdownMenuRadioItem
+                      value="Excellent"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Excellent
                     </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Poor">
+                    <DropdownMenuRadioItem
+                      value="Poor"
+                      className="hover:bg-muted-background hover:text-foreground"
+                    >
                       Poor
                     </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
@@ -394,14 +413,16 @@ export function ToolDataViewDialog(props: {
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
-                <Input readOnly disabled></Input>
+                <Input
+                  readOnly
+                  disabled
+                  className="text-muted-background bg-muted-foreground"
+                />
                 <UploadButton
                   disabled={!isEditing}
                   input={{ tool_id: data.tool_id }}
                   endpoint="toolImageUploader"
-                  onClientUploadComplete={() => {
-                    handleUploadComplete();
-                  }}
+                  onClientUploadComplete={handleUploadComplete}
                 />
               </div>
             </div>
@@ -429,7 +450,6 @@ export function ToolDataViewDialog(props: {
                   Save
                 </Button>
               </DialogClose>
-
               <DialogClose asChild>
                 <Button
                   onClick={handleSaveAndCloseClick}

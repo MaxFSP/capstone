@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -242,13 +244,13 @@ function KanbanBoard(props: {
                   <div
                     {...provided.draggableProps}
                     ref={provided.innerRef}
-                    className="flex min-w-[300px] max-w-[400px] flex-col"
+                    className="flex min-w-[300px] max-w-[400px] flex-col rounded-sm border border-border p-1 shadow-md"
                   >
                     <div
-                      className="mb-4 rounded bg-gray-800 p-4 shadow"
+                      className="mb-4 rounded bg-secondary p-4 shadow"
                       {...provided.dragHandleProps}
                     >
-                      <h2 className="break-words text-center text-base font-semibold">
+                      <h2 className="break-words text-center text-base font-semibold text-secondary-foreground">
                         {columnId.length > 27
                           ? columnId.slice(0, 27) + "..."
                           : columnId}
@@ -322,18 +324,27 @@ function KanbanBoard(props: {
                     placeholder="New Column Name"
                     value={newColumnName}
                     onChange={(e) => setNewColumnName(e.target.value)}
+                    className="border border-border bg-background text-foreground"
                   />
                   <div className="mt-4 flex">
-                    <Button onClick={addColumn} className="mr-2">
+                    <Button
+                      onClick={addColumn}
+                      className="mr-2 bg-primary text-primary-foreground"
+                    >
                       Add Column
                     </Button>
-                    <Button onClick={cancelAddColumn}>X</Button>
+                    <Button
+                      onClick={cancelAddColumn}
+                      className="bg-destructive text-destructive-foreground"
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </>
               ) : (
                 <Button
                   onClick={() => setIsAddingColumn(true)}
-                  className="h-full min-w-[300px] max-w-[400px] p-4"
+                  className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
                 >
                   + Add Column
                 </Button>

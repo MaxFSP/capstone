@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
-
 import {
   Card,
   CardContent,
@@ -34,9 +33,13 @@ export function PercentageChart({
       {
         status: "completed",
         tasks: completedTasks,
-        fill: "#ECB365",
-      }, // Yellow
-      { status: "ongoing", tasks: tasksOngoing, fill: "hsl(210, 100%, 20%)" }, // Navy Blue
+        fill: "hsl(var(--chart-1))", // Brighter Caterpillar Yellow
+      },
+      {
+        status: "ongoing",
+        tasks: tasksOngoing,
+        fill: "hsl(var(--chart-2))", // Darker Gray for better contrast
+      },
     ],
     [completedTasks, tasksOngoing],
   );
@@ -47,11 +50,11 @@ export function PercentageChart({
     },
     completed: {
       label: "Completed",
-      color: "hsl(45, 100%, 50%)",
+      color: "hsl(var(--chart-1))", // Brighter Caterpillar Yellow
     },
     ongoing: {
       label: "Ongoing",
-      color: "hsl(210, 100%, 20%)",
+      color: "hsl(var(--chart-2))", // Darker Gray
     },
   } satisfies ChartConfig;
 
@@ -60,10 +63,10 @@ export function PercentageChart({
   }, [completedTasks, totalTasks]);
 
   return (
-    <Card className="mx-auto flex w-full max-w-md flex-col bg-[#04293A] text-white md:max-w-full">
+    <Card className="mx-auto flex w-full max-w-md flex-col bg-card text-card-foreground md:max-w-full">
       <CardHeader className="items-center pb-0">
-        <CardTitle className="text-[#ECB365]">Tasks Completion</CardTitle>
-        <CardDescription className="text-[#ECB365]">
+        <CardTitle className="text-foreground">Tasks Completion</CardTitle>
+        <CardDescription className="text-foreground">
           Current Task Status
         </CardDescription>
       </CardHeader>
@@ -97,14 +100,14 @@ export function PercentageChart({
                         <tspan
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          className="fill-[#ECB365] text-3xl font-bold"
+                          className="fill-foreground text-3xl font-bold"
                         >
                           {completedPercentage}%
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy ?? 0) + 24}
-                          className="fill-[#ECB365]"
+                          className="fill-foreground"
                         >
                           Completed
                         </tspan>
@@ -118,7 +121,7 @@ export function PercentageChart({
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
-        <div className="leading-none text-[#ECB365]">
+        <div className="leading-none text-foreground">
           Showing task completion percentage
         </div>
       </CardFooter>

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
@@ -16,6 +18,16 @@ import {
 } from "~/components/ui/dialog";
 
 import { Input, Button, Checkbox } from "@nextui-org/react";
+import { Button as ButtonTwo } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 import type {
   UpdateUserRequest,
@@ -26,8 +38,16 @@ import type { UpdateClerkUser } from "../../server/types/IClerkUser";
 import { DialogClose } from "@radix-ui/react-dialog";
 
 import { Avatar } from "@nextui-org/react";
+import { type Org } from "../../server/types/org";
+import { Label } from "~/components/ui/label";
 
-export default function SmallEditUser({ user }: { user: ClerkUser }) {
+export default function SmallEditUser({
+  user,
+  orgs,
+}: {
+  user: ClerkUser;
+  orgs: Org[];
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
     firstName: user.firstName,
@@ -38,6 +58,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
     password: "",
     confirmPassword: "",
   });
+  const [role, setRole] = useState(user.org.name);
 
   const [initialFormValues, setInitialFormValues] = useState({ ...formValues });
   const [isFormValid, setIsFormValid] = useState(false);
@@ -50,7 +71,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [formValues]);
+  }, [formValues, role]);
 
   const validateForm = () => {
     const email = formValues.email ?? "";
@@ -75,7 +96,8 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
   const checkForChanges = () => {
     const hasChanges =
       JSON.stringify({ ...formValues, confirmPassword: "" }) !==
-      JSON.stringify({ ...initialFormValues, confirmPassword: "" });
+        JSON.stringify({ ...initialFormValues, confirmPassword: "" }) ||
+      role !== user.org.name;
     setHasChanges(hasChanges);
   };
 
@@ -92,7 +114,6 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
   const handleEditClick = () => setIsEditing((prev) => !prev);
 
   const handleSaveClick = async (): Promise<boolean> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, confirmPassword, ...formValuesWithoutPassword } =
       formValues;
 
@@ -104,7 +125,6 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
       ) as (keyof typeof formValuesWithoutPassword)[]
     ).forEach((key) => {
       if (formValuesWithoutPassword[key] !== initialFormValues[key]) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
         changes[key] = formValuesWithoutPassword[key] as any;
       }
     });
@@ -117,8 +137,11 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
       changes.email = [formValues.email!];
     }
 
+    const selectedDepartment = orgs.find((org) => org.name === role);
+    const orgVal = selectedDepartment ? selectedDepartment.id : "";
     const finalChanges: UpdateUserRequest = {
       userId: user.id,
+      orgId: orgVal,
       formEmployee: {
         ...changes,
         email: changes.email,
@@ -206,13 +229,13 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="border-blue-gray-50 flex cursor-pointer items-center gap-4 border-b px-5 py-4">
+        <div className="flex cursor-pointer items-center gap-4 border-b border-border px-5 py-4 text-foreground">
           <Avatar src={user.img} alt={user.firstName} size="lg" />
           <div className="flex w-full flex-col justify-center">
             <div className="flex items-center justify-between">
               <p className="text-base font-semibold">{user.firstName}</p>
               <div className="flex items-center gap-2 pr-5">
-                <div className="text-blue-gray-600 text-sm font-semibold">
+                <div className="text-sm font-semibold text-muted-foreground">
                   {user.org.name}
                 </div>
                 <div
@@ -223,11 +246,13 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto rounded-lg border border-border bg-background lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
-          <DialogDescription>
-            This will update the users details in the system.
+          <DialogTitle className="text-large text-primary">
+            Edit User
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            This will update the user`&apos;`s details in the system.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
@@ -239,13 +264,16 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
             />
           </div>
           <div className="w-full">
-            <h3 className="mb-4 text-2xl font-semibold">Edit User</h3>
+            <h3 className="mb-4 text-2xl font-semibold text-foreground">
+              Edit User
+            </h3>
             <form className="flex flex-col space-y-4">
               <Input
                 type="text"
                 label="User Id"
                 defaultValue={`${user.id}`}
                 isDisabled
+                className="border border-border bg-muted text-muted-foreground"
               />
               <Input
                 type="text"
@@ -259,6 +287,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                 errorMessage={
                   isNameInvalid ? "Name can only contain letters" : undefined
                 }
+                className="border border-border bg-background text-foreground"
               />
               <Input
                 type="text"
@@ -274,6 +303,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                     ? "Last Name can only contain letters"
                     : undefined
                 }
+                className="border border-border bg-background text-foreground"
               />
               <Input
                 type="text"
@@ -290,6 +320,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                     ? "Username can only contain letters and numbers"
                     : undefined
                 }
+                className="border border-border bg-background text-foreground"
               />
               <Input
                 type="email"
@@ -303,6 +334,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                 errorMessage={
                   isEmailInvalid ? "Please enter a valid email" : undefined
                 }
+                className="border border-border bg-background text-foreground"
               />
 
               <Input
@@ -319,6 +351,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                     ? "Password must be at least 8 characters long and contain at least one uppercase letter and one number"
                     : undefined
                 }
+                className="border border-border bg-background text-foreground"
               />
               <Input
                 type="password"
@@ -334,12 +367,41 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                     ? "Passwords do not match"
                     : undefined
                 }
+                className="border border-border bg-background text-foreground"
               />
+              <div className="flex-1">
+                <Label>Role</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild disabled={!isEditing}>
+                    <ButtonTwo
+                      className="w-full border border-border bg-background text-foreground"
+                      variant="outline"
+                    >
+                      {role}
+                    </ButtonTwo>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full bg-background text-foreground">
+                    <DropdownMenuLabel>Role</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup
+                      value={role}
+                      onValueChange={(value: string) => setRole(value)}
+                    >
+                      {orgs.map((org) => (
+                        <DropdownMenuRadioItem key={org.id} value={org.name}>
+                          {org.name}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <Checkbox
                 name="online"
                 isSelected={formValues.online}
                 onChange={handleCheckboxChange}
                 isDisabled={!isEditing}
+                className="border border-border bg-background text-foreground"
               >
                 Online
               </Checkbox>
@@ -347,11 +409,14 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
               <div className="flex space-x-4">
                 {!isEditing && (
                   <DialogClose asChild>
-                    <Button>Close</Button>
+                    <Button className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+                      Close
+                    </Button>
                   </DialogClose>
                 )}
                 <Button
                   onClick={isEditing ? handleCancelClick : handleEditClick}
+                  className="bg-primary text-primary-foreground"
                 >
                   {isEditing ? "Cancel" : "Edit"}
                 </Button>
@@ -361,6 +426,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                       <Button
                         onClick={handleSaveClick}
                         isDisabled={!isFormValid || !hasChanges}
+                        className="hover:bg-accent-dark bg-accent text-accent-foreground"
                       >
                         Save
                       </Button>
@@ -370,6 +436,7 @@ export default function SmallEditUser({ user }: { user: ClerkUser }) {
                       <Button
                         onClick={handleSaveAndCloseClick}
                         isDisabled={!isFormValid || !hasChanges}
+                        className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
                       >
                         Save & Close
                       </Button>

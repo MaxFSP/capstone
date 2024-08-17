@@ -2,7 +2,6 @@ import { nextui } from "@nextui-org/react";
 import type { Config } from "tailwindcss";
 
 const config = {
-  darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -10,7 +9,7 @@ const config = {
     "./src/**/*.{ts,tsx}",
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
-  prefix: "",
+  darkMode: "class", // Ensures dark mode works via the 'dark' class
   theme: {
     container: {
       center: true,
@@ -21,47 +20,47 @@ const config = {
     },
     extend: {
       boxShadow: {
-        outline: "0 0 0 2px rgba(59, 130, 246, 0.5)", // Adjust the color and size as needed
+        outline: "0 0 0 2px rgba(255, 204, 0, 0.5)", // Caterpillar Yellow, semi-transparent
       },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "hsl(var(--background))", // Use CSS variable for background
+        foreground: "hsl(var(--foreground))", // Use CSS variable for text color
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "hsl(var(--primary))", // Caterpillar Yellow
+          foreground: "hsl(var(--primary-foreground))", // Caterpillar Black
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "hsl(var(--secondary))", // Caterpillar Black
+          foreground: "hsl(var(--secondary-foreground))", // Caterpillar White
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "hsl(var(--destructive))", // Bright Red
+          foreground: "hsl(var(--destructive-foreground))", // Caterpillar White
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "hsl(var(--muted))", // Light Gray
+          foreground: "hsl(var(--muted-foreground))", // Dark Gray
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "hsl(var(--accent))", // Dark Gray
+          foreground: "hsl(var(--accent-foreground))", // Caterpillar Yellow
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "hsl(var(--popover))", // Dark Gray
+          foreground: "hsl(var(--popover-foreground))", // Caterpillar Yellow
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "hsl(var(--card))", // Light Gray
+          foreground: "hsl(var(--card-foreground))", // Caterpillar Black
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0.5rem", // Border radius customization
+        md: "calc(0.5rem - 2px)",
+        sm: "calc(0.5rem - 4px)",
       },
       keyframes: {
         "accordion-down": {

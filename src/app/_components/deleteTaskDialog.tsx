@@ -34,21 +34,22 @@ export default function DeleteTaskDialog(props: {
         router.refresh();
         onDelete(); // Invoke the onDelete callback
       } else {
-        // console.error("Failed to update tool:", result.error);
+        console.error("Failed to delete task");
       }
     } catch (error) {
       console.error("Error deleting task:", error);
     }
   };
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild key={task.task_id + "task" + task.title}>
         <Button variant="destructive">Delete</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-large">
-            Delete task
+            Delete Task
           </AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete this task?
@@ -56,7 +57,7 @@ export default function DeleteTaskDialog(props: {
         </AlertDialogHeader>
         <AlertDialogFooter className="flex justify-end sm:justify-start">
           <AlertDialogCancel asChild>
-            <Button type="button" variant="secondary">
+            <Button type="button" variant="default">
               Cancel
             </Button>
           </AlertDialogCancel>

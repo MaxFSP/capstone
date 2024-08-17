@@ -85,7 +85,6 @@ export function SmallPartDialog(props: {
   const validateForm = () => {
     const isDataValid =
       formData.part_id !== null && formData.part_id !== undefined;
-    formData;
     setIsFormValid(isDataValid);
   };
 
@@ -146,35 +145,41 @@ export function SmallPartDialog(props: {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex flex-col border-b border-gray-700 px-5 py-4 text-white">
+        <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-base font-semibold">ID</p>
             <div className="flex items-center gap-2">{index}</div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Name</p>
+            <p className="text-sm font-medium text-muted-foreground">Name</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.name}</span>
+              <span className="text-sm text-foreground">{data.name}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Condition</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Condition
+            </p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.condition}</span>
+              <span className="text-sm text-foreground">{data.condition}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Quantity</p>
+            <p className="text-sm font-medium text-muted-foreground">
+              Quantity
+            </p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-200">{data.quantity}</span>
+              <span className="text-sm text-foreground">{data.quantity}</span>
             </div>
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto rounded-lg border border-border bg-background lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">Edit Part</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-large text-primary">
+            Edit Part
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Anyone who has this link will be able to view this.
           </DialogDescription>
         </DialogHeader>
@@ -222,7 +227,7 @@ export function SmallPartDialog(props: {
                 value={formData.part_id}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -233,7 +238,7 @@ export function SmallPartDialog(props: {
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -246,7 +251,7 @@ export function SmallPartDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
           </div>
@@ -260,7 +265,7 @@ export function SmallPartDialog(props: {
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
-                className="border border-gray-300"
+                className="border border-border bg-background text-foreground"
               />
             </div>
             <div className="flex-1">
@@ -270,7 +275,7 @@ export function SmallPartDialog(props: {
                 value={formData.created_at.toLocaleDateString()}
                 readOnly
                 disabled
-                className="bg-zinc-700"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
           </div>
@@ -286,16 +291,19 @@ export function SmallPartDialog(props: {
                     readOnly={!isEditing}
                     disabled={!isEditing}
                     onChange={handleChange}
-                    className="  border border-gray-300"
+                    className="  border border-border bg-background text-foreground"
                   />
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className="w-1/6" variant="outline">
+                      <Button
+                        className="w-1/6 border border-border bg-background text-foreground"
+                        variant="outline"
+                      >
                         {length}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="border border-border bg-background text-foreground">
                       <DropdownMenuLabel>Unit</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
@@ -323,15 +331,18 @@ export function SmallPartDialog(props: {
                     readOnly={!isEditing}
                     disabled={!isEditing}
                     onChange={handleChange}
-                    className=" border border-gray-300"
+                    className=" border border-border bg-background text-foreground"
                   />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className=" w-1/6" variant="outline">
+                      <Button
+                        className=" w-1/6 border border-border bg-background text-foreground"
+                        variant="outline"
+                      >
                         {width}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="border border-border bg-background text-foreground">
                       <DropdownMenuLabel>Unit</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
@@ -358,15 +369,18 @@ export function SmallPartDialog(props: {
                     disabled={!isEditing}
                     readOnly={!isEditing}
                     onChange={handleChange}
-                    className=" border border-gray-300"
+                    className=" border border-border bg-background text-foreground"
                   />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button className=" w-1/6" variant="outline">
+                      <Button
+                        className=" w-1/6 border border-border bg-background text-foreground"
+                        variant="outline"
+                      >
                         {height}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className="border border-border bg-background text-foreground">
                       <DropdownMenuLabel>Unit</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
@@ -395,11 +409,14 @@ export function SmallPartDialog(props: {
               <Label>Location</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {locationValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -422,11 +439,14 @@ export function SmallPartDialog(props: {
               <Label>Condition</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border border-border bg-background text-foreground"
+                    variant="outline"
+                  >
                     {conditionValue}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
+                <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Condition</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -456,7 +476,11 @@ export function SmallPartDialog(props: {
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
-                <Input readOnly disabled></Input>
+                <Input
+                  readOnly
+                  disabled
+                  className="border border-border bg-muted text-muted-foreground"
+                ></Input>
                 <UploadButton
                   disabled={!isEditing}
                   input={{ part_id: data.part_id }}
@@ -473,12 +497,19 @@ export function SmallPartDialog(props: {
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button
+                type="button"
+                variant="secondary"
+                className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
                 Close
               </Button>
             </DialogClose>
           )}
-          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
+          <Button
+            onClick={isEditing ? handleCancelClick : handleEditClick}
+            className="bg-primary text-primary-foreground"
+          >
             {isEditing ? "Cancel" : "Edit"}
           </Button>
           {isEditing && (
@@ -487,6 +518,7 @@ export function SmallPartDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="hover:bg-accent-dark bg-accent text-accent-foreground"
                 >
                   Save
                 </Button>
@@ -496,6 +528,7 @@ export function SmallPartDialog(props: {
                 <Button
                   onClick={handleSaveAndCloseClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
                 >
                   Save & Close
                 </Button>

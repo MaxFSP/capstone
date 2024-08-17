@@ -33,7 +33,7 @@ export function CreateNewStockDialog(props: {
       <AlertDialogTrigger asChild>
         <Button variant="default">Create {type}</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto border-border bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-large">
             Create {type}

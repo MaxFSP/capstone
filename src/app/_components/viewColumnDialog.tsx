@@ -56,23 +56,28 @@ export default function EditColumnDialog(props: {
       triggerRefresh();
       router.refresh();
     } else {
-      // console.error("Failed to update columns:", result.error);
+      console.error("Failed to update columns:", response.statusText);
     }
   };
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" className="w-full sm:w-auto">
+        <Button
+          variant="outline"
+          className="w-full border border-border bg-background text-foreground sm:w-auto"
+        >
           Edit Columns
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto sm:max-w-2xl">
+      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-lg sm:text-xl">
+          <AlertDialogTitle className="text-lg text-primary sm:text-xl">
             Column editing
           </AlertDialogTitle>
-          <AlertDialogDescription>Edit the column names</AlertDialogDescription>
+          <AlertDialogDescription className="text-muted-foreground">
+            Edit the column names
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
           {columns.map((column) => (
@@ -81,15 +86,15 @@ export default function EditColumnDialog(props: {
               className="flex flex-col items-center gap-4 sm:flex-row"
             >
               <Input
-                className="w-full text-base font-semibold sm:w-[70%]"
+                className="w-full border border-border bg-muted text-base font-semibold text-muted-foreground sm:w-[70%]"
                 value={columnTitles[column.column_id] ?? column.title}
                 onChange={(e) =>
                   handleInputChange(column.column_id, e.target.value)
                 }
               />
               <Button
-                variant={"default"}
-                className="w-full sm:w-auto"
+                variant="default"
+                className="w-full bg-primary text-primary-foreground sm:w-auto"
                 onClick={() =>
                   editColumn(
                     column.column_id,
@@ -107,7 +112,7 @@ export default function EditColumnDialog(props: {
             <Button
               type="button"
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="w-full bg-secondary text-secondary-foreground sm:w-auto"
               onClick={() => {
                 setColumns(initialValue);
               }}

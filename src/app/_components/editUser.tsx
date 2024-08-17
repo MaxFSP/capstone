@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
@@ -113,7 +115,6 @@ export default function EditUser({
   const handleEditClick = () => setIsEditing((prev) => !prev);
 
   const handleSaveClick = async (): Promise<boolean> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, confirmPassword, ...formValuesWithoutPassword } =
       formValues;
 
@@ -125,7 +126,6 @@ export default function EditUser({
       ) as (keyof typeof formValuesWithoutPassword)[]
     ).forEach((key) => {
       if (formValuesWithoutPassword[key] !== initialFormValues[key]) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
         changes[key] = formValuesWithoutPassword[key] as any;
       }
     });
@@ -187,7 +187,6 @@ export default function EditUser({
     const saveSuccessful = await handleSaveClick();
     if (saveSuccessful) {
       router.refresh();
-      // notify the user that the changes have been saved
     }
   };
 
@@ -230,13 +229,15 @@ export default function EditUser({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <p className=" w-8 cursor-pointer text-small font-semibold"> View </p>
+        <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">
+          View
+        </p>
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
           <DialogDescription>
-            This will update the users details in the system.
+            This will update the user`&apos;` details in the system.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
@@ -248,7 +249,9 @@ export default function EditUser({
             />
           </div>
           <div className="w-full">
-            <h3 className="mb-4 text-2xl font-semibold">Edit User</h3>
+            <h3 className="mb-4 text-2xl font-semibold text-foreground">
+              Edit User
+            </h3>
             <form className="flex flex-col space-y-4">
               <Input
                 type="text"
@@ -288,7 +291,6 @@ export default function EditUser({
                 type="text"
                 label="Username"
                 name="username"
-                pattern="[a-zA-Z0-9]+"
                 value={formValues.username}
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
@@ -348,23 +350,25 @@ export default function EditUser({
                 <Label>Role</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild disabled={!isEditing}>
-                    <ButtonTwo className="w-full" variant="outline">
+                    <ButtonTwo
+                      className="w-full border border-border bg-background text-foreground"
+                      variant="outline"
+                    >
                       {role}
                     </ButtonTwo>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
-                    <DropdownMenuLabel>Serial Number</DropdownMenuLabel>
+                  <DropdownMenuContent className="w-full bg-background text-foreground">
+                    <DropdownMenuLabel>Role</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup
                       value={role}
                       onValueChange={(value: string) => setRole(value)}
                     >
-                      <DropdownMenuRadioItem value="Administrador">
-                        Administrador
-                      </DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="Jefes">
-                        Jefes
-                      </DropdownMenuRadioItem>
+                      {orgs.map((org) => (
+                        <DropdownMenuRadioItem key={org.id} value={org.name}>
+                          {org.name}
+                        </DropdownMenuRadioItem>
+                      ))}
                     </DropdownMenuRadioGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
