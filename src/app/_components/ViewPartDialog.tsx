@@ -197,7 +197,7 @@ export function PartDataViewDialog(props: {
                 value={formData.part_id}
                 readOnly
                 disabled
-                className="text-muted-background bg-muted-foreground"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -246,7 +246,7 @@ export function PartDataViewDialog(props: {
                 value={formData.created_at.toLocaleDateString()}
                 readOnly
                 disabled
-                className="text-muted-background bg-muted-foreground"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
           </div>
@@ -477,7 +477,7 @@ export function PartDataViewDialog(props: {
                 <Input
                   readOnly
                   disabled
-                  className="text-muted-background bg-muted-foreground"
+                  className="border border-border bg-muted text-muted-foreground"
                 ></Input>
                 <UploadButton
                   disabled={!isEditing}

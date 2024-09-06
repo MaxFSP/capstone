@@ -211,7 +211,7 @@ export function ToolDataViewDialog(props: {
                 value={data.tool_id}
                 readOnly
                 disabled
-                className="text-muted-background bg-muted-foreground"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -416,7 +416,7 @@ export function ToolDataViewDialog(props: {
                 <Input
                   readOnly
                   disabled
-                  className="text-muted-background bg-muted-foreground"
+                  className="border border-border bg-muted text-muted-foreground"
                 />
                 <UploadButton
                   disabled={!isEditing}

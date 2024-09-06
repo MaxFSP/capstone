@@ -167,7 +167,7 @@ export function MachineryDataViewDialog(props: {
     disabled: data.state === "Sold",
     className:
       data.state === "Sold"
-        ? "bg-muted-foreground text-muted-background"
+        ? "border border-border bg-muted text-muted-foreground"
         : "border border-border bg-background text-foreground",
   };
 

@@ -378,6 +378,9 @@ export function WorkOrderDataViewDialog(props: {
               </DialogClose>
             </>
           )}
+          <DialogClose asChild>
+            <Button> Generate Report </Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
