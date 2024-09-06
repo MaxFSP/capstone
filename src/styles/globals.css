@@ -2,6 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-black text-white;
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 0%; /* Black */
+    --card: 0 0% 96%; /* Light Gray */
+    --card-foreground: 0 0% 0%; /* Black */
+    --popover: 0 0% 96%; /* Light Gray */
+    --popover-foreground: 0 0% 0%; /* Black */
+    --primary: 45 100% 50%; /* Caterpillar Yellow */
+    --primary-foreground: 0 0% 0%; /* Black */
+    --secondary: 0 0% 20%; /* Dark Gray */
+    --secondary-foreground: 0 0% 100%; /* White */
+    --muted: 0 0% 85%; /* Light Gray */
+    --muted-foreground: 0 0% 0%; /* Black */
+    --accent: 0 0% 20%; /* Dark Gray */
+    --accent-foreground: 45 100% 50%; /* Caterpillar Yellow */
+    --destructive: 0 100% 50%; /* Bright Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 0 0% 75%; /* Medium Gray */
+    --input: 0 0% 75%; /* Medium Gray */
+    --ring: 45 100% 50%; /* Caterpillar Yellow */
+    --radius: 0.5rem;
+    --chart-1: 45 100% 50%; /* Caterpillar Yellow */
+    --chart-2: 0 0% 25%; /* Medium Gray */
+    --chart-3: 0 0% 50%; /* Light Gray */
+    --chart-4: 0 0% 96%; /* Very Light Gray */
+    --chart-5: 0 0% 0%; /* Black */
+  }
+
+  .dark {
+    --background: 0 0% 0%; /* Black */
+    --foreground: 0 0% 100%; /* White */
+    --card: 0 0% 15%; /* Dark Gray */
+    --card-foreground: 0 0% 100%; /* White */
+    --popover: 0 0% 15%; /* Dark Gray */
+    --popover-foreground: 0 0% 100%; /* White */
+    --primary: 45 100% 50%; /* Caterpillar Yellow */
+    --primary-foreground: 0 0% 0%; /* Black */
+    --secondary: 0 0% 20%; /* Dark Gray */
+    --secondary-foreground: 45 100% 50%; /* Caterpillar Yellow */
+    --muted: 0 0% 15%; /* Dark Gray */
+    --muted-foreground: 45 100% 50%; /* Caterpillar Yellow */
+    --accent: 0 0% 15%; /* Dark Gray */
+    --accent-foreground: 45 100% 50%; /* Caterpillar Yellow */
+    --destructive: 0 100% 50%; /* Bright Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 0 0% 25%; /* Medium Gray */
+    --input: 0 0% 25%; /* Medium Gray */
+    --ring: 45 100% 50%; /* Caterpillar Yellow */
+    --chart-1: 45 100% 60%; /* Brighter Caterpillar Yellow for better contrast */
+    --chart-2: 0 0% 40%; /* Darker Gray for contrast */
+    --chart-3: 0 0% 65%; /* Medium Gray for visibility */
+    --chart-4: 0 0% 85%; /* Lighter Gray for distinction */
+    --chart-5: 0 0% 100%; /* White for high contrast */
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong {
+    color: var(--primary);
+  }
+
+  a {
+    color: var(--primary);
+    &:hover {
+      color: var(--primary-foreground);
+      background-color: var(--primary);
+    }
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+  }
+
+  .bg-accent {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .bg-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .text-muted {
+    color: var(--muted-foreground);
+  }
+
+  .bg-muted {
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+  }
 }

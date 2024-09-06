@@ -2,7 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isProtectedRoute = (pathname: string) => {
-  const excludedRoutes = ["/signIn"]; // Include other auth-related routes if necessary
+  const excludedRoutes = ["/signIn", "/api/uploadthing"]; // Include other auth-related routes if necessary
 
   // Check if the pathname starts with any excluded route
   for (const route of excludedRoutes) {

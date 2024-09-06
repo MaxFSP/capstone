@@ -1,32 +1,54 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import type { Employee } from "../types/employee";
-import type { Org } from "../types/org";
+import type { ClerkUser } from "../../server/types/IClerkUser";
 import React, { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+
 import {
-  Input,
-  Dropdown,
-  DropdownTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+
+import { Input, Button, Checkbox } from "@nextui-org/react";
+import { Button as ButtonTwo } from "~/components/ui/button";
+
+import type {
+  UpdateUserRequest,
+  UpdateUserResponse,
+} from "../../server/types/api";
+import {
   DropdownMenu,
-  DropdownItem,
-  Button,
-  Checkbox,
-} from "@nextui-org/react";
-import type { UpdateUserRequest, UpdateUserResponse } from "../types/api";
-import type { UpdateEmployee } from "../types/employee";
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import type { UpdateClerkUser } from "../../server/types/IClerkUser";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { useRouter } from "next/navigation";
+import { Label } from "~/components/ui/label";
+import { type Org } from "~/server/types/org";
 
 export default function EditUser({
   user,
   orgs,
-  currentOrg,
 }: {
-  user: Employee;
+  user: ClerkUser;
   orgs: Org[];
-  currentOrg: Org;
 }) {
   const router = useRouter();
+  const current_role = user.org.name;
+  const [role, setRole] = useState(current_role);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState({
@@ -40,29 +62,21 @@ export default function EditUser({
   });
 
   const [initialFormValues, setInitialFormValues] = useState({ ...formValues });
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([currentOrg.name]),
-  );
-  const [initialSelectedKeys, setInitialSelectedKeys] = useState(
-    new Set([currentOrg.name]),
-  );
   const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const selectedValue = useMemo(
-    () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-    [selectedKeys],
-  );
-
   useEffect(() => {
     setInitialFormValues({ ...formValues, email: user.email[0] });
-    setSelectedKeys(new Set([currentOrg.name]));
-    setInitialSelectedKeys(new Set([currentOrg.name]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, orgs, currentOrg]);
+  }, [user]);
 
   useEffect(() => {
-    const isEmailValid = validateEmail(formValues.email);
+    validateForm();
+    checkForChanges();
+  }, [formValues, role]);
+
+  const validateForm = () => {
+    const email = formValues.email ?? "";
+    const isEmailValid = validateEmail(email);
     const isUsernameValid = validateUsername(formValues.username);
     const isNameValid = validateName(formValues.firstName);
     const isLastNameValid = validateName(formValues.lastName);
@@ -76,17 +90,17 @@ export default function EditUser({
         isNameValid &&
         isLastNameValid &&
         (formValues.password === "" ||
-          (isPasswordValid && isConfirmPasswordValid)) &&
-        selectedKeys.size > 0,
+          (isPasswordValid && isConfirmPasswordValid)),
     );
+  };
 
+  const checkForChanges = () => {
     const hasChanges =
       JSON.stringify({ ...formValues, confirmPassword: "" }) !==
         JSON.stringify({ ...initialFormValues, confirmPassword: "" }) ||
-      JSON.stringify(Array.from(selectedKeys)) !==
-        JSON.stringify(Array.from(initialSelectedKeys));
+      role !== current_role;
     setHasChanges(hasChanges);
-  }, [formValues, selectedKeys, initialFormValues, initialSelectedKeys]);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -101,11 +115,10 @@ export default function EditUser({
   const handleEditClick = () => setIsEditing((prev) => !prev);
 
   const handleSaveClick = async (): Promise<boolean> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, confirmPassword, ...formValuesWithoutPassword } =
       formValues;
 
-    const changes: Partial<UpdateEmployee> = {};
+    const changes: Partial<UpdateClerkUser> = {};
 
     (
       Object.keys(
@@ -113,7 +126,6 @@ export default function EditUser({
       ) as (keyof typeof formValuesWithoutPassword)[]
     ).forEach((key) => {
       if (formValuesWithoutPassword[key] !== initialFormValues[key]) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
         changes[key] = formValuesWithoutPassword[key] as any;
       }
     });
@@ -122,26 +134,22 @@ export default function EditUser({
       changes.password = password;
     }
 
-    const selectedDepartmentName = Array.from(selectedKeys).join(", ");
-    const selectedDepartment = orgs.find(
-      (department) => department.name === selectedDepartmentName,
-    );
-    const orgId = selectedDepartment ? selectedDepartment.id : "";
-    changes.orgId = orgId;
-
     if (!changes.email) {
       changes.email = [formValues.email!];
     }
 
+    const selectedDepartment = orgs.find((org) => org.name === role);
+    const orgVal = selectedDepartment ? selectedDepartment.id : "";
+
     const finalChanges: UpdateUserRequest = {
       userId: user.id,
+      orgId: orgVal,
       formEmployee: {
         ...changes,
         email: changes.email,
       },
     };
 
-    // console.log(finalChanges);
     try {
       const response = await fetch("/api/updateUser", {
         method: "POST",
@@ -155,7 +163,6 @@ export default function EditUser({
         throw new Error("Failed to update user");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const data: UpdateUserResponse = await response.json();
       if (data.error) {
         throw new Error(data.error);
@@ -163,7 +170,7 @@ export default function EditUser({
 
       setIsEditing(false);
       setInitialFormValues({ ...formValues });
-      setInitialSelectedKeys(new Set(selectedKeys));
+      checkForChanges();
       return true;
     } catch (error) {
       console.error("Failed to update user:", error);
@@ -173,19 +180,14 @@ export default function EditUser({
 
   const handleCancelClick = () => {
     setFormValues(initialFormValues);
-    setSelectedKeys(initialSelectedKeys);
     setIsEditing(false);
   };
 
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
     if (saveSuccessful) {
-      router.push("/management");
+      router.refresh();
     }
-  };
-
-  const handleCloseClick = () => {
-    router.push("/management");
   };
 
   const validateEmail = (email: string) =>
@@ -197,13 +199,14 @@ export default function EditUser({
     /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const isEmailInvalid = useMemo(
-    () => formValues.email !== "" && !validateEmail(formValues.email),
+    () => formValues.email && !validateEmail(formValues.email),
     [formValues.email],
   );
   const isUsernameInvalid = useMemo(
-    () => formValues.username !== "" && !validateUsername(formValues.username),
+    () => formValues.username && !validateUsername(formValues.username),
     [formValues.username],
   );
+
   const isNameInvalid = useMemo(
     () => formValues.firstName !== "" && !validateName(formValues.firstName),
     [formValues.firstName],
@@ -224,9 +227,20 @@ export default function EditUser({
   );
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center text-gray-100">
-      <div className="w-full max-w-4xl rounded-lg bg-gray-800 p-8 shadow-lg">
-        <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+    <Dialog>
+      <DialogTrigger asChild>
+        <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">
+          View
+        </p>
+      </DialogTrigger>
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Edit User</DialogTitle>
+          <DialogDescription>
+            This will update the user`&apos;` details in the system.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
           <div className="mb-4 flex-shrink-0 md:mb-0">
             <img
               src={user.img}
@@ -235,7 +249,9 @@ export default function EditUser({
             />
           </div>
           <div className="w-full">
-            <h3 className="mb-4 text-2xl font-semibold">Edit User</h3>
+            <h3 className="mb-4 text-2xl font-semibold text-foreground">
+              Edit User
+            </h3>
             <form className="flex flex-col space-y-4">
               <Input
                 type="text"
@@ -252,7 +268,9 @@ export default function EditUser({
                 isDisabled={!isEditing}
                 isInvalid={isNameInvalid}
                 color={isNameInvalid ? "danger" : "default"}
-                errorMessage={isNameInvalid && "Name can only contain letters"}
+                errorMessage={
+                  isNameInvalid ? "Name can only contain letters" : undefined
+                }
               />
               <Input
                 type="text"
@@ -264,22 +282,24 @@ export default function EditUser({
                 isInvalid={isLastNameInvalid}
                 color={isLastNameInvalid ? "danger" : "default"}
                 errorMessage={
-                  isLastNameInvalid && "Last Name can only contain letters"
+                  isLastNameInvalid
+                    ? "Last Name can only contain letters"
+                    : undefined
                 }
               />
               <Input
                 type="text"
                 label="Username"
                 name="username"
-                pattern="[a-zA-Z0-9]+"
                 value={formValues.username}
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
-                isInvalid={isUsernameInvalid}
+                isInvalid={!!isUsernameInvalid}
                 color={isUsernameInvalid ? "danger" : "default"}
                 errorMessage={
-                  isUsernameInvalid &&
-                  "Username can only contain letters and numbers"
+                  isUsernameInvalid
+                    ? "Username can only contain letters and numbers"
+                    : undefined
                 }
               />
               <Input
@@ -289,9 +309,11 @@ export default function EditUser({
                 value={formValues.email}
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
-                isInvalid={isEmailInvalid}
+                isInvalid={!!isEmailInvalid}
                 color={isEmailInvalid ? "danger" : "default"}
-                errorMessage={isEmailInvalid && "Please enter a valid email"}
+                errorMessage={
+                  isEmailInvalid ? "Please enter a valid email" : undefined
+                }
               />
 
               <Input
@@ -304,8 +326,9 @@ export default function EditUser({
                 isInvalid={isPasswordInvalid}
                 color={isPasswordInvalid ? "danger" : "default"}
                 errorMessage={
-                  isPasswordInvalid &&
-                  "Password must contain at least 8 characters, one uppercase letter, and one number"
+                  isPasswordInvalid
+                    ? "Password must be at least 8 characters long and contain at least one uppercase letter and one number"
+                    : undefined
                 }
               />
               <Input
@@ -318,40 +341,52 @@ export default function EditUser({
                 isInvalid={isConfirmPasswordInvalid}
                 color={isConfirmPasswordInvalid ? "danger" : "default"}
                 errorMessage={
-                  isConfirmPasswordInvalid && "Passwords do not match"
+                  isConfirmPasswordInvalid
+                    ? "Passwords do not match"
+                    : undefined
                 }
               />
-              <Dropdown isDisabled={!isEditing} closeOnSelect={true}>
-                <DropdownTrigger>
-                  <Button variant="bordered" className="capitalize">
-                    {selectedValue === "" ? "Select Department" : selectedValue}
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  variant="flat"
-                  disallowEmptySelection
-                  selectionMode="single"
-                  selectedKeys={selectedKeys}
-                  onSelectionChange={(keys) => setSelectedKeys(new Set(keys))}
-                >
-                  {orgs.map((department) => (
-                    <DropdownItem key={department.name}>
-                      {department.name}
-                    </DropdownItem>
-                  ))}
+              <div className="flex-1">
+                <Label>Role</Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild disabled={!isEditing}>
+                    <ButtonTwo
+                      className="w-full border border-border bg-background text-foreground"
+                      variant="outline"
+                    >
+                      {role}
+                    </ButtonTwo>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full bg-background text-foreground">
+                    <DropdownMenuLabel>Role</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup
+                      value={role}
+                      onValueChange={(value: string) => setRole(value)}
+                    >
+                      {orgs.map((org) => (
+                        <DropdownMenuRadioItem key={org.id} value={org.name}>
+                          {org.name}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
                 </DropdownMenu>
-              </Dropdown>
+              </div>
               <Checkbox
+                name="online"
                 isSelected={formValues.online}
                 onChange={handleCheckboxChange}
-                name="online"
                 isDisabled={!isEditing}
               >
                 Online
               </Checkbox>
+
               <div className="flex space-x-4">
                 {!isEditing && (
-                  <Button onClick={handleCloseClick}>Close</Button>
+                  <DialogClose asChild>
+                    <Button>Close</Button>
+                  </DialogClose>
                 )}
                 <Button
                   onClick={isEditing ? handleCancelClick : handleEditClick}
@@ -360,25 +395,30 @@ export default function EditUser({
                 </Button>
                 {isEditing && (
                   <>
-                    <Button
-                      onClick={handleSaveClick}
-                      isDisabled={!isFormValid || !hasChanges}
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      onClick={handleSaveAndCloseClick}
-                      isDisabled={!isFormValid || !hasChanges}
-                    >
-                      Save & Close
-                    </Button>
+                    <DialogClose asChild>
+                      <Button
+                        onClick={handleSaveClick}
+                        isDisabled={!isFormValid || !hasChanges}
+                      >
+                        Save
+                      </Button>
+                    </DialogClose>
+
+                    <DialogClose asChild>
+                      <Button
+                        onClick={handleSaveAndCloseClick}
+                        isDisabled={!isFormValid || !hasChanges}
+                      >
+                        Save & Close
+                      </Button>
+                    </DialogClose>
                   </>
                 )}
               </div>
             </form>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

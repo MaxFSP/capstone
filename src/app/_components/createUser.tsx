@@ -1,60 +1,53 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import type { CreateEmployee } from "../types/employee";
-import type { Org } from "../types/org";
-import React, { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import {
-  Input,
-  Dropdown,
-  DropdownTrigger,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+
+import { Button as ButtonUI } from "~/components/ui/button";
+
+import type { Org } from "../../server/types/org";
+import React, { useEffect, useState, useMemo } from "react";
+import { Input, Button } from "@nextui-org/react";
+
+import {
   DropdownMenu,
-  DropdownItem,
-  Button,
-} from "@nextui-org/react";
-import type { CreateUserResponse } from "../types/api";
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
-export default function CreateUser({
-  user,
-  orgs,
-}: {
-  user: CreateEmployee;
-  orgs: Org[];
-}) {
+import type { CreateUserResponse } from "../../server/types/api";
+import { useRouter } from "next/navigation";
+import { cn } from "~/lib/utils";
+
+export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const router = useRouter();
-
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    username: user.username,
-    email: user.email[0]!,
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setInitialFormValues] = useState({ ...formValues });
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-    new Set([orgs[0]!.name]),
-  );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [initialSelectedKeys, setInitialSelectedKeys] = useState(
-    new Set([orgs[0]!.name]),
-  );
+
   const [isFormValid, setIsFormValid] = useState(false);
-
-  const selectedValue = useMemo(
-    () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-    [selectedKeys],
-  );
-
-  useEffect(() => {
-    setInitialFormValues({ ...formValues });
-    setSelectedKeys(new Set([orgs[0]!.name]));
-    setInitialSelectedKeys(new Set([orgs[0]!.name]));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, orgs]);
+  const [role, setRole] = useState(orgs[0]!.name);
 
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
@@ -70,10 +63,9 @@ export default function CreateUser({
         isNameValid &&
         isLastNameValid &&
         isPasswordValid &&
-        isPasswordsMatch &&
-        selectedKeys.size > 0,
+        isPasswordsMatch,
     );
-  }, [formValues, selectedKeys]);
+  }, [formValues]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -81,19 +73,14 @@ export default function CreateUser({
   };
 
   const handleSaveClick = async (): Promise<boolean> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...formValuesWithoutConfirm } = formValues;
     const { email, ...formValuesCrop } = formValuesWithoutConfirm;
     const emails = [email];
     const formValuesF = { email: emails, ...formValuesCrop };
 
-    const selectedDepartmentName = Array.from(selectedKeys).join(", ");
-    const selectedDepartment = orgs.find(
-      (org) => org.name === selectedDepartmentName,
-    );
+    const selectedDepartment = orgs.find((org) => org.name === role);
     const organizationId = selectedDepartment ? selectedDepartment.id : "";
 
-    // Add organizationId to the form values
     const formValuesWithOrg = { ...formValuesF, organizationId };
 
     try {
@@ -109,7 +96,6 @@ export default function CreateUser({
         throw new Error("Failed to process user");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const data: CreateUserResponse = await response.json();
       if (data.error) {
         throw new Error(data.error);
@@ -123,14 +109,18 @@ export default function CreateUser({
     }
   };
 
-  const handleCancelClick = () => {
-    router.push("/management");
-  };
-
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
     if (saveSuccessful) {
-      router.push("/management");
+      setFormValues({
+        firstName: "",
+        lastName: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      router.refresh();
     }
   };
 
@@ -170,18 +160,29 @@ export default function CreateUser({
   );
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center text-gray-100">
-      <div className="w-full max-w-4xl rounded-lg bg-gray-800 p-8 shadow-lg">
-        <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+    <Dialog>
+      <DialogTrigger asChild>
+        <ButtonUI className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+          Create User
+        </ButtonUI>
+      </DialogTrigger>
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-primary">Create User</DialogTitle>
+          <DialogDescription>
+            This will create a new user in the system.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
           <div className="mb-4 flex-shrink-0 md:mb-0">
             <img
               src="https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18yZ3FVVEYwYk8yTGxBZUZQYkFMYWFMT1Njc2QiLCJyaWQiOiJ1c2VyXzJndWxDUGRBTE03OFFGSVhZZ0RseGt0UGR4VCIsImluaXRpYWxzIjoiTEcifQ"
-              alt={`${user.firstName} ${user.lastName}'s profile picture`}
+              alt={`${formValues.firstName} ${formValues.lastName}'s profile picture`}
               className="h-32 w-32 rounded-full object-cover"
             />
           </div>
           <div className="w-full">
-            <h3 className="mb-4 text-2xl font-semibold">Create User</h3>
             <form className="flex flex-col space-y-4">
               <Input
                 required
@@ -192,7 +193,11 @@ export default function CreateUser({
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isNameInvalid}
-                color={isNameInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isNameInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={isNameInvalid && "Name can only contain letters"}
               />
               <Input
@@ -204,7 +209,11 @@ export default function CreateUser({
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isLastNameInvalid}
-                color={isLastNameInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isLastNameInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isLastNameInvalid && "Last Name can only contain letters"
                 }
@@ -219,7 +228,11 @@ export default function CreateUser({
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isUsernameInvalid}
-                color={isUsernameInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isUsernameInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isUsernameInvalid &&
                   "Username can only contain letters and numbers"
@@ -234,7 +247,11 @@ export default function CreateUser({
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isEmailInvalid}
-                color={isEmailInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isEmailInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={isEmailInvalid && "Please enter a valid email"}
               />
               <Input
@@ -246,7 +263,11 @@ export default function CreateUser({
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isPasswordInvalid}
-                color={isPasswordInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isPasswordInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isPasswordInvalid &&
                   "Password must contain at least 8 characters, one uppercase letter, and one number"
@@ -261,36 +282,66 @@ export default function CreateUser({
                 onChange={handleInputChange}
                 isDisabled={!isEditing}
                 isInvalid={isConfirmPasswordInvalid}
-                color={isConfirmPasswordInvalid ? "danger" : "default"}
+                className={cn(
+                  "border border-border bg-background text-foreground",
+                  isConfirmPasswordInvalid &&
+                    "border-destructive text-destructive-foreground",
+                )}
                 errorMessage={
                   isConfirmPasswordInvalid && "Passwords do not match"
                 }
               />
-              <Dropdown isDisabled={!isEditing} closeOnSelect={true}>
-                <DropdownTrigger>
-                  <Button variant="bordered" className="capitalize">
-                    {selectedValue === "" ? "Select Department" : selectedValue}
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  variant="flat"
-                  disallowEmptySelection
-                  selectionMode="single"
-                  selectedKeys={selectedKeys}
-                  onSelectionChange={(keys) => setSelectedKeys(new Set(keys))}
-                >
-                  {orgs.map((org) => (
-                    <DropdownItem key={org.name}>{org.name}</DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <ButtonUI
+                    variant="outline"
+                    className="w-full border border-border bg-background text-foreground"
+                  >
+                    {role}
+                  </ButtonUI>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-background text-foreground">
+                  <DropdownMenuLabel className="text-primary">
+                    Roles
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={role} onValueChange={setRole}>
+                    <DropdownMenuRadioItem value="Administrador">
+                      Administrador
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Jefes">
+                      Jefes
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <div className="flex justify-between">
-                <Button onClick={handleCancelClick}>Cancel</Button>
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="bordered"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary"
+                    onClick={() => {
+                      setFormValues({
+                        firstName: "",
+                        lastName: "",
+                        username: "",
+                        email: "",
+                        password: "",
+                        confirmPassword: "",
+                      });
+                    }}
+                  >
+                    Close
+                  </Button>
+                </DialogClose>
 
                 <Button
                   onClick={handleSaveAndCloseClick}
-                  isDisabled={!isFormValid}
+                  disabled={!isFormValid}
+                  className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
                 >
                   Save & Close
                 </Button>
@@ -298,7 +349,9 @@ export default function CreateUser({
             </form>
           </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter className="sm:justify-start"></DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

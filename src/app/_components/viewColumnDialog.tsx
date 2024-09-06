@@ -1,0 +1,127 @@
+import { Button } from "~/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogDescription,
+  AlertDialogCancel,
+} from "~/components/ui/alert-dialog";
+
+import { type Column } from "~/server/types/IColumns";
+
+import { useRouter } from "next/navigation";
+import { Input } from "~/components/ui/input";
+
+import { useState } from "react";
+
+export default function EditColumnDialog(props: {
+  columnsWorkOrder: Column[];
+  triggerRefresh: () => void;
+}) {
+  const router = useRouter();
+
+  const { triggerRefresh, columnsWorkOrder } = props;
+  const [columnTitles, setColumnTitles] = useState<Record<number, string>>({});
+
+  const initialValue = columnsWorkOrder;
+
+  const [columns, setColumns] = useState<Column[]>(
+    columnsWorkOrder || ([] as Column[]),
+  );
+
+  const handleInputChange = (columnId: number, value: string) => {
+    setColumnTitles((prev) => ({
+      ...prev,
+      [columnId]: value,
+    }));
+  };
+
+  const editColumn = async (columnId: number, columnName: string) => {
+    const col = {
+      column_id: columnId,
+      title: columnName,
+    };
+
+    const response = await fetch("/api/updateColumn", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(col),
+    });
+    if (response.ok) {
+      triggerRefresh();
+      router.refresh();
+    } else {
+      console.error("Failed to update columns:", response.statusText);
+    }
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="outline"
+          className="w-full border border-border bg-background text-foreground sm:w-auto"
+        >
+          Edit Columns
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-lg text-primary sm:text-xl">
+            Column editing
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-muted-foreground">
+            Edit the column names
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-4">
+          {columns.map((column) => (
+            <div
+              key={column.column_id + column.title + "column"}
+              className="flex flex-col items-center gap-4 sm:flex-row"
+            >
+              <Input
+                className="w-full border border-border bg-muted text-base font-semibold text-muted-foreground sm:w-[70%]"
+                value={columnTitles[column.column_id] ?? column.title}
+                onChange={(e) =>
+                  handleInputChange(column.column_id, e.target.value)
+                }
+              />
+              <Button
+                variant="default"
+                className="w-full bg-primary text-primary-foreground sm:w-auto"
+                onClick={() =>
+                  editColumn(
+                    column.column_id,
+                    columnTitles[column.column_id] ?? column.title,
+                  )
+                }
+              >
+                + Edit Column
+              </Button>
+            </div>
+          ))}
+        </div>
+        <AlertDialogFooter className="flex justify-end sm:justify-start">
+          <AlertDialogCancel asChild>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full bg-secondary text-secondary-foreground sm:w-auto"
+              onClick={() => {
+                setColumns(initialValue);
+              }}
+            >
+              Cancel
+            </Button>
+          </AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}

@@ -7,3 +7,4 @@
 - [x] Set up database (vercel postgres)
 - [x] attach database to UI
 - [x] add authentication (w/ clerk)
+- [x] create db schema

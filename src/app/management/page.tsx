@@ -1,24 +1,104 @@
 import EmployeeTable from "../_components/employeeTable";
-import { Card, CardHeader } from "@nextui-org/card";
-import CreateUserButton from "../_components/createUserButton";
-import { getAllUsers } from "~/server/queries";
+import { getAllOrgs, getAllUsers } from "~/server/queries/queries";
+import { getLocations } from "~/server/queries/location/queries";
+import { getEmployees } from "~/server/queries/employee/queries";
+import CardLayout from "../_components/cardLayout";
+import CreateUser from "../_components/createUser";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import TableComponent from "../_components/tableComponent";
+import { getMachineries } from "~/server/queries/machinery/queries";
+import { getUsers } from "~/server/queries/user/queries";
+import { getWorkOrders } from "~/server/queries/workOrder/queries";
 
-async function UserMaganement() {
+const employeeColumns = [
+  { key: "firstName", label: "First Name" },
+  { key: "lastName", label: "Last Name" },
+  { key: "job", label: "Job" },
+];
+
+const workOrderColumns = [
+  { key: "name", label: "Name" },
+  { key: "machine_serial", label: "Machine" },
+  { key: "userName", label: "Assigned User" },
+];
+
+async function UserManagement() {
   const users = await getAllUsers();
+  const orgs = await getAllOrgs();
+  const locations = await getLocations();
+  const employees = await getEmployees();
+  const machines = await getMachineries();
+  const userData = await getUsers();
+  const workOrders = await getWorkOrders();
+
+  // Find the serial and the username of the ids in workOrders
+  const workOrdersWithSerial = workOrders.map((workOrder) => {
+    const machine = machines.find(
+      (machine) => machine.machine_id === workOrder.machine_id,
+    );
+    return { ...workOrder, machine_serial: machine?.serial_number };
+  });
+
+  const workOrdersWithUsername = workOrdersWithSerial.map((workOrder) => {
+    const user = userData.find(
+      (user) => user.user_id === workOrder.assigned_user,
+    );
+    return {
+      ...workOrder,
+      userName: `${user?.first_name} ${user?.last_name}`,
+    };
+  });
 
   return (
-    <main className=" background-black mb-8  mt-12  flex flex-col  gap-12">
-      <div>
-        <Card>
-          <CardHeader className="mb-8 flex items-center justify-between bg-gray-700 p-6">
-            <p className="text-l text-white">Users</p>
-            <CreateUserButton />
-          </CardHeader>
-          <EmployeeTable users={users} />
-        </Card>
-      </div>
-    </main>
+    <Tabs defaultValue="users">
+      <TabsList className="m-4 grid grid-cols-3 rounded-lg border border-border bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] dark:bg-[hsl(var(--accent))] dark:text-[hsl(var(--accent-foreground))] sm:w-full md:w-1/2">
+        <TabsTrigger
+          value="users"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Users
+        </TabsTrigger>
+        <TabsTrigger
+          value="employees"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Employees
+        </TabsTrigger>
+        <TabsTrigger
+          value="workOrders"
+          className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] dark:hover:bg-[hsl(var(--popover))]"
+        >
+          Work Orders
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="users">
+        <CardLayout>
+          <p className="text-l text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--accent-foreground))]">
+            Users
+          </p>
+          <CreateUser orgs={orgs} />
+        </CardLayout>
+        <EmployeeTable users={users} orgs={orgs} />
+      </TabsContent>
+      <TabsContent value="employees">
+        <TableComponent
+          data={employees}
+          columns={employeeColumns}
+          valueType="Employee"
+          locations={locations}
+        />
+      </TabsContent>
+      <TabsContent value="workOrders">
+        <TableComponent
+          data={workOrdersWithUsername}
+          columns={workOrderColumns}
+          valueType="WorkOrder"
+          users={userData}
+          machines={machines}
+        />
+      </TabsContent>
+    </Tabs>
   );
 }
 
-export default UserMaganement;
+export default UserManagement;

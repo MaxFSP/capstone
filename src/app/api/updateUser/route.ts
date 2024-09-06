@@ -7,8 +7,8 @@ import {
   clerkClient,
   type AllowlistIdentifier,
 } from "@clerk/nextjs/server";
-import type { UpdateUserRequest, UpdateUserResponse } from "~/app/types/api";
-import { getOrgByUserId } from "~/server/queries";
+import type { UpdateUserRequest, UpdateUserResponse } from "~/server/types/api";
+import { getOrgByUserId } from "~/server/queries/queries";
 
 export async function POST(req: NextRequest) {
   const { userId } = getAuth(req);
@@ -17,11 +17,14 @@ export async function POST(req: NextRequest) {
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { userId: targetUserId, formEmployee }: UpdateUserRequest =
-      await req.json();
+    const {
+      userId: targetUserId,
+      orgId: targetOrgId,
+      formEmployee,
+    }: UpdateUserRequest = await req.json();
 
     // Separate department and online from formEmployee
-    const { orgId, online, ...employeeData } = formEmployee;
+    const { online, ...employeeData } = formEmployee;
 
     // Check if there is at least a single param that's not empty in employeeData
     const hasNonEmptyFields = Object.keys(employeeData).some(
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (hasNonEmptyFields) {
       await clerkClient.users.updateUser(targetUserId, employeeData);
 
-      if (orgId) {
+      if (targetOrgId) {
         // Remove all roles
         const userOrgs = await getOrgByUserId(targetUserId);
         await clerkClient.organizations.deleteOrganizationMembership({
@@ -40,7 +43,7 @@ export async function POST(req: NextRequest) {
         });
         // Add the new role
         await clerkClient.organizations.createOrganizationMembership({
-          organizationId: orgId,
+          organizationId: targetOrgId,
           userId: targetUserId,
           role: "org:member",
         });

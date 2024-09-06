@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useOrganizationList } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export const CustomOrgSwitcher = () => {
+  const router = useRouter();
   const { isLoaded, setActive, userMemberships } = useOrganizationList({
     userMemberships: {
       infinite: true,
@@ -36,6 +38,7 @@ export const CustomOrgSwitcher = () => {
       try {
         await setActive({ organization: organizationId });
         setIsOpen(false);
+        router.refresh();
       } catch (error) {
         console.error("Failed to set active organization:", error);
       }
@@ -49,11 +52,11 @@ export const CustomOrgSwitcher = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        className="rounded-full bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+        className="rounded-full bg-[hsl(var(--muted))] p-2 hover:bg-[hsl(var(--popover))] dark:bg-[hsl(var(--accent))] dark:hover:bg-[hsl(var(--secondary))]"
         onClick={toggleDropdown}
       >
         <svg
-          className="h-6 w-6 text-gray-900 dark:text-gray-100"
+          className="h-6 w-6 text-[hsl(var(--muted-foreground))] dark:text-[hsl(var(--accent-foreground))]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -68,13 +71,13 @@ export const CustomOrgSwitcher = () => {
         </svg>
       </button>
       {isOpen && (
-        <div className="absolute bottom-full left-0 z-10 mb-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-          <ul className="py-1 text-black dark:text-white">
+        <div className="absolute bottom-full left-0 z-10 mb-2 w-48 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-lg">
+          <ul className="py-1 text-[hsl(var(--card-foreground))]">
             {userMemberships.data?.map((mem) => (
               <li
                 onClick={() => handleSetActive(mem.organization.id)}
                 key={mem.id}
-                className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="cursor-pointer px-4 py-2 hover:bg-[hsl(var(--popover))] dark:hover:bg-[hsl(var(--primary))] dark:hover:text-[hsl(var(--primary-foreground))]"
               >
                 <span>{mem.organization.name}</span>
               </li>

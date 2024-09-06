@@ -1,6 +1,6 @@
 import React from "react";
 import SideBar from "./sidebar";
-import { getUserName, getActiveOrg } from "../../server/queries";
+import { getUserName, getActiveOrg } from "../../server/queries/queries";
 
 export default async function SidebarContainer() {
   const user: string = await getUserName();
