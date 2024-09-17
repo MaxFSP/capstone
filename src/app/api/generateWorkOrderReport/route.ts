@@ -8,6 +8,7 @@ import { getTasksByWorkOrderId } from "~/server/queries/workTask/queries";
 import { getMachineryById } from "~/server/queries/machinery/queries";
 import { getUserById } from "~/server/queries/user/queries";
 import { getEmployeeById } from "~/server/queries/employee/queries";
+import { Task } from "~/server/types/ITasks";
 
 export async function POST(req: Request) {
   try {
@@ -17,13 +18,17 @@ export async function POST(req: Request) {
     const workOrder = await getWorkOrderById(orderId);
     if (!workOrder) throw new Error("Work order not found");
 
-    const columns = await getColumnTasksByWorkOrderId(orderId);
-    if (!columns) throw new Error("Columns not found");
+    let columns = await getColumnTasksByWorkOrderId(orderId);
+    if (!columns) {
+      columns = [];
+    }
     // order the columns by their position
     columns.sort((a, b) => a.position - b.position);
 
-    const tasks = await getTasksByWorkOrderId(orderId);
-    if (!tasks) throw new Error("Tasks not found");
+    let tasks = await getTasksByWorkOrderId(orderId);
+    if (!tasks) {
+      tasks = [];
+    }
     // order the tasks by their position
     tasks.sort((a, b) => a.position - b.position);
 

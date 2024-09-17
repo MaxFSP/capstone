@@ -24,7 +24,7 @@ export default function KanbanBoardHeader(props: {
           {workOrder.name + " - " + workOrder.order_id}
         </h1>
         <h1 className="mb-2 text-xl font-bold text-foreground md:text-2xl">
-          {"Currently working on: "}
+          Dashboard
         </h1>
       </div>
       <div className="flex flex-col items-start gap-2 md:flex-row md:items-center">
