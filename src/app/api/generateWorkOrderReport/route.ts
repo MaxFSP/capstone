@@ -244,6 +244,9 @@ export async function POST(req: Request) {
           ({ page, yOffset } = addPage());
         }
 
+        if (task.state === 0) {
+          continue;
+        }
         // Task box
         page.drawRectangle({
           x: 60,
