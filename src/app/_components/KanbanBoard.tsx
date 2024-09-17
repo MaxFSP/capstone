@@ -233,122 +233,124 @@ function KanbanBoard(props: {
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
         {(provided) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className="flex h-full w-full flex-col space-y-4 p-4 lg:flex-row lg:space-x-4 lg:space-y-0"
-          >
-            {columnOrder.map((columnId, index) => (
-              <Draggable draggableId={columnId} index={index} key={columnId}>
-                {(provided) => (
-                  <div
-                    {...provided.draggableProps}
-                    ref={provided.innerRef}
-                    className="flex min-w-[300px] max-w-[400px] flex-col rounded-sm border border-border p-1 shadow-md"
-                  >
+          <div className="flex h-full w-full ">
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className="flex h-full w-fit flex-col space-y-4 p-4 lg:flex-row lg:space-x-4 lg:space-y-0"
+            >
+              {columnOrder.map((columnId, index) => (
+                <Draggable draggableId={columnId} index={index} key={columnId}>
+                  {(provided) => (
                     <div
-                      className="mb-4 rounded bg-secondary p-4 shadow"
-                      {...provided.dragHandleProps}
+                      {...provided.draggableProps}
+                      ref={provided.innerRef}
+                      className="flex min-w-[300px] max-w-[400px] flex-col rounded-sm border border-border p-1 shadow-md"
                     >
-                      <h2 className="break-words text-center text-base font-semibold text-secondary-foreground">
-                        {columnId.length > 27
-                          ? columnId.slice(0, 27) + "..."
-                          : columnId}
-                      </h2>
-                    </div>
-                    <Droppable droppableId={columnId} type="TASK">
-                      {(provided) => (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          className="mb-2 flex-grow overflow-auto"
-                        >
-                          {tasks[columnId]?.map((task, index) => (
-                            <Draggable
-                              draggableId={task.task_id.toString()}
-                              index={index}
-                              key={task.task_id}
-                            >
-                              {(provided) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className="m-1 mb-4 p-1"
-                                >
-                                  <KanbanTask
-                                    key={task.task_id + "KanbanTask"}
-                                    task={task}
-                                    employees={employees}
-                                    column_id={getColumnIdByName(columnId)}
-                                    tools={tools}
-                                    parts={parts}
-                                    onGone={() => {
-                                      const newTasks = { ...tasks };
-                                      delete newTasks[columnId]![index];
-                                      setTasks(newTasks);
-                                    }}
-                                    triggerRefresh={() => {
-                                      triggerRefresh();
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                          <div className="mt-2 w-full text-center">
-                            <CreateTaskDialog
-                              employees={employees}
-                              pos={tasks[columnId]?.length ?? 0}
-                              column_id={getColumnIdByName(columnId)}
-                              tools={tools}
-                              parts={parts}
-                              triggerRefresh={() => {
-                                triggerRefresh();
-                              }}
-                            />
+                      <div
+                        className="mb-4 rounded bg-secondary p-4 shadow"
+                        {...provided.dragHandleProps}
+                      >
+                        <h2 className="break-words text-center text-base font-semibold text-secondary-foreground">
+                          {columnId.length > 27
+                            ? columnId.slice(0, 27) + "..."
+                            : columnId}
+                        </h2>
+                      </div>
+                      <Droppable droppableId={columnId} type="TASK">
+                        {(provided) => (
+                          <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className="mb-2 flex-grow overflow-auto"
+                          >
+                            {tasks[columnId]?.map((task, index) => (
+                              <Draggable
+                                draggableId={task.task_id.toString()}
+                                index={index}
+                                key={task.task_id}
+                              >
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="m-1 mb-4 p-1"
+                                  >
+                                    <KanbanTask
+                                      key={task.task_id + "KanbanTask"}
+                                      task={task}
+                                      employees={employees}
+                                      column_id={getColumnIdByName(columnId)}
+                                      tools={tools}
+                                      parts={parts}
+                                      onGone={() => {
+                                        const newTasks = { ...tasks };
+                                        delete newTasks[columnId]![index];
+                                        setTasks(newTasks);
+                                      }}
+                                      triggerRefresh={() => {
+                                        triggerRefresh();
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                            <div className="mt-2 w-full text-center">
+                              <CreateTaskDialog
+                                employees={employees}
+                                pos={tasks[columnId]?.length ?? 0}
+                                column_id={getColumnIdByName(columnId)}
+                                tools={tools}
+                                parts={parts}
+                                triggerRefresh={() => {
+                                  triggerRefresh();
+                                }}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </Droppable>
-                  </div>
+                        )}
+                      </Droppable>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+              <div className="flex h-full min-w-[300px] max-w-[400px] flex-col items-center justify-center">
+                {isAddingColumn ? (
+                  <>
+                    <Input
+                      placeholder="New Column Name"
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      className="border border-border bg-background text-foreground"
+                    />
+                    <div className="mt-4 flex">
+                      <Button
+                        onClick={addColumn}
+                        className="mr-2 bg-primary text-primary-foreground"
+                      >
+                        Add Column
+                      </Button>
+                      <Button
+                        onClick={cancelAddColumn}
+                        className="bg-destructive text-destructive-foreground"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => setIsAddingColumn(true)}
+                    className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
+                  >
+                    + Add Column
+                  </Button>
                 )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-            <div className="flex h-full min-w-[300px] max-w-[400px] flex-col items-center justify-center">
-              {isAddingColumn ? (
-                <>
-                  <Input
-                    placeholder="New Column Name"
-                    value={newColumnName}
-                    onChange={(e) => setNewColumnName(e.target.value)}
-                    className="border border-border bg-background text-foreground"
-                  />
-                  <div className="mt-4 flex">
-                    <Button
-                      onClick={addColumn}
-                      className="mr-2 bg-primary text-primary-foreground"
-                    >
-                      Add Column
-                    </Button>
-                    <Button
-                      onClick={cancelAddColumn}
-                      className="bg-destructive text-destructive-foreground"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <Button
-                  onClick={() => setIsAddingColumn(true)}
-                  className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
-                >
-                  + Add Column
-                </Button>
-              )}
+              </div>
             </div>
           </div>
         )}

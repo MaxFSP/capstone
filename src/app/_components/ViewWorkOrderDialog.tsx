@@ -167,6 +167,33 @@ export function WorkOrderDataViewDialog(props: {
     setIsEditing(false);
   };
 
+  async function generateReport(orderId: number) {
+    try {
+      const response = await fetch("/api/generateWorkOrderReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `WorkOrder_${orderId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error("Failed to generate report");
+      }
+    } catch (error) {
+      console.error("Error generating report:", error);
+    }
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -276,7 +303,7 @@ export function WorkOrderDataViewDialog(props: {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[240px] justify-start bg-white text-left font-normal text-black",
+                      "w-[240px] justify-start bg-background text-left font-normal",
                       !dateValue && "text-muted-foreground",
                     )}
                   >
@@ -284,7 +311,7 @@ export function WorkOrderDataViewDialog(props: {
                     {dateValue ? format(dateValue, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto bg-white p-0 text-black">
+                <PopoverContent className="w-auto p-0 ">
                   <Calendar
                     mode="single"
                     selected={dateValue}
@@ -298,6 +325,7 @@ export function WorkOrderDataViewDialog(props: {
                       }
                     }}
                     initialFocus
+                    className="border border-border bg-background text-foreground"
                   />
                 </PopoverContent>
               </Popover>
@@ -379,7 +407,9 @@ export function WorkOrderDataViewDialog(props: {
             </>
           )}
           <DialogClose asChild>
-            <Button> Generate Report </Button>
+            <Button onClick={() => generateReport(data.order_id)}>
+              Generate Report
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

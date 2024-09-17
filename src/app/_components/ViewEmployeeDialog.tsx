@@ -362,7 +362,7 @@ export function EmployeeDataViewDialog(props: {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-[240px] justify-start bg-background text-left font-normal text-foreground",
+                        "w-[240px] justify-start bg-background text-left font-normal",
                         !dateValue && "text-muted-foreground",
                       )}
                     >
@@ -374,10 +374,7 @@ export function EmployeeDataViewDialog(props: {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent
-                    className="w-auto bg-white p-0 text-black"
-                    align="start"
-                  >
+                  <PopoverContent className="w-auto  p-0 " align="start">
                     <Calendar
                       mode="single"
                       selected={dateValue}
@@ -391,6 +388,7 @@ export function EmployeeDataViewDialog(props: {
                         }
                       }}
                       initialFocus
+                      className="border border-border bg-background text-foreground"
                     />
                   </PopoverContent>
                 </Popover>
