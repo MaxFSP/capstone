@@ -19,9 +19,13 @@ export async function POST(req: Request) {
 
     const columns = await getColumnTasksByWorkOrderId(orderId);
     if (!columns) throw new Error("Columns not found");
+    // order the columns by their position
+    columns.sort((a, b) => a.position - b.position);
 
     const tasks = await getTasksByWorkOrderId(orderId);
     if (!tasks) throw new Error("Tasks not found");
+    // order the tasks by their position
+    tasks.sort((a, b) => a.position - b.position);
 
     const machinery = await getMachineryById(workOrder.machine_id);
     if (!machinery) throw new Error("Machinery not found");
