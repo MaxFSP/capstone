@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { readFileSync } from "fs";
 import { getWorkOrderById } from "~/server/queries/workOrder/queries";
 import { getColumnTasksByWorkOrderId } from "~/server/queries/columnsWorkOrder/queries";
 import { getTasksByWorkOrderId } from "~/server/queries/workTask/queries";
@@ -38,10 +37,33 @@ export async function POST(req: Request) {
     const watermarkUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/icons/512.png`;
 
     // Fetch the images as buffers if you need to use them in some way
-    const logoBytes = await fetch(logoUrl).then((res) => res.arrayBuffer());
-    const watermarkBytes = await fetch(watermarkUrl).then((res) =>
-      res.arrayBuffer(),
-    );
+    // Fetch logo
+    let logoBytes, watermarkBytes;
+
+    try {
+      const logoResponse = await fetch(logoUrl);
+      if (!logoResponse.ok) {
+        throw new Error(`Failed to fetch logo: ${logoResponse.statusText}`);
+      }
+      logoBytes = await logoResponse.arrayBuffer();
+    } catch (error) {
+      console.error("Logo fetch error:", error);
+      throw new Error("Logo fetch failed");
+    }
+
+    // Fetch watermark
+    try {
+      const watermarkResponse = await fetch(watermarkUrl);
+      if (!watermarkResponse.ok) {
+        throw new Error(
+          `Failed to fetch watermark: ${watermarkResponse.statusText}`,
+        );
+      }
+      watermarkBytes = await watermarkResponse.arrayBuffer();
+    } catch (error) {
+      console.error("Watermark fetch error:", error);
+      throw new Error("Watermark fetch failed");
+    }
 
     const logoImage = await pdfDoc.embedPng(logoBytes);
     const watermarkImage = await pdfDoc.embedPng(watermarkBytes);
@@ -294,7 +316,7 @@ export async function POST(req: Request) {
     // Serialize and return the PDF
     const pdfBytes = await pdfDoc.save();
 
-    return new NextResponse(pdfBytes, {
+    return new Response(pdfBytes, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
