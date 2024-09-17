@@ -34,8 +34,14 @@ export async function POST(req: Request) {
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     // Load logo and watermark images from the public folder
-    const logoBytes = readFileSync("public/icons/192.png"); // Adjust path if needed
-    const watermarkBytes = readFileSync("public/icons/512.png");
+    const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/icons/192.png`;
+    const watermarkUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/icons/512.png`;
+
+    // Fetch the images as buffers if you need to use them in some way
+    const logoBytes = await fetch(logoUrl).then((res) => res.arrayBuffer());
+    const watermarkBytes = await fetch(watermarkUrl).then((res) =>
+      res.arrayBuffer(),
+    );
 
     const logoImage = await pdfDoc.embedPng(logoBytes);
     const watermarkImage = await pdfDoc.embedPng(watermarkBytes);
