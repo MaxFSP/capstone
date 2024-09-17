@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { promises as fs } from "fs";
+import path from "path";
 import { getWorkOrderById } from "~/server/queries/workOrder/queries";
 import { getColumnTasksByWorkOrderId } from "~/server/queries/columnsWorkOrder/queries";
 import { getTasksByWorkOrderId } from "~/server/queries/workTask/queries";
@@ -14,62 +16,46 @@ export async function POST(req: Request) {
     // Fetch work order data
     const workOrder = await getWorkOrderById(orderId);
     if (!workOrder) throw new Error("Work order not found");
+    console.log("Work Order:", workOrder);
 
     const columns = await getColumnTasksByWorkOrderId(orderId);
     if (!columns) throw new Error("Columns not found");
+    console.log("Columns:", columns);
 
     const tasks = await getTasksByWorkOrderId(orderId);
     if (!tasks) throw new Error("Tasks not found");
+    console.log("Tasks:", tasks);
 
     const machinery = await getMachineryById(workOrder.machine_id);
     if (!machinery) throw new Error("Machinery not found");
+    console.log("Machinery:", machinery);
 
     const user = await getUserById(workOrder.assigned_user);
     if (!user) throw new Error("User not found");
+    console.log("User:", user);
 
     // Create PDF document
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    // Load logo and watermark images from the public folder
-    const logoUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/icons/192.png`;
-    const watermarkUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/icons/512.png`;
+    // Read images directly from the file system
+    const logoPath = path.join(process.cwd(), "public", "icons", "192.png");
+    const watermarkPath = path.join(
+      process.cwd(),
+      "public",
+      "icons",
+      "512.png",
+    );
 
-    // Fetch the images as buffers if you need to use them in some way
-    // Fetch logo
-    let logoBytes, watermarkBytes;
-
-    try {
-      const logoResponse = await fetch(logoUrl);
-      if (!logoResponse.ok) {
-        throw new Error(`Failed to fetch logo: ${logoResponse.statusText}`);
-      }
-      logoBytes = await logoResponse.arrayBuffer();
-    } catch (error) {
-      console.error("Logo fetch error:", error);
-      throw new Error("Logo fetch failed");
-    }
-
-    // Fetch watermark
-    try {
-      const watermarkResponse = await fetch(watermarkUrl);
-      if (!watermarkResponse.ok) {
-        throw new Error(
-          `Failed to fetch watermark: ${watermarkResponse.statusText}`,
-        );
-      }
-      watermarkBytes = await watermarkResponse.arrayBuffer();
-    } catch (error) {
-      console.error("Watermark fetch error:", error);
-      throw new Error("Watermark fetch failed");
-    }
+    const logoBytes = await fs.readFile(logoPath);
+    const watermarkBytes = await fs.readFile(watermarkPath);
 
     const logoImage = await pdfDoc.embedPng(logoBytes);
     const watermarkImage = await pdfDoc.embedPng(watermarkBytes);
 
-    const logoDims = logoImage.scale(0.25); // Scale logo
-    const watermarkDims = watermarkImage.scale(1); // Adjust watermark size
+    const logoDims = logoImage.scale(0.25);
+    const watermarkDims = watermarkImage.scale(1);
 
     // Get the current date for the footer
     const currentDate = new Date().toLocaleDateString();
@@ -84,7 +70,7 @@ export async function POST(req: Request) {
         y: (newPage.getHeight() - watermarkDims.height) / 2,
         width: watermarkDims.width,
         height: watermarkDims.height,
-        opacity: 0.15, // Make the watermark subtle
+        opacity: 0.15,
       });
 
       // Draw the header bar
@@ -105,10 +91,10 @@ export async function POST(req: Request) {
         color: rgb(0, 0, 0),
       });
 
-      // Draw logo on the top right corner **above** the header
+      // Draw logo on the top right corner above the header
       newPage.drawImage(logoImage, {
-        x: newPage.getWidth() - logoDims.width,
-        y: newPage.getHeight() - logoDims.height, // Adjust to move above header
+        x: newPage.getWidth() - logoDims.width - 20, // Adjusted position
+        y: newPage.getHeight() - logoDims.height - 20,
         width: logoDims.width,
         height: logoDims.height,
       });
@@ -116,7 +102,7 @@ export async function POST(req: Request) {
       // Add the current date in the top left
       newPage.drawText(`Generated on: ${currentDate}`, {
         x: 20,
-        y: newPage.getHeight() - 65, // Slightly above header
+        y: newPage.getHeight() - 65,
         size: 12,
         font,
         color: rgb(128 / 255, 128 / 255, 128 / 255),
@@ -324,7 +310,10 @@ export async function POST(req: Request) {
       },
     });
   } catch (error) {
-    console.error("Error generating work order report:", error);
+    console.error(
+      "Error generating work order report:",
+      error instanceof Error ? error.stack : error,
+    );
     return NextResponse.json(
       { error: "Failed to generate report" },
       { status: 500 },
