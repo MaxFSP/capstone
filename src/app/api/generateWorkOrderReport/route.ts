@@ -16,23 +16,18 @@ export async function POST(req: Request) {
     // Fetch work order data
     const workOrder = await getWorkOrderById(orderId);
     if (!workOrder) throw new Error("Work order not found");
-    console.log("Work Order:", workOrder);
 
     const columns = await getColumnTasksByWorkOrderId(orderId);
     if (!columns) throw new Error("Columns not found");
-    console.log("Columns:", columns);
 
     const tasks = await getTasksByWorkOrderId(orderId);
     if (!tasks) throw new Error("Tasks not found");
-    console.log("Tasks:", tasks);
 
     const machinery = await getMachineryById(workOrder.machine_id);
     if (!machinery) throw new Error("Machinery not found");
-    console.log("Machinery:", machinery);
 
     const user = await getUserById(workOrder.assigned_user);
     if (!user) throw new Error("User not found");
-    console.log("User:", user);
 
     // Create PDF document
     const pdfDoc = await PDFDocument.create();
@@ -93,8 +88,8 @@ export async function POST(req: Request) {
 
       // Draw logo on the top right corner above the header
       newPage.drawImage(logoImage, {
-        x: newPage.getWidth() - logoDims.width - 20, // Adjusted position
-        y: newPage.getHeight() - logoDims.height - 20,
+        x: newPage.getWidth() - logoDims.width, // Adjusted position
+        y: newPage.getHeight() - logoDims.height,
         width: logoDims.width,
         height: logoDims.height,
       });
@@ -295,7 +290,7 @@ export async function POST(req: Request) {
           },
         );
 
-        yOffset += 90;
+        yOffset += 110;
       }
     }
 
