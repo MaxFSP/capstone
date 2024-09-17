@@ -212,6 +212,10 @@ export async function POST(req: Request) {
         ({ page, yOffset } = addPage());
       }
 
+      if (column.state === 0) {
+        continue;
+      }
+
       // Draw column title with a separator line
       page.drawText(`Column: ${column.title}`, {
         x: 50,
