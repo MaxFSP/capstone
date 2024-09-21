@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,14 +14,14 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-} from "~/components/ui/carousel";
+} from '~/components/ui/carousel';
 import {
   Dialog,
   DialogClose,
@@ -28,88 +31,81 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { type ILocation } from "~/server/types/ILocation";
-import { type ToolCondition, type Tool } from "~/server/types/ITool";
-import { UploadButton } from "../utils/uploadthing";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { type Image } from "~/server/types/IImages";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { type ILocation } from '~/server/types/ILocation';
+import { type ToolCondition, type Tool } from '~/server/types/ITool';
+import { UploadButton } from '../utils/uploadthing';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { type Image } from '~/server/types/IImages';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
+import { useToast } from '~/components/hooks/use-toast';
+import { useFormValidation } from '~/hooks/useFormValidation';
+import { toolSchema } from '~/server/types/ITool';
+import type { z } from 'zod';
 
-export function ToolDataViewDialog(props: {
-  title: string;
-  data: Tool;
-  locations: ILocation[];
-}) {
+type ToolFormData = z.infer<typeof toolSchema>;
+
+export function ToolDataViewDialog(props: { title: string; data: Tool; locations: ILocation[] }) {
   const { title, data, locations } = props;
 
   const router = useRouter();
-  const current_date = data.acquisition_date;
+  const { toast } = useToast();
+
   const current_location: string = locations.find(
-    (location) => data.location_name === location.name,
+    (location) => data.location_name === location.name
   )!.name;
   const current_condition = data.condition;
 
-  const [conditionValue, setConditionValue] = useState<ToolCondition>(
-    data.condition as ToolCondition,
-  );
-  const [dateValue, setDateValue] = useState<Date>(
-    new Date(data.acquisition_date),
-  );
+  const [conditionValue, setConditionValue] = useState<ToolCondition>(data.condition);
+  const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
   const [locationValue, setLocationValue] = useState<string>(current_location);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
-  const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const { formData, setFormData, isFormValid, errors, validateForm } =
+    useFormValidation<ToolFormData>({
+      schema: toolSchema,
+      initialData: { ...data },
+    });
 
   useEffect(() => {
     if (!isEditing) {
       setLocationValue(current_location);
-      setConditionValue(data.condition as ToolCondition);
+      setConditionValue(data.condition);
       setFormData({ ...data });
-      setDateValue(data.acquisition_date);
+      setDateValue(new Date(data.acquisition_date));
     }
   }, [isEditing, data]);
 
   useEffect(() => {
-    validateForm();
     checkForChanges();
   }, [formData, locationValue, conditionValue, dateValue]);
 
   const handleUploadComplete = () => {
+    toast({
+      title: 'Success',
+      description: 'Image uploaded successfully.',
+    });
     router.refresh();
   };
 
-  const validateForm = () => {
-    const isDataValid =
-      formData.tool_id !== null && formData.tool_id !== undefined;
-    setIsFormValid(isDataValid);
-  };
-
   const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
+    const hasFormChanged = JSON.stringify(formData) !== JSON.stringify(initialFormData);
+    const hasLocationChanged = locationValue !== current_location;
+    const hasConditionChanged = conditionValue !== current_condition;
+    const hasDateChanged =
+      dateValue.toISOString().split('T')[0] !==
+      new Date(data.acquisition_date).toISOString().split('T')[0];
 
-    const hasChanges =
-      JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
-      locationValue !== current_location ||
-      conditionValue !== current_condition ||
-      dateWithoutTime !== dateWithoutTimeCurrent;
-    setHasChanges(hasChanges);
+    setHasChanges(hasFormChanged ?? hasLocationChanged ?? hasConditionChanged ?? hasDateChanged);
   };
 
   const handleEditClick = () => {
@@ -121,7 +117,18 @@ export function ToolDataViewDialog(props: {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let parsedValue: string | number = value;
+
+    // Convert to number for specific fields
+    if (name === 'quantity') {
+      parsedValue = value === '' ? 0 : Number(value);
+      if (isNaN(parsedValue)) {
+        parsedValue = 0;
+      }
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: parsedValue }));
+    validateForm();
   };
 
   const handleCancelClick = () => {
@@ -132,32 +139,46 @@ export function ToolDataViewDialog(props: {
   const handleSaveClick = async () => {
     if (isFormValid && hasChanges) {
       try {
-        formData.location_id = locations.find(
-          (location) => location.name === locationValue,
-        )!.location_id;
-        formData.condition = conditionValue;
-        formData.acquisition_date = dateValue;
-        const response = await fetch("/api/updateTool", {
-          method: "POST",
+        const updatedFormData: ToolFormData = {
+          ...formData,
+          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          condition: conditionValue,
+          acquisition_date: dateValue,
+        };
+
+        const response = await fetch('/api/updateTool', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedFormData),
         });
+
         if (response.ok) {
+          toast({
+            title: 'Success',
+            description: 'Tool updated successfully.',
+          });
           router.refresh();
+          setIsEditing(false);
         } else {
-          console.error("Failed to update tool");
+          const responseData = await response.json();
+          throw new Error(responseData.error ?? 'Failed to update tool.');
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error('Error updating tool:', error);
+        let errorMessage = 'An unknown error occurred.';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
       }
     }
-  };
-
-  const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setIsEditing(false);
   };
 
   return (
@@ -168,9 +189,7 @@ export function ToolDataViewDialog(props: {
       <DialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
-          <DialogDescription>
-            Anyone who has this link will be able to view this.
-          </DialogDescription>
+          <DialogDescription>Anyone who has this link will be able to view this.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -190,7 +209,7 @@ export function ToolDataViewDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Tool",
+                            type: 'Tool',
                           }}
                         />
                       </div>
@@ -203,12 +222,13 @@ export function ToolDataViewDialog(props: {
             </div>
           )}
 
+          {/* Tool ID and Brand */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Tool ID</Label>
               <Input
                 name="tool_id"
-                value={data.tool_id}
+                value={formData.tool_id}
                 readOnly
                 disabled
                 className="border border-border bg-muted text-muted-foreground"
@@ -224,9 +244,15 @@ export function ToolDataViewDialog(props: {
                 disabled={!isEditing}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'brand') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'brand')?.message}
+                </p>
+              )}
             </div>
           </div>
 
+          {/* Name and Category */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Name</Label>
@@ -238,6 +264,11 @@ export function ToolDataViewDialog(props: {
                 disabled={!isEditing}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'name') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'name')?.message}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label>Category</Label>
@@ -249,9 +280,15 @@ export function ToolDataViewDialog(props: {
                 disabled={!isEditing}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'category') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'category')?.message}
+                </p>
+              )}
             </div>
           </div>
 
+          {/* Tool Type and Quantity */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Tool Type</Label>
@@ -263,35 +300,46 @@ export function ToolDataViewDialog(props: {
                 disabled={!isEditing}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'tool_type') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'tool_type')?.message}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label>Quantity</Label>
               <Input
                 name="quantity"
+                type="number"
                 value={formData.quantity}
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'quantity') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'quantity')?.message}
+                </p>
+              )}
             </div>
+          </div>
+
+          {/* Acquisition Date */}
+          <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Acquisition Date</Label>
               <Popover>
                 <PopoverTrigger asChild disabled={!isEditing}>
                   <Button
-                    variant={"outline"}
+                    variant={'outline'}
                     className={cn(
-                      "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
-                      !dateValue && "text-muted-foreground",
+                      'w-full justify-start border border-border bg-background text-left font-normal text-foreground',
+                      !dateValue && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? (
-                      format(dateValue, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {dateValue ? format(dateValue, 'PPP') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto border border-border bg-background p-0 text-foreground">
@@ -311,23 +359,35 @@ export function ToolDataViewDialog(props: {
                   />
                 </PopoverContent>
               </Popover>
+              {errors.find((e) => e.path[0] === 'acquisition_date') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'acquisition_date')?.message}
+                </p>
+              )}
             </div>
           </div>
 
+          {/* Observations */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Observations</Label>
               <Input
                 name="observations"
-                value={formData.observations ?? "N/A"}
+                value={formData.observations ?? ''}
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'observations') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'observations')?.message}
+                </p>
+              )}
             </div>
           </div>
 
+          {/* Location and Condition */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Location</Label>
@@ -343,10 +403,7 @@ export function ToolDataViewDialog(props: {
                 <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={locationValue}
-                    onValueChange={setLocationValue}
-                  >
+                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                     {locations.map((location) => (
                       <DropdownMenuRadioItem
                         key={location.name}
@@ -376,9 +433,7 @@ export function ToolDataViewDialog(props: {
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={conditionValue}
-                    onValueChange={(value) =>
-                      setConditionValue(value as ToolCondition)
-                    }
+                    onValueChange={(value) => setConditionValue(value as ToolCondition)}
                   >
                     <DropdownMenuRadioItem
                       value="Good"
@@ -409,6 +464,8 @@ export function ToolDataViewDialog(props: {
               </DropdownMenu>
             </div>
           </div>
+
+          {/* Upload Images */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Upload Images</Label>
@@ -429,6 +486,11 @@ export function ToolDataViewDialog(props: {
           </div>
         </div>
 
+        {/* Display general error message if there are validation errors */}
+        {errors.length > 0 && isEditing && (
+          <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
+        )}
+
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
@@ -438,20 +500,18 @@ export function ToolDataViewDialog(props: {
             </DialogClose>
           )}
           <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
-            <>
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveClick}
-                  disabled={!isFormValid || !hasChanges}
-                  className="bg-primary text-primary-foreground"
-                >
-                  Save
-                </Button>
-              </DialogClose>
-            </>
+            <DialogClose asChild>
+              <Button
+                onClick={handleSaveClick}
+                className="bg-primary text-primary-foreground"
+                disabled={!isFormValid ?? !hasChanges}
+              >
+                Save
+              </Button>
+            </DialogClose>
           )}
         </DialogFooter>
       </DialogContent>

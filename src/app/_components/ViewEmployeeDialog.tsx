@@ -27,6 +27,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 import { Label } from '~/components/ui/label';
+import { Input } from '~/components/ui/input'; // Importing the simple Input component
 import { UploadButton } from '../utils/uploadthing';
 import { CalendarIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
@@ -39,7 +40,6 @@ import type { Employee } from '~/server/types/IEmployee';
 import { useFormValidation } from '~/hooks/useFormValidation';
 import { employeeSchema } from '~/server/types/IEmployee';
 import type { z } from 'zod';
-import LabeledInput from './LabeledInput';
 import { isBloodType, isJobType } from '~/server/types/typeGuard';
 import { useToast } from '~/components/hooks/use-toast';
 import { BLOOD_TYPES, JOB_TYPES } from '~/server/types/constants';
@@ -277,64 +277,122 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
               </div>
             )}
             <div className="flex-1 flex-col">
-              <div className="flex space-x-4">
-                <LabeledInput
-                  label="First Name"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                  disabled={!isEditing}
-                  error={errors.find((e) => e.path[0] === 'firstName')?.message}
-                  required
-                />
-                <LabeledInput
-                  label="Last Name"
-                  name="lastName"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                  disabled={!isEditing}
-                  error={errors.find((e) => e.path[0] === 'lastName')?.message}
-                  required
-                />
-              </div>
-              <div className="flex space-x-4">
-                <LabeledInput
-                  label="Age"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                  disabled={!isEditing}
-                  error={errors.find((e) => e.path[0] === 'age')?.message}
-                  required
-                />
-                <LabeledInput
-                  label="Phone Number"
-                  name="phoneNumber"
-                  type="text"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                  disabled={!isEditing}
-                  error={errors.find((e) => e.path[0] === 'phoneNumber')?.message}
-                  required
-                />
-              </div>
+              {/* First Name and Last Name Inputs */}
               <div className="flex space-x-4">
                 <div className="flex-1">
-                  <Label>Blood Type</Label>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    className={cn(
+                      'border border-border bg-background text-foreground',
+                      formData.firstName &&
+                        errors.some((e) => e.path[0] === 'firstName') &&
+                        'border-destructive'
+                    )}
+                  />
+                  {errors.find((e) => e.path[0] === 'firstName') && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.find((e) => e.path[0] === 'firstName')?.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    className={cn(
+                      'border border-border bg-background text-foreground',
+                      formData.lastName &&
+                        errors.some((e) => e.path[0] === 'lastName') &&
+                        'border-destructive'
+                    )}
+                  />
+                  {errors.find((e) => e.path[0] === 'lastName') && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.find((e) => e.path[0] === 'lastName')?.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Age and Phone Number Inputs */}
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    name="age"
+                    type="number"
+                    value={formData.age}
+                    onChange={handleChange}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    min={18}
+                    max={90}
+                    className={cn(
+                      'border border-border bg-background text-foreground',
+                      errors.some((e) => e.path[0] === 'age') && 'border-destructive'
+                    )}
+                  />
+                  {errors.find((e) => e.path[0] === 'age') && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.find((e) => e.path[0] === 'age')?.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="text"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    className={cn(
+                      'border border-border bg-background text-foreground',
+                      errors.some((e) => e.path[0] === 'phoneNumber') && 'border-destructive'
+                    )}
+                  />
+                  {errors.find((e) => e.path[0] === 'phoneNumber') && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errors.find((e) => e.path[0] === 'phoneNumber')?.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Blood Type and Job Dropdowns */}
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <Label htmlFor="bloodType">Blood Type</Label>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button variant="outline" className="w-full bg-background text-foreground">
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full border border-border bg-background text-foreground',
+                          !isEditing && 'cursor-not-allowed opacity-50'
+                        )}
+                        disabled={!isEditing}
+                      >
                         {bloodTypeValue}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-full bg-white text-black">
+                    <DropdownMenuContent className="w-full bg-background text-foreground">
                       <DropdownMenuLabel>Blood Type</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
@@ -351,14 +409,21 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
                   </DropdownMenu>
                 </div>
                 <div className="flex-1">
-                  <Label>Job</Label>
+                  <Label htmlFor="job">Job</Label>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button variant="outline" className="w-full bg-background text-foreground">
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full border border-border bg-background text-foreground',
+                          !isEditing && 'cursor-not-allowed opacity-50'
+                        )}
+                        disabled={!isEditing}
+                      >
                         {jobValue}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-full bg-white text-black">
+                    <DropdownMenuContent className="w-full bg-background text-foreground">
                       <DropdownMenuLabel>Job</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup value={jobValue} onValueChange={handleJobChange}>
@@ -372,22 +437,29 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
                   </DropdownMenu>
                 </div>
               </div>
+
+              {/* Hire Date Picker */}
               <div className="flex flex-col">
-                <Label>Hire Date</Label>
+                <Label htmlFor="hireDate">Hire Date</Label>
                 <Popover>
-                  <PopoverTrigger asChild disabled={!isEditing}>
+                  <PopoverTrigger asChild>
                     <Button
                       variant={'outline'}
                       className={cn(
-                        'w-[240px] justify-start bg-background text-left font-normal',
+                        'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
+                        !isEditing && 'cursor-not-allowed opacity-50',
                         !dateValue && 'text-muted-foreground'
                       )}
+                      disabled={!isEditing}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-4 w-4 text-foreground" />
                       {dateValue ? format(dateValue, 'PPP') : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent
+                    className="w-auto border border-border bg-background p-0 text-foreground"
+                    align="start"
+                  >
                     <Calendar
                       mode="single"
                       selected={dateValue}
@@ -400,6 +472,8 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Upload Images Section */}
           {!data.imageUrl && (
             <div className="flex space-x-4">
               <div className="flex-1">
@@ -422,40 +496,58 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
             </div>
           )}
         </div>
+
+        {/* Error Message */}
         {errors.length > 0 && isEditing && (
           <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
         )}
+
+        {/* Dialog Footer */}
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button
+                type="button"
+                variant="secondary"
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+              >
                 Close
               </Button>
             </DialogClose>
           )}
-          <Button onClick={handleEditClick}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+          <Button
+            onClick={handleEditClick}
+            className={cn(
+              isEditing ? 'bg-gray-500 text-white' : 'bg-primary text-primary-foreground'
+            )}
+          >
+            {isEditing ? 'Cancel' : 'Edit'}
+          </Button>
           {isEditing && (
             <>
               <DialogClose asChild>
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
-                  className="bg-primary text-primary-foreground"
+                  className={cn(
+                    'bg-primary text-primary-foreground hover:bg-primary/90',
+                    (!isFormValid || !hasChanges) && 'opacity-50 cursor-not-allowed'
+                  )}
                 >
                   Save
                 </Button>
               </DialogClose>
             </>
           )}
-          <DialogClose asChild>
+          {/* <DialogClose asChild>
             <Button
               onClick={handleDeleteClick}
               variant="destructive"
-              className="bg-red-600 text-white"
+              className="bg-red-600 text-white hover:bg-red-700"
             >
               Delete
             </Button>
-          </DialogClose>
+          </DialogClose> */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

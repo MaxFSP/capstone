@@ -27,6 +27,51 @@ import { type ILocation } from '~/server/types/ILocation';
 import { useToast } from '~/components/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
+interface Image {
+  url: string;
+  altText?: string;
+}
+
+// Define the interface for formData
+interface FormData {
+  part_id: number;
+  name: string;
+  part_number: string;
+  condition: PartCondition;
+  quantity: number;
+  location_id: number;
+  location_name: string;
+  length: number;
+  length_unit: typeof partUnitEnum._type;
+  width: number;
+  width_unit: typeof partUnitEnum._type;
+  height: number;
+  height_unit: typeof partUnitEnum._type;
+  compatible_machines: string;
+  acquisition_date: Date;
+  images: Image[]; // Use the defined Image type
+}
+
+// Define the initial form data
+const initialFormData: FormData = {
+  part_id: 0,
+  name: '',
+  part_number: '',
+  condition: 'Good',
+  quantity: 0,
+  location_id: 0, // Will be set based on locations prop
+  location_name: '',
+  length: 0,
+  length_unit: 'cm',
+  width: 0,
+  width_unit: 'cm',
+  height: 0,
+  height_unit: 'cm',
+  compatible_machines: '',
+  acquisition_date: new Date(),
+  images: [],
+};
+
 export default function CreatePartDialog(props: { locations: ILocation[] }) {
   const { locations } = props;
   const router = useRouter();
@@ -36,29 +81,24 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
   const [length, setLength] = useState<typeof partUnitEnum._type>('cm');
   const [width, setWidth] = useState<typeof partUnitEnum._type>('cm');
   const [height, setHeight] = useState<typeof partUnitEnum._type>('cm');
-  const [locationValue, setLocationValue] = useState(locations[0]!.name);
+  const [locationValue, setLocationValue] = useState(locations[0]?.name ?? '');
   const [conditionValue, setConditionValue] = useState<PartCondition>('Good');
 
-  const [formData, setFormData] = useState({
-    part_id: 0,
-    name: '',
-    part_number: '',
-    condition: 'Good' as PartCondition,
-    quantity: 0,
-    location_id: locations[0]!.location_id,
-    location_name: locations[0]!.name,
-    length: 0,
-    length_unit: 'cm' as typeof partUnitEnum._type,
-    width: 0,
-    width_unit: 'cm' as typeof partUnitEnum._type,
-    height: 0,
-    height_unit: 'cm' as typeof partUnitEnum._type,
-    compatible_machines: '',
-    created_at: new Date(),
-    images: [],
+  const [formData, setFormData] = useState<FormData>({
+    ...initialFormData,
+    location_id: locations[0]?.location_id ?? 0,
+    location_name: locations[0]?.name ?? '',
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
+
+  // PART VALIDATIONS
+  const validateName = (name: string) => name.trim() !== '';
+  const validatePartNumber = (partNumber: string) => /^[A-Za-z0-9-]+$/.test(partNumber);
+  const validateQuantity = (quantity: number) => quantity > 0;
+  const validateDimensions = (length: number, width: number, height: number) =>
+    length > 0 && width > 0 && height > 0;
+  const validateCompatibleMachines = (machines: string) => machines.trim() !== '';
 
   useEffect(() => {
     const isNameValid = validateName(formData.name);
@@ -76,14 +116,6 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
     );
   }, [formData]);
 
-  // PART VALIDATIONS
-  const validateName = (name: string) => name.trim() !== '';
-  const validatePartNumber = (partNumber: string) => /^[A-Za-z0-9-]+$/.test(partNumber);
-  const validateQuantity = (quantity: number) => quantity > 0;
-  const validateDimensions = (length: number, width: number, height: number) =>
-    length > 0 && width > 0 && height > 0;
-  const validateCompatibleMachines = (machines: string) => machines.trim() !== '';
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let parsedValue: string | number = value;
@@ -98,18 +130,37 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
     setFormData((prevData) => ({ ...prevData, [name]: parsedValue }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      ...initialFormData,
+      location_id: locations[0]?.location_id ?? 0,
+      location_name: locations[0]?.name ?? '',
+    });
+    setDate(new Date());
+    setLength('cm');
+    setWidth('cm');
+    setHeight('cm');
+    setLocationValue(locations[0]?.name ?? '');
+    setConditionValue('Good');
+  };
+
   const handleSaveClick = async () => {
     if (isFormValid) {
       try {
-        const updatedFormData = {
+        const selectedLocation = locations.find((location) => location.name === locationValue);
+        if (!selectedLocation) {
+          throw new Error('Selected location is invalid.');
+        }
+
+        const updatedFormData: FormData = {
           ...formData,
-          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          location_id: selectedLocation.location_id,
           location_name: locationValue,
           condition: conditionValue,
           length_unit: length,
           width_unit: width,
           height_unit: height,
-          created_at: date,
+          acquisition_date: date, // Ensure Date object is set
         };
 
         const response = await fetch('/api/createPart', {
@@ -125,13 +176,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             title: 'Success',
             description: 'Part created successfully.',
           });
+          resetForm();
           router.refresh();
         } else {
           const data = await response.json();
-          throw new Error(data.error || 'Failed to create part.');
+          throw new Error(data.error ?? 'Failed to create part.');
         }
       } catch (error) {
-        console.error('Error creating part:', error);
         let errorMessage = 'An unknown error occurred.';
         if (error instanceof Error) {
           errorMessage = error.message;
@@ -160,7 +211,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
   );
   const isDimensionsInvalid = useMemo(
     () =>
-      (formData.length !== 0 || formData.width !== 0 || formData.height !== 0) &&
+      (formData.length !== 0 ?? formData.width !== 0 ?? formData.height !== 0) &&
       !validateDimensions(formData.length, formData.width, formData.height),
     [formData.length, formData.width, formData.height]
   );
@@ -173,11 +224,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      {/* Name and Part Number */}
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Name</Label>
+          <Label htmlFor="name">Name</Label>
           <Input
             name="name"
+            id="name"
             value={formData.name}
             onChange={handleChange}
             className={cn(
@@ -185,12 +238,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               isNameInvalid && 'border-destructive'
             )}
           />
-          {isNameInvalid && <p className="text-sm text-destructive">Name cannot be empty</p>}
+          {isNameInvalid && <p className="text-sm text-destructive">Name cannot be empty.</p>}
         </div>
         <div className="flex-1">
-          <Label>Part Number</Label>
+          <Label htmlFor="part_number">Part Number</Label>
           <Input
             name="part_number"
+            id="part_number"
             value={formData.part_number}
             onChange={handleChange}
             className={cn(
@@ -200,17 +254,19 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           />
           {isPartNumberInvalid && (
             <p className="text-sm text-destructive">
-              Part number can only contain letters, numbers, and hyphens
+              Part number can only contain letters, numbers, and hyphens.
             </p>
           )}
         </div>
       </div>
 
+      {/* Compatible Machines and Quantity */}
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Compatible Machines</Label>
+          <Label htmlFor="compatible_machines">Compatible Machines</Label>
           <Input
             name="compatible_machines"
+            id="compatible_machines"
             value={formData.compatible_machines}
             onChange={handleChange}
             className={cn(
@@ -219,26 +275,30 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             )}
           />
           {isCompatibleMachinesInvalid && (
-            <p className="text-sm text-destructive">Compatible machines cannot be empty</p>
+            <p className="text-sm text-destructive">Compatible machines cannot be empty.</p>
           )}
         </div>
         <div className="w-[100px]">
-          <Label>Quantity</Label>
+          <Label htmlFor="quantity">Quantity</Label>
           <Input
             name="quantity"
+            id="quantity"
+            type="number" // Changed to number to restrict input
             value={formData.quantity}
             onChange={handleChange}
+            min="1" // Enforce minimum value in the UI
             className={cn(
               'border border-border bg-background text-foreground',
               isQuantityInvalid && 'border-destructive'
             )}
           />
           {isQuantityInvalid && (
-            <p className="text-sm text-destructive">Quantity must be greater than 0</p>
+            <p className="text-sm text-destructive">Quantity must be greater than 0.</p>
           )}
         </div>
       </div>
 
+      {/* Dimensions */}
       <div className="flex space-x-4">
         <div className="flex-1">
           <div className="flex flex-col">
@@ -246,10 +306,14 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             <Label>(L x W x H)</Label>
           </div>
           <div className="flex">
+            {/* Length */}
             <Input
               name="length"
+              id="length"
+              type="number" // Changed to number to restrict input
               value={formData.length}
               onChange={handleChange}
+              min="1" // Enforce minimum value in the UI
               className={cn(
                 'm-2 w-1/6 border border-border bg-background text-foreground',
                 isDimensionsInvalid && 'border-destructive'
@@ -274,10 +338,14 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Width */}
             <Input
               name="width"
+              id="width"
+              type="number" // Changed to number to restrict input
               value={formData.width}
               onChange={handleChange}
+              min="1" // Enforce minimum value in the UI
               className={cn(
                 'm-2 w-1/6 border border-border bg-background text-foreground',
                 isDimensionsInvalid && 'border-destructive'
@@ -302,10 +370,14 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Height */}
             <Input
               name="height"
+              id="height"
+              type="number" // Changed to number to restrict input
               value={formData.height}
               onChange={handleChange}
+              min="1" // Enforce minimum value in the UI
               className={cn(
                 'm-2 w-1/6 border border-border bg-background text-foreground',
                 isDimensionsInvalid && 'border-destructive'
@@ -331,11 +403,12 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             </DropdownMenu>
           </div>
           {isDimensionsInvalid && (
-            <p className="text-sm text-destructive">Please enter valid dimensions</p>
+            <p className="text-sm text-destructive">Please enter valid dimensions.</p>
           )}
         </div>
       </div>
 
+      {/* Location and Condition */}
       <div className="flex space-x-4">
         <div className="flex-1">
           <Label>Location</Label>
@@ -348,7 +421,16 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             <DropdownMenuContent className="bg-background text-foreground">
               <DropdownMenuLabel>Locations</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
+              <DropdownMenuRadioGroup
+                value={locationValue}
+                onValueChange={(value) => {
+                  setLocationValue(value);
+                  const selectedLocation = locations.find((loc) => loc.name === value);
+                  if (selectedLocation) {
+                    setFormData((prev) => ({ ...prev, location_id: selectedLocation.location_id }));
+                  }
+                }}
+              >
                 {locations.map((location) => (
                   <DropdownMenuRadioItem key={location.name} value={location.name}>
                     {location.name}
@@ -383,6 +465,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
         </div>
       </div>
 
+      {/* Acquisition Date */}
       <div className="flex flex-col">
         <Label>Acquisition Date</Label>
         <Popover>
@@ -402,56 +485,44 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(newDate) => newDate && setDate(newDate)}
+              onSelect={(newDate) => {
+                if (newDate) {
+                  setDate(newDate);
+                  setFormData((prev) => ({
+                    ...prev,
+                    acquisition_date: newDate,
+                  }));
+                }
+              }}
               initialFocus
             />
           </PopoverContent>
         </Popover>
       </div>
 
+      {/* Form Actions */}
       <AlertDialogFooter className="sm:justify-start">
         <AlertDialogCancel asChild>
           <Button
             type="button"
             variant="secondary"
             onClick={() => {
-              setFormData({
-                part_id: 0,
-                name: '',
-                part_number: '',
-                condition: 'Good',
-                quantity: 0,
-                location_id: locations[0]!.location_id,
-                location_name: locations[0]!.name,
-                length: 0,
-                length_unit: 'cm',
-                width: 0,
-                width_unit: 'cm',
-                height: 0,
-                height_unit: 'cm',
-                compatible_machines: '',
-                created_at: new Date(),
-                images: [],
-              });
-              setDate(new Date());
-              setLength('cm');
-              setWidth('cm');
-              setHeight('cm');
-              setLocationValue(locations[0]!.name);
-              setConditionValue('Good');
+              resetForm(); // Reset the form
             }}
             className="bg-secondary text-secondary-foreground"
           >
             Close
           </Button>
         </AlertDialogCancel>
-        <Button
-          onClick={handleSaveClick}
-          disabled={!isFormValid}
-          className="bg-primary text-primary-foreground"
-        >
-          Save
-        </Button>
+        <AlertDialogCancel asChild>
+          <Button
+            onClick={handleSaveClick}
+            disabled={!isFormValid}
+            className="bg-primary text-primary-foreground"
+          >
+            Save
+          </Button>
+        </AlertDialogCancel>
       </AlertDialogFooter>
     </form>
   );

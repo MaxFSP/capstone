@@ -54,13 +54,11 @@ export async function updateEmployee(
   employee_id: number,
   firstName?: string,
   lastName?: string,
-  imageUrl?: string,
   age?: number,
   hireDate?: Date,
   phoneNumber?: string,
   job?: string,
-  bloodType?: string,
-  imageKey?: string
+  bloodType?: string
 ) {
   const updatedEmployee = await db
     .update(employees)
@@ -69,11 +67,9 @@ export async function updateEmployee(
       lastName: lastName,
       age: age,
       hireDate: hireDate,
-      imageUrl: imageUrl,
       phoneNumber: phoneNumber,
       job: job,
       bloodType: bloodType,
-      imageKey: imageKey,
     })
     .where(eq(employees.employee_id, employee_id))
     .returning();

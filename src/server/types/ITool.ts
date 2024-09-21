@@ -21,8 +21,9 @@ export const toolSchema = z.object({
   state: z.number().int().positive().max(1, 'State must be between 0 and 1'),
   images: z.array(
     z.object({
-      url: z.string().url('Invalid URL'),
-      alt: z.string().optional(),
+      image_id: z.number().int().nonnegative(),
+      image_key: z.string().min(1, 'Image key is required'),
+      image_url: z.string().url('Invalid URL'),
     })
   ),
 });
