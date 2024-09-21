@@ -236,7 +236,12 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
             <form className="flex flex-col space-y-4" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <Label>User Id</Label>
-                <Input type="text" defaultValue={`${user.id}`} disabled />
+                <Input
+                  type="text"
+                  defaultValue={`${user.id}`}
+                  disabled
+                  className="border border-border bg-background text-foreground"
+                />
               </div>
               <div>
                 <Label>First Name</Label>
@@ -246,10 +251,13 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                   value={formValues.firstName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isNameInvalid && 'border-red-500')}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isNameInvalid && 'border-destructive'
+                  )}
                 />
                 {isNameInvalid && (
-                  <p className="text-sm text-red-500">Name can only contain letters</p>
+                  <p className="text-sm text-destructive">Name can only contain letters</p>
                 )}
               </div>
               <div>
@@ -260,10 +268,13 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                   value={formValues.lastName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isLastNameInvalid && 'border-red-500')}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isLastNameInvalid && 'border-destructive'
+                  )}
                 />
                 {isLastNameInvalid && (
-                  <p className="text-sm text-red-500">Last Name can only contain letters</p>
+                  <p className="text-sm text-destructive">Last Name can only contain letters</p>
                 )}
               </div>
               <div>
@@ -274,10 +285,13 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                   value={formValues.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isUsernameInvalid && 'border-red-500')}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isUsernameInvalid && 'border-destructive'
+                  )}
                 />
                 {isUsernameInvalid && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-destructive">
                     Username can only contain letters and numbers
                   </p>
                 )}
@@ -290,10 +304,13 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                   value={formValues.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isEmailInvalid && 'border-red-500')}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isEmailInvalid && 'border-destructive'
+                  )}
                 />
                 {isEmailInvalid && (
-                  <p className="text-sm text-red-500">Please enter a valid email</p>
+                  <p className="text-sm text-destructive">Please enter a valid email</p>
                 )}
               </div>
               <div>
@@ -304,10 +321,13 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                   value={formValues.password}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isPasswordInvalid && 'border-red-500')}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isPasswordInvalid && 'border-destructive'
+                  )}
                 />
                 {isPasswordInvalid && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-destructive">
                     Password must be at least 8 characters long and contain at least one uppercase
                     letter and one number
                   </p>
@@ -321,21 +341,27 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                   value={formValues.confirmPassword}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isConfirmPasswordInvalid && 'border-red-500')}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isConfirmPasswordInvalid && 'border-destructive'
+                  )}
                 />
                 {isConfirmPasswordInvalid && (
-                  <p className="text-sm text-red-500">Passwords do not match</p>
+                  <p className="text-sm text-destructive">Passwords do not match</p>
                 )}
               </div>
               <div className="flex-1">
                 <Label>Role</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild disabled={!isEditing}>
-                    <Button className="w-full" variant="outline">
+                    <Button
+                      className="w-full border border-border bg-background text-foreground"
+                      variant="outline"
+                    >
                       {role}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full">
+                  <DropdownMenuContent className="w-full bg-background text-foreground">
                     <DropdownMenuLabel>Role</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup
@@ -364,10 +390,18 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
               <div className="flex space-x-4">
                 {!isEditing && (
                   <DialogClose asChild>
-                    <Button>Close</Button>
+                    <Button className="bg-secondary text-secondary-foreground">Close</Button>
                   </DialogClose>
                 )}
-                <Button type="button" onClick={isEditing ? handleCancelClick : handleEditClick}>
+                <Button
+                  type="button"
+                  onClick={isEditing ? handleCancelClick : handleEditClick}
+                  className={
+                    isEditing
+                      ? 'bg-secondary text-secondary-foreground'
+                      : 'bg-primary text-primary-foreground'
+                  }
+                >
                   {isEditing ? 'Cancel' : 'Edit'}
                 </Button>
                 {isEditing && (
@@ -376,6 +410,7 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
                       type="button"
                       onClick={handleSaveClick}
                       disabled={!isFormValid || !hasChanges}
+                      className="bg-primary text-primary-foreground"
                     >
                       Save
                     </Button>

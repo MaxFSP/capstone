@@ -361,8 +361,6 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
             </form>
           </div>
         </div>
-
-        <DialogFooter className="sm:justify-start"></DialogFooter>
       </DialogContent>
     </Dialog>
   );
