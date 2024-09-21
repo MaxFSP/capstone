@@ -43,11 +43,16 @@ export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] 
 
   let current_role = '';
 
-  if (Array.isArray(orgs)) {
-    if (orgs.some((o) => o.name?.includes('Administrator'))) {
-      current_role = 'Administrator';
+  if (user.org) {
+    if (Array.isArray(user.org)) {
+      const hasAdminRole = user.org.some((org) => org.name?.toLowerCase().includes('admin'));
+      if (hasAdminRole) {
+        current_role = 'Admin';
+      } else {
+        current_role = user.org[0]?.name ?? '';
+      }
     } else {
-      current_role = orgs[0]?.name ?? '';
+      current_role = user.org.name?.toLowerCase().includes('admin') ? 'Admin' : user.org.name ?? '';
     }
   }
 
