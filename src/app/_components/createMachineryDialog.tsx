@@ -371,7 +371,7 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
                 state: '',
               });
               setDate(new Date());
-              setLocationValue(locations[0]?.name || '');
+              setLocationValue(locations[0]?.name ?? '');
               setStateValue('Available');
               setIsEditing(true);
               // Optionally, close the dialog here if applicable
