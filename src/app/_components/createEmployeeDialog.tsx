@@ -51,7 +51,7 @@ export function CreateEmployeeDialog() {
     const ageNum = parseInt(age);
     return !isNaN(ageNum) && ageNum >= 18 && ageNum <= 90;
   };
-  const validatePhoneNumber = (phoneNumber: string) => /^\d{8,15}$/.test(phoneNumber);
+  const validatePhoneNumber = (phoneNumber: string) => /^\d{7,8}$/.test(phoneNumber);
 
   useEffect(() => {
     const isFirstNameValid = validateName(formData.firstName);
@@ -197,7 +197,7 @@ export function CreateEmployeeDialog() {
           />
           {formData.phoneNumber && !validatePhoneNumber(formData.phoneNumber) && (
             <p className="text-sm text-destructive mt-1">
-              Phone number must contain 8 to 15 digits.
+              Phone number must contain 7 to 8 digits.
             </p>
           )}
         </div>
