@@ -591,7 +591,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
               </DialogClose>
             </>
           )}
-          <DialogClose asChild>
+          {/* <DialogClose asChild>
             <Button
               onClick={handleDeleteClick}
               variant="destructive"
@@ -599,7 +599,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
             >
               Delete
             </Button>
-          </DialogClose>
+          </DialogClose> */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

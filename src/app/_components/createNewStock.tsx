@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button } from "~/components/ui/button";
+import { Button } from '~/components/ui/button';
 
 import {
   AlertDialog,
@@ -9,16 +9,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
+} from '~/components/ui/alert-dialog';
 
-import { type ILocation } from "~/server/types/ILocation";
-import CreatePartDialog from "./createPartDialog";
-import { CreateMachineryDialog } from "./createMachineryDialog";
-import { CreateToolDialog } from "./createToolDialog";
-import { CreateEmployeeDialog } from "./createEmployeeDialog";
-import { CreateWorkOrderDialog } from "./createWorkOrderDialog";
-import { type User } from "~/server/types/IUser";
-import { type Machinery } from "~/server/types/IMachinery";
+import { type ILocation } from '~/server/types/ILocation';
+import CreatePartDialog from './createPartDialog';
+import { CreateMachineryDialog } from './createMachineryDialog';
+import { CreateToolDialog } from './createToolDialog';
+import { CreateEmployeeDialog } from './createEmployeeDialog';
+import { CreateWorkOrderDialog } from './createWorkOrderDialog';
+import { type User } from '~/server/types/IUser';
+import { type Machinery } from '~/server/types/IMachinery';
 
 export function CreateNewStockDialog(props: {
   locations?: ILocation[];
@@ -35,22 +35,19 @@ export function CreateNewStockDialog(props: {
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] overflow-auto border-border bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-large">
-            Create {type}
-          </AlertDialogTitle>
+          <AlertDialogTitle className="text-large">Create {type}</AlertDialogTitle>
           <AlertDialogDescription>
-            Make sure you type the correct information before creating the
-            machine.
+            Make sure you type the correct information before creating the {type}.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        {type === "Machinery" ? (
+        {type === 'Machinery' ? (
           <CreateMachineryDialog locations={locations!} />
-        ) : type === "Part" ? (
+        ) : type === 'Part' ? (
           <CreatePartDialog locations={locations!} />
-        ) : type === "Tool" ? (
+        ) : type === 'Tool' ? (
           <CreateToolDialog locations={locations!} />
-        ) : type === "Employee" ? (
+        ) : type === 'Employee' ? (
           <CreateEmployeeDialog />
         ) : (
           <CreateWorkOrderDialog users={users!} machines={machines!} />
