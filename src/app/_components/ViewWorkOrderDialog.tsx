@@ -1,9 +1,8 @@
+// WorkOrderDataViewDialog.tsx
+
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
-
-import { useState, useEffect } from "react";
-
-import { Button } from "~/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +11,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogClose,
@@ -22,23 +21,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { useRouter } from "next/navigation";
-import { type WorkOrdersWithUser } from "~/server/types/IOrders";
-import { type User } from "~/server/types/IUser";
-import { type Machinery } from "~/server/types/IMachinery";
-import { Switch } from "~/components/ui/switch";
+} from '~/components/ui/dialog';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { useRouter } from 'next/navigation';
+import { type WorkOrdersWithUser } from '~/server/types/IOrders';
+import { type User } from '~/server/types/IUser';
+import { type Machinery } from '~/server/types/IMachinery';
+import { Switch } from '~/components/ui/switch';
+import { type z } from 'zod';
+import { useFormValidation } from '~/hooks/useFormValidation';
+import { workOrderSchema } from '~/server/types/IOrders';
+import LabeledInput from './LabeledInput';
+import { Label } from '~/components/ui/label';
+
+type WorkOrderFormData = z.infer<typeof workOrderSchema>;
 
 export function WorkOrderDataViewDialog(props: {
   title: string;
@@ -58,48 +58,40 @@ export function WorkOrderDataViewDialog(props: {
 
   const [assigned_user, setAssignedUser] = useState(data.userName);
   const [machinery, setMachine] = useState(data.machine_serial);
-
   const [dateValue, setDateValue] = useState<Date>(new Date(data.start_date));
-
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
-  const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [currentStateBoolean, setCurrentStateBoolean] = useState<boolean>(data.state === 1);
 
-  const [currentStateBoolean, setCurrentStateBoolean] = useState<boolean>(
-    data.state === 1,
-  );
+  const { formData, setFormData, isFormValid, errors, validateForm } =
+    useFormValidation<WorkOrderFormData>({
+      schema: workOrderSchema,
+      initialData: {
+        ...data,
+        start_date: new Date(data.start_date),
+        end_date: data.end_date ? new Date(data.end_date) : null,
+      },
+    });
 
   useEffect(() => {
     if (!isEditing) {
       setAssignedUser(data.userName);
       setMachine(data.machine_serial);
       setFormData({ ...data });
-      setDateValue(data.start_date);
+      setDateValue(new Date(data.start_date));
     }
   }, [isEditing, data]);
 
   useEffect(() => {
-    validateForm();
     checkForChanges();
   }, [formData, machinery, assigned_user, dateValue, currentStateBoolean]);
 
-  const validateForm = () => {
-    const isDataValid =
-      formData.order_id !== null && formData.order_id !== undefined;
-    setIsFormValid(isDataValid);
-  };
-
   const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
+    const dateWithoutTime = dateValue.toISOString().split('T')[0];
+    const dateWithoutTimeCurrent = new Date(current_date).toISOString().split('T')[0];
 
-    const machine_id = machines.find(
-      (machine) => machine.serial_number === machinery,
-    )!.machine_id;
+    const machine_id = machines.find((machine) => machine.serial_number === machinery)!.machine_id;
 
     const currentState = current_state === 1;
     const hasChanges =
@@ -120,7 +112,8 @@ export function WorkOrderDataViewDialog(props: {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value || null }));
+    validateForm();
   };
 
   const handleCancelClick = () => {
@@ -132,47 +125,40 @@ export function WorkOrderDataViewDialog(props: {
   const handleSaveClick = async () => {
     if (isFormValid && hasChanges) {
       try {
-        formData.assigned_user = users.find(
-          (user) => user.first_name + " " + user.last_name === assigned_user,
-        )!.user_id;
+        const updatedFormData: WorkOrderFormData = {
+          ...formData,
+          assigned_user: users.find(
+            (user) => user.first_name + ' ' + user.last_name === assigned_user
+          )!.user_id,
+          machine_id: machines.find((machine) => machine.serial_number === machinery)!.machine_id,
+          start_date: dateValue,
+          state: currentStateBoolean ? 1 : 0,
+        };
 
-        formData.machine_id = machines.find(
-          (machine) => machine.serial_number === machinery,
-        )!.machine_id;
-
-        formData.start_date = dateValue;
-
-        formData.state = currentStateBoolean ? 1 : 0;
-
-        const response = await fetch("/api/updateWorkOrder", {
-          method: "POST",
+        const response = await fetch('/api/updateWorkOrder', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedFormData),
         });
         if (response.ok) {
           router.refresh();
         } else {
-          console.error("Failed to update work order");
+          console.error('Failed to update work order');
         }
       } catch (error) {
-        console.error("Error updating work order:", error);
+        console.error('Error updating work order:', error);
       }
     }
   };
 
-  const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setIsEditing(false);
-  };
-
   async function generateReport(orderId: number) {
     try {
-      const response = await fetch("/api/generateWorkOrderReport", {
-        method: "POST",
+      const response = await fetch('/api/generateWorkOrderReport', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ orderId }),
       });
@@ -180,27 +166,25 @@ export function WorkOrderDataViewDialog(props: {
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = url;
         a.download = `WorkOrder_${orderId}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
       } else {
-        console.error("Failed to generate report");
+        console.error('Failed to generate report');
       }
     } catch (error) {
-      console.error("Error generating report:", error);
+      console.error('Error generating report:', error);
     }
   }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {size === "lg" ? (
-          <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">
-            {title}
-          </p>
+        {size === 'lg' ? (
+          <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">{title}</p>
         ) : (
           <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
             <div className="mb-2 flex items-center justify-between">
@@ -214,17 +198,13 @@ export function WorkOrderDataViewDialog(props: {
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">
-                Machine Serial
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">Machine Serial</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm">{data.machine_serial}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">
-                Username
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">Username</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm">{data.userName}</span>
               </div>
@@ -241,17 +221,16 @@ export function WorkOrderDataViewDialog(props: {
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Name</Label>
-              <Input
-                required
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
-            </div>
+            <LabeledInput
+              label="Name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              disabled={!isEditing}
+              required
+              error={errors.find((e) => e.path[0] === 'name')?.message}
+            />
             <div className="flex-1">
               <Label>Assigned Machine</Label>
               <DropdownMenu>
@@ -282,17 +261,15 @@ export function WorkOrderDataViewDialog(props: {
           </div>
 
           <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Observations</Label>
-              <Input
-                required
-                type="text"
-                name="age"
-                value={formData.observations ?? " "}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
-            </div>
+            <LabeledInput
+              label="Observations"
+              name="observations"
+              type="text"
+              value={formData.observations ?? ''}
+              onChange={handleChange}
+              disabled={!isEditing}
+              error={errors.find((e) => e.path[0] === 'observations')?.message}
+            />
           </div>
 
           <div className="flex space-x-4">
@@ -301,14 +278,14 @@ export function WorkOrderDataViewDialog(props: {
               <Popover>
                 <PopoverTrigger asChild disabled={!isEditing}>
                   <Button
-                    variant={"outline"}
+                    variant={'outline'}
                     className={cn(
-                      "w-[240px] justify-start bg-background text-left font-normal",
-                      !dateValue && "text-muted-foreground",
+                      'w-[240px] justify-start bg-background text-left font-normal',
+                      !dateValue && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? format(dateValue, "PPP") : "Pick a date"}
+                    {dateValue ? format(dateValue, 'PPP') : 'Pick a date'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 ">
@@ -318,10 +295,6 @@ export function WorkOrderDataViewDialog(props: {
                     onSelect={(date) => {
                       if (date) {
                         setDateValue(date);
-                        setFormData((prev) => ({
-                          ...prev,
-                          hireDate: date,
-                        }));
                       }
                     }}
                     initialFocus
@@ -348,9 +321,9 @@ export function WorkOrderDataViewDialog(props: {
                     {users.map((user) => (
                       <DropdownMenuRadioItem
                         key={user.username}
-                        value={user.first_name + " " + user.last_name}
+                        value={user.first_name + ' ' + user.last_name}
                       >
-                        {user.first_name + " " + user.last_name}
+                        {user.first_name + ' ' + user.last_name}
                       </DropdownMenuRadioItem>
                     ))}
                   </DropdownMenuRadioGroup>
@@ -365,15 +338,16 @@ export function WorkOrderDataViewDialog(props: {
                   id="enableWorkOrder"
                   disabled={!isEditing}
                   checked={currentStateBoolean}
-                  onCheckedChange={() =>
-                    setCurrentStateBoolean(!currentStateBoolean)
-                  }
+                  onCheckedChange={() => setCurrentStateBoolean(!currentStateBoolean)}
                 />
                 <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
               </div>
             </div>
           </div>
         </div>
+        {errors.length > 0 && (
+          <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
+        )}
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
@@ -383,7 +357,7 @@ export function WorkOrderDataViewDialog(props: {
             </DialogClose>
           )}
           <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
             <>
@@ -391,25 +365,15 @@ export function WorkOrderDataViewDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="bg-primary text-primary-foreground"
                 >
                   Save
-                </Button>
-              </DialogClose>
-
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                >
-                  Save & Close
                 </Button>
               </DialogClose>
             </>
           )}
           <DialogClose asChild>
-            <Button onClick={() => generateReport(data.order_id)}>
-              Generate Report
-            </Button>
+            <Button onClick={() => generateReport(data.order_id)}>Generate Report</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

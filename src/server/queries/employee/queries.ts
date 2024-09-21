@@ -1,9 +1,9 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { employees } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { db } from '../../db';
+import { employees } from '../../db/schema';
+import { eq } from 'drizzle-orm';
 
 // Employees Table --------------------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ export async function createEmployee(
   hireDate: Date,
   phoneNumber: string,
   job: string,
-  bloodType: string,
+  bloodType: string
 ) {
   const newEmployee = await db
     .insert(employees)
@@ -27,6 +27,7 @@ export async function createEmployee(
       phoneNumber: phoneNumber,
       job: job,
       bloodType: bloodType,
+      state: 1,
     })
     .returning();
   return newEmployee;
@@ -59,7 +60,7 @@ export async function updateEmployee(
   phoneNumber?: string,
   job?: string,
   bloodType?: string,
-  imageKey?: string,
+  imageKey?: string
 ) {
   const updatedEmployee = await db
     .update(employees)
@@ -80,11 +81,7 @@ export async function updateEmployee(
   return updatedEmployee;
 }
 
-export async function addImageToEmployee(
-  employee_id: number,
-  imageUrl: string,
-  imageKey: string,
-) {
+export async function addImageToEmployee(employee_id: number, imageUrl: string, imageKey: string) {
   await db
     .update(employees)
     .set({

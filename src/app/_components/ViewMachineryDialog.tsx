@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
-import { UploadButton } from "../utils/uploadthing";
+import { UploadButton } from '../utils/uploadthing';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,16 +17,16 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 
-import { Button } from "~/components/ui/button";
+import { Button } from '~/components/ui/button';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-} from "~/components/ui/carousel";
+} from '~/components/ui/carousel';
 import {
   Dialog,
   DialogClose,
@@ -31,26 +36,27 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { SellDataViewDialog } from "./sellMachineDialog";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { SellDataViewDialog } from './sellMachineDialog';
 
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 
-import { type States, type Machinery } from "~/server/types/IMachinery";
-import { type ILocation } from "~/server/types/ILocation";
-import { type Image } from "~/server/types/IImages";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
+import { type States, type Machinery, machinerySchema } from '~/server/types/IMachinery';
+import { type ILocation } from '~/server/types/ILocation';
+import { type Image } from '~/server/types/IImages';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
+import { useToast } from '~/components/hooks/use-toast';
+import { useFormValidation } from '~/hooks/useFormValidation';
+import type { z } from 'zod';
+
+type MachineryFormData = z.infer<typeof machinerySchema>;
 
 export function MachineryDataViewDialog(props: {
   title: string;
@@ -61,26 +67,29 @@ export function MachineryDataViewDialog(props: {
   const current_date = data.acquisition_date;
   const current_state = data.state;
   const router = useRouter();
+  const { toast } = useToast();
 
   const current_location: string = locations.find(
-    (location) => data.location_name === location.name,
+    (location) => data.location_name === location.name
   )!.name;
 
-  const [stateValue, setStateValue] = useState<States>(data.state as States);
-  const [dateValue, setDateValue] = useState<Date>(
-    new Date(data.acquisition_date),
-  );
+  const [stateValue, setStateValue] = useState<States>(data.state);
+  const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
   const [locationValue, setLocationValue] = useState<string>(current_location);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
-  const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const { formData, setFormData, isFormValid, errors, validateForm } =
+    useFormValidation<MachineryFormData>({
+      schema: machinerySchema,
+      initialData: { ...data },
+    });
 
   useEffect(() => {
     if (!isEditing) {
       setLocationValue(current_location);
-      setStateValue(data.state as States);
+      setStateValue(data.state);
       setFormData({ ...data });
     }
   }, [isEditing, data]);
@@ -92,19 +101,15 @@ export function MachineryDataViewDialog(props: {
 
   const handleUploadComplete = () => {
     router.refresh();
-  };
-
-  const validateForm = () => {
-    const isDataValid =
-      formData.machine_id !== null && formData.machine_id !== undefined;
-    setIsFormValid(isDataValid);
+    toast({
+      title: 'Success',
+      description: 'Image uploaded successfully.',
+    });
   };
 
   const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
+    const dateWithoutTime = dateValue.toISOString().split('T')[0];
+    const dateWithoutTimeCurrent = new Date(current_date).toISOString().split('T')[0];
 
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
@@ -124,7 +129,14 @@ export function MachineryDataViewDialog(props: {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'year') {
+      // Only allow numeric input for year
+      const numericValue = value.replace(/\D/g, '');
+      setFormData((prev) => ({ ...prev, [name]: numericValue ? parseInt(numericValue, 10) : 0 }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    validateForm();
   };
 
   const handleCancelClick = () => {
@@ -135,40 +147,54 @@ export function MachineryDataViewDialog(props: {
   const handleSaveClick = async () => {
     if (isFormValid && hasChanges) {
       try {
-        formData.location_id = locations.find(
-          (location) => location.name === locationValue,
-        )!.location_id;
-        formData.state = stateValue;
-        const response = await fetch("/api/updateMachinery", {
-          method: "POST",
+        const updatedFormData: MachineryFormData = {
+          ...formData,
+          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          state: stateValue,
+          acquisition_date: dateValue,
+        };
+
+        const response = await fetch('/api/updateMachinery', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedFormData),
         });
         if (response.ok) {
+          toast({
+            title: 'Success',
+            description: 'Machinery updated successfully.',
+          });
           router.refresh();
+          setIsEditing(false);
         } else {
-          console.error("Failed to update machinery");
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to update machinery.');
         }
       } catch (error) {
-        console.error("Error updating machinery:", error);
+        console.error('Error updating machinery:', error);
+        let errorMessage = 'An unknown error occurred.';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
       }
     }
   };
 
-  const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setIsEditing(false);
-  };
-
   const inputProps = {
-    readOnly: data.state === "Sold",
-    disabled: data.state === "Sold",
+    readOnly: data.state === 'Sold',
+    disabled: data.state === 'Sold',
     className:
-      data.state === "Sold"
-        ? "border border-border bg-muted text-muted-foreground"
-        : "border border-border bg-background text-foreground",
+      data.state === 'Sold'
+        ? 'border border-border bg-muted text-muted-foreground'
+        : 'border border-border bg-background text-foreground',
   };
 
   return (
@@ -179,9 +205,7 @@ export function MachineryDataViewDialog(props: {
       <DialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
-          <DialogDescription>
-            Anyone who has this link will be able to view this.
-          </DialogDescription>
+          <DialogDescription>Anyone who has this link will be able to view this.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -201,7 +225,7 @@ export function MachineryDataViewDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Machinery",
+                            type: 'Machinery',
                           }}
                         />
                       </div>
@@ -235,6 +259,11 @@ export function MachineryDataViewDialog(props: {
                 disabled={!isEditing}
                 className={inputProps.className}
               />
+              {errors.find((e) => e.path[0] === 'brand') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'brand')?.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -249,17 +278,31 @@ export function MachineryDataViewDialog(props: {
                 disabled={!isEditing}
                 className={inputProps.className}
               />
+              {errors.find((e) => e.path[0] === 'model') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'model')?.message}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label>Year</Label>
               <Input
                 name="year"
+                type="number"
+                min="1900"
+                max={new Date().getFullYear()}
                 value={formData.year}
                 onChange={handleChange}
                 readOnly={!isEditing && inputProps.readOnly}
                 disabled={!isEditing}
                 className={inputProps.className}
               />
+
+              {errors.find((e) => e.path[0] === 'year') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'year')?.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -274,24 +317,25 @@ export function MachineryDataViewDialog(props: {
                 disabled={!isEditing}
                 className={inputProps.className}
               />
+              {errors.find((e) => e.path[0] === 'serial_number') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'serial_number')?.message}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label>Acquisition Date</Label>
               <Popover>
                 <PopoverTrigger asChild disabled={!isEditing}>
                   <Button
-                    variant={"outline"}
+                    variant={'outline'}
                     className={cn(
-                      "w-[240px] justify-start text-left font-normal",
-                      !dateValue && "text-muted-foreground",
+                      'w-[240px] justify-start text-left font-normal',
+                      !dateValue && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? (
-                      format(dateValue, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {dateValue ? format(dateValue, 'PPP') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -312,6 +356,11 @@ export function MachineryDataViewDialog(props: {
                   />
                 </PopoverContent>
               </Popover>
+              {errors.find((e) => e.path[0] === 'acquisition_date') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'acquisition_date')?.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -320,12 +369,17 @@ export function MachineryDataViewDialog(props: {
               <Label>Observations</Label>
               <Input
                 name="observations"
-                value={formData.observations ?? "N/A"}
+                value={formData.observations ?? 'N/A'}
                 onChange={handleChange}
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 className={inputProps.className}
               />
+              {errors.find((e) => e.path[0] === 'observations') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'observations')?.message}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label>Created At</Label>
@@ -394,10 +448,7 @@ export function MachineryDataViewDialog(props: {
                 <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={locationValue}
-                    onValueChange={setLocationValue}
-                  >
+                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                     {locations.map((location) => (
                       <DropdownMenuRadioItem
                         key={location.name}
@@ -413,50 +464,44 @@ export function MachineryDataViewDialog(props: {
             </div>
           </div>
 
-          {data.state === "Sold" &&
-            data.sold_price !== null &&
-            data.sold_to !== null && (
-              <>
-                <div className="flex space-x-4">
-                  <div className="flex-1">
-                    <Label>Sold Price</Label>
-                    <Input
-                      value={data.sold_price}
-                      readOnly={!isEditing}
-                      disabled={!isEditing}
-                      className={inputProps.className}
-                    />
-                  </div>
-
-                  <div className="flex-1">
-                    <Label>Sold To</Label>
-                    <Input
-                      value={data.sold_to}
-                      readOnly={!isEditing}
-                      disabled={!isEditing}
-                      className={inputProps.className}
-                    />
-                  </div>
+          {data.state === 'Sold' && data.sold_price !== null && data.sold_to !== null && (
+            <>
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <Label>Sold Price</Label>
+                  <Input
+                    value={data.sold_price}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    className={inputProps.className}
+                  />
                 </div>
 
-                <div className="flex space-x-4">
-                  <div className="flex-1">
-                    <Label>Sold Date</Label>
-                    <Input
-                      value={
-                        data.sold_date
-                          ? data.sold_date.toLocaleDateString()
-                          : "N/A"
-                      }
-                      readOnly={!isEditing && inputProps.readOnly}
-                      disabled={!isEditing}
-                      className={inputProps.className}
-                    />
-                  </div>
+                <div className="flex-1">
+                  <Label>Sold To</Label>
+                  <Input
+                    value={data.sold_to}
+                    readOnly={!isEditing}
+                    disabled={!isEditing}
+                    className={inputProps.className}
+                  />
                 </div>
-              </>
-            )}
-          {data.state !== "Sold" && (
+              </div>
+
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <Label>Sold Date</Label>
+                  <Input
+                    value={data.sold_date ? data.sold_date.toLocaleDateString() : 'N/A'}
+                    readOnly={!isEditing && inputProps.readOnly}
+                    disabled={!isEditing}
+                    className={inputProps.className}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          {data.state !== 'Sold' && (
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
@@ -469,9 +514,7 @@ export function MachineryDataViewDialog(props: {
                   disabled={!isEditing}
                   input={{ machine_id: data.machine_id }}
                   endpoint="machineryImageUploader"
-                  onClientUploadComplete={() => {
-                    handleUploadComplete();
-                  }}
+                  onClientUploadComplete={handleUploadComplete}
                 />
               </div>
             </div>
@@ -486,9 +529,9 @@ export function MachineryDataViewDialog(props: {
               </Button>
             </DialogClose>
           )}
-          {data.state !== "Sold" && (
+          {data.state !== 'Sold' && (
             <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-              {isEditing ? "Cancel" : "Edit"}
+              {isEditing ? 'Cancel' : 'Edit'}
             </Button>
           )}
           {isEditing && (
@@ -497,22 +540,14 @@ export function MachineryDataViewDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="bg-primary text-primary-foreground"
                 >
                   Save
                 </Button>
               </DialogClose>
-
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                >
-                  Save & Close
-                </Button>
-              </DialogClose>
             </>
           )}
-          {data.state !== "Sold" && (
+          {data.state !== 'Sold' && (
             <SellDataViewDialog
               data={{
                 machine_id: data.machine_id,
@@ -521,7 +556,7 @@ export function MachineryDataViewDialog(props: {
                 year: data.year,
                 serial_number: data.serial_number,
                 sold_price: data.sold_price ?? 0,
-                sold_to: data.sold_to ?? "N/A",
+                sold_to: data.sold_to ?? 'N/A',
                 sold_date: data.sold_date ?? new Date(),
               }}
             />

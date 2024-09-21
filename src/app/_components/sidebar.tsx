@@ -91,7 +91,7 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
                 </Link>
               </li>
 
-              {org == "administrativo" && (
+              {org == "admin" && (
                 <li className="mb-2">
                   <Link
                     href="/management"
@@ -99,17 +99,6 @@ export default function Sidebar({ user, org }: { user: string; org: string }) {
                     onClick={toggleMenu}
                   >
                     General Management
-                  </Link>
-                </li>
-              )}
-              {org == "test" && (
-                <li className="mb-2">
-                  <Link
-                    href="/test"
-                    className="block rounded px-3 py-2 hover:bg-gray-300 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-gray-100"
-                    onClick={toggleMenu}
-                  >
-                    Test
                   </Link>
                 </li>
               )}

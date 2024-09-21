@@ -326,7 +326,7 @@ export function CreateEmployeeDialog() {
             disabled={!isEmployeeFormValid}
             className="bg-primary text-primary-foreground"
           >
-            Save & Close
+            Save
           </Button>
         </AlertDialogCancel>
       </AlertDialogFooter>

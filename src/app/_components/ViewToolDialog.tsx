@@ -446,16 +446,9 @@ export function ToolDataViewDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="bg-primary text-primary-foreground"
                 >
                   Save
-                </Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                >
-                  Save & Close
                 </Button>
               </DialogClose>
             </>

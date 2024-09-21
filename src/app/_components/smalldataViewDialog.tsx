@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { Avatar } from "@nextui-org/react";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -17,6 +16,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 
 interface TableColumn {
   key: string;
@@ -60,7 +60,12 @@ export function SmallDataViewDialog(props: {
                 <p className="text-sm font-medium text-gray-400">{col.label}</p>
                 <div className="flex items-center gap-2">
                   {col.type === "avatar" ? (
-                    <Avatar src={item[col.key]} alt="Profile Image" size="sm" />
+                    <Avatar>
+                      <AvatarImage src={item[col.key]} alt="Profile Image" />
+                      <AvatarFallback>
+                        {item.name ? item.name.slice(0, 2).toUpperCase() : "NA"}
+                      </AvatarFallback>
+                    </Avatar>
                   ) : item[col.key] !== undefined ? (
                     <span className="text-sm text-gray-200">
                       {item[col.key].toString()}

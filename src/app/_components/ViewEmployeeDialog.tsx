@@ -1,9 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
+'use client';
 
-import { useState, useEffect } from "react";
-
-import { Button } from "~/components/ui/button";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +15,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogClose,
@@ -22,134 +25,206 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { UploadButton } from "../utils/uploadthing";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
-import { type Employee } from "~/server/types/IEmployee";
+} from '~/components/ui/dialog';
+import { Label } from '~/components/ui/label';
+import { UploadButton } from '../utils/uploadthing';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
+import type { Employee } from '~/server/types/IEmployee';
+import { useFormValidation } from '~/hooks/useFormValidation';
+import { employeeSchema } from '~/server/types/IEmployee';
+import type { z } from 'zod';
+import LabeledInput from './LabeledInput';
+import { isBloodType, isJobType } from '~/server/types/typeGuard';
+import { useToast } from '~/components/hooks/use-toast';
+import { BLOOD_TYPES, JOB_TYPES } from '~/server/types/constants';
+import type { BloodType } from '~/server/types/constants';
+import { deleteEntity } from '~/lib/api-utils';
 
-export function EmployeeDataViewDialog(props: {
+type EmployeeFormData = z.infer<typeof employeeSchema>;
+
+interface EmployeeDataViewDialogProps {
   title: string;
   data: Employee;
   size: string;
   index: number;
-}) {
-  const { title, data, size, index } = props;
+}
 
+const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
+  title,
+  data,
+  size,
+  index,
+}) => {
   const router = useRouter();
-  const current_date = data.hireDate;
+  const { toast } = useToast();
 
-  const current_job = data.job;
-  const [jobValue, setJobValue] = useState(data.job);
-  const current_bloodType = data.bloodType;
-  const [bloodTypeValue, setBloodTypeValue] = useState(data.bloodType);
-
+  // State Management
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [jobValue, setJobValue] = useState<string>(data.job);
+  const [bloodTypeValue, setBloodTypeValue] = useState<BloodType>(data.bloodType as BloodType);
   const [dateValue, setDateValue] = useState<Date>(new Date(data.hireDate));
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ ...data });
-  const [initialFormData, setInitialFormData] = useState({ ...data });
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+  // Initialize form data with proper types
+  const initialFormData: EmployeeFormData = {
+    ...data,
+    age: Number(data.age),
+    hireDate: new Date(data.hireDate),
+  };
 
-  useEffect(() => {
-    if (!isEditing) {
-      setJobValue(data.job);
-      setBloodTypeValue(data.bloodType);
-      setFormData({ ...data });
-      setDateValue(data.hireDate);
+  const { formData, setFormData, isFormValid, errors, validateForm } =
+    useFormValidation<EmployeeFormData>({
+      schema: employeeSchema,
+      initialData: initialFormData,
+    });
+
+  // Handle input changes
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value, type } = e.target;
+      let newValue: string | number = value;
+
+      if (type === 'number') {
+        newValue = value === '' ? 0 : Number(value);
+      }
+
+      setFormData({ [name]: newValue });
+      validateForm();
+    },
+    [setFormData, validateForm]
+  );
+
+  // Handle Blood Type Change with Type Guard
+  const handleBloodTypeChange = (value: string) => {
+    if (isBloodType(value)) {
+      setBloodTypeValue(value);
+      setFormData({ bloodType: value });
+    } else {
+      console.error(`Invalid BloodType: ${value}`);
+      toast({
+        title: 'Error',
+        description: 'Selected blood type is invalid.',
+        variant: 'destructive',
+      });
     }
-  }, [isEditing, data]);
-
-  useEffect(() => {
-    validateForm();
-    checkForChanges();
-  }, [formData, jobValue, dateValue]);
-
-  const handleUploadComplete = () => {
-    router.refresh();
   };
 
-  const validateForm = () => {
-    const isDataValid =
-      formData.employee_id !== null && formData.employee_id !== undefined;
-    setIsFormValid(isDataValid);
+  // Handle Job Change with Type Guard
+  const handleJobChange = (value: string) => {
+    if (isJobType(value)) {
+      setJobValue(value);
+      setFormData({ job: value });
+    } else {
+      console.error(`Invalid Job Type: ${value}`);
+      toast({
+        title: 'Error',
+        description: 'Selected job type is invalid.',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
-
-    const hasChanges =
-      JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
-      jobValue !== current_job ||
-      bloodTypeValue !== current_bloodType ||
-      dateWithoutTime !== dateWithoutTimeCurrent;
-    setHasChanges(hasChanges);
+  // Handle Date Change
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setDateValue(date);
+      setFormData({ hireDate: date });
+    }
   };
 
+  // Handle Edit/Cancel Click
   const handleEditClick = () => {
     if (isEditing) {
-      setInitialFormData({ ...formData });
+      // If cancelling, reset form data to initial
+      setFormData(initialFormData);
+      setJobValue(initialFormData.job);
+      setBloodTypeValue(initialFormData.bloodType);
+      setDateValue(initialFormData.hireDate);
     }
     setIsEditing(!isEditing);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCancelClick = () => {
-    setFormData(initialFormData);
-    setIsEditing(false);
-  };
-
+  // Handle Save Click
   const handleSaveClick = async () => {
     if (isFormValid && hasChanges) {
       try {
-        formData.job = jobValue;
-        formData.hireDate = dateValue;
-        const response = await fetch("/api/updateEmployee", {
-          method: "POST",
+        const updatedFormData: Employee = {
+          ...formData,
+          job: jobValue,
+          bloodType: bloodTypeValue,
+          hireDate: dateValue,
+        };
+
+        const response = await fetch('/api/updateEmployee', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedFormData),
         });
+
         if (response.ok) {
+          toast({
+            title: 'Success',
+            description: 'Employee updated successfully.',
+          });
           router.refresh();
+          setIsEditing(false);
         } else {
-          console.error("Failed to update employee");
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to update employee.');
         }
       } catch (error) {
-        console.error("Error updating employee:", error);
+        console.error('Error updating employee:', error);
+        let errorMessage = 'An unknown error occurred.';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
       }
     }
   };
 
-  const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setIsEditing(false);
+  const handleDeleteClick = async () => {
+    try {
+      await deleteEntity({
+        endpoint: '/api/deleteEntity',
+        entityId: data.employee_id,
+        entityName: 'employee',
+        onSuccess: () => router.refresh(),
+      });
+    } catch (error) {}
   };
+
+  // Check for changes in the form
+  useEffect(() => {
+    const hasFormChanges =
+      formData.firstName !== initialFormData.firstName ||
+      formData.lastName !== initialFormData.lastName ||
+      formData.age !== initialFormData.age ||
+      formData.phoneNumber !== initialFormData.phoneNumber ||
+      formData.job !== initialFormData.job ||
+      formData.bloodType !== initialFormData.bloodType ||
+      formData.hireDate.toISOString() !== initialFormData.hireDate.toISOString();
+
+    setHasChanges(hasFormChanges);
+  }, [formData, initialFormData]);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {size === "lg" ? (
+        {size === 'lg' ? (
           <p className="w-8 cursor-pointer text-small font-semibold">{title}</p>
         ) : (
           <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
@@ -158,19 +233,13 @@ export function EmployeeDataViewDialog(props: {
               <div className="flex items-center gap-2">{index}</div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">
-                First Name
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">First Name</p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-foreground">
-                  {data.firstName}
-                </span>
+                <span className="text-sm text-foreground">{data.firstName}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">
-                Last Name
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">Last Name</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-foreground">{data.lastName}</span>
               </div>
@@ -187,9 +256,7 @@ export function EmployeeDataViewDialog(props: {
       <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
-          <DialogDescription>
-            Anyone who has this link will be able to view this.
-          </DialogDescription>
+          <DialogDescription>Manage employee details.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex space-x-4">
@@ -204,78 +271,66 @@ export function EmployeeDataViewDialog(props: {
                   imageInfo={{
                     image_id: data.employee_id,
                     image_key: data.imageKey!,
-                    type: "Employee",
+                    type: 'Employee',
                   }}
                 />
               </div>
             )}
-            <div className="flex-1 flex-row">
+            <div className="flex-1 flex-col">
               <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label>First Name</Label>
-                  <Input
-                    required
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    readOnly={!isEditing}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="border border-border bg-background text-foreground"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label>Last Name</Label>
-                  <Input
-                    required
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    readOnly={!isEditing}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="border border-border bg-background text-foreground"
-                  />
-                </div>
+                <LabeledInput
+                  label="First Name"
+                  name="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  disabled={!isEditing}
+                  error={errors.find((e) => e.path[0] === 'firstName')?.message}
+                  required
+                />
+                <LabeledInput
+                  label="Last Name"
+                  name="lastName"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  disabled={!isEditing}
+                  error={errors.find((e) => e.path[0] === 'lastName')?.message}
+                  required
+                />
               </div>
               <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label>Age</Label>
-                  <Input
-                    required
-                    type="text"
-                    name="age"
-                    value={formData.age}
-                    readOnly={!isEditing}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="border border-border bg-background text-foreground"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label>Phone Number</Label>
-                  <Input
-                    required
-                    type="text"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    readOnly={!isEditing}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="border border-border bg-background text-foreground"
-                  />
-                </div>
+                <LabeledInput
+                  label="Age"
+                  name="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  disabled={!isEditing}
+                  error={errors.find((e) => e.path[0] === 'age')?.message}
+                  required
+                />
+                <LabeledInput
+                  label="Phone Number"
+                  name="phoneNumber"
+                  type="text"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  disabled={!isEditing}
+                  error={errors.find((e) => e.path[0] === 'phoneNumber')?.message}
+                  required
+                />
               </div>
-
               <div className="flex space-x-4">
                 <div className="flex-1">
                   <Label>Blood Type</Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-background text-foreground"
-                      >
+                      <Button variant="outline" className="w-full bg-background text-foreground">
                         {bloodTypeValue}
                       </Button>
                     </DropdownMenuTrigger>
@@ -284,34 +339,13 @@ export function EmployeeDataViewDialog(props: {
                       <DropdownMenuSeparator />
                       <DropdownMenuRadioGroup
                         value={bloodTypeValue}
-                        onValueChange={(value: string) =>
-                          setBloodTypeValue(value)
-                        }
+                        onValueChange={handleBloodTypeChange}
                       >
-                        <DropdownMenuRadioItem value="A+">
-                          A+
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="A-">
-                          A-
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="B+">
-                          B+
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="B-">
-                          B-
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="AB+">
-                          AB+
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="AB-">
-                          AB-
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="O+">
-                          O+
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="O-">
-                          O-
-                        </DropdownMenuRadioItem>
+                        {BLOOD_TYPES.map((type) => (
+                          <DropdownMenuRadioItem key={type} value={type}>
+                            {type}
+                          </DropdownMenuRadioItem>
+                        ))}
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -320,73 +354,44 @@ export function EmployeeDataViewDialog(props: {
                   <Label>Job</Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild disabled={!isEditing}>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-background text-foreground"
-                      >
+                      <Button variant="outline" className="w-full bg-background text-foreground">
                         {jobValue}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-full bg-white text-black">
                       <DropdownMenuLabel>Job</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup
-                        value={jobValue}
-                        onValueChange={(value: string) => setJobValue(value)}
-                      >
-                        <DropdownMenuRadioItem value="Mechanic">
-                          Mechanic
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="Doctor">
-                          Painter
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="Engineer">
-                          Engineer
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="Parts Specialist">
-                          Parts Specialist
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="Sales">
-                          Sales
-                        </DropdownMenuRadioItem>
+                      <DropdownMenuRadioGroup value={jobValue} onValueChange={handleJobChange}>
+                        {JOB_TYPES.map((job) => (
+                          <DropdownMenuRadioItem key={job} value={job}>
+                            {job}
+                          </DropdownMenuRadioItem>
+                        ))}
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </div>
-
               <div className="flex flex-col">
                 <Label>Hire Date</Label>
                 <Popover>
                   <PopoverTrigger asChild disabled={!isEditing}>
                     <Button
-                      variant={"outline"}
+                      variant={'outline'}
                       className={cn(
-                        "w-[240px] justify-start bg-background text-left font-normal",
-                        !dateValue && "text-muted-foreground",
+                        'w-[240px] justify-start bg-background text-left font-normal',
+                        !dateValue && 'text-muted-foreground'
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateValue ? (
-                        format(dateValue, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {dateValue ? format(dateValue, 'PPP') : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto  p-0 " align="start">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={dateValue}
-                      onSelect={(date) => {
-                        if (date) {
-                          setDateValue(date);
-                          setFormData((prev) => ({
-                            ...prev,
-                            hireDate: date,
-                          }));
-                        }
-                      }}
+                      onSelect={handleDateChange}
                       initialFocus
                       className="border border-border bg-background text-foreground"
                     />
@@ -400,13 +405,16 @@ export function EmployeeDataViewDialog(props: {
               <div className="flex-1">
                 <Label>Upload Images</Label>
                 <div className="flex items-center gap-2">
-                  <Input readOnly disabled></Input>
                   <UploadButton
                     disabled={!isEditing}
                     input={{ employee_id: data.employee_id }}
                     endpoint="employeeImageUploader"
                     onClientUploadComplete={() => {
-                      handleUploadComplete();
+                      toast({
+                        title: 'Success',
+                        description: 'Image uploaded successfully.',
+                      });
+                      router.refresh();
                     }}
                   />
                 </div>
@@ -414,6 +422,9 @@ export function EmployeeDataViewDialog(props: {
             </div>
           )}
         </div>
+        {errors.length > 0 && isEditing && (
+          <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
+        )}
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
@@ -422,32 +433,33 @@ export function EmployeeDataViewDialog(props: {
               </Button>
             </DialogClose>
           )}
-          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-            {isEditing ? "Cancel" : "Edit"}
-          </Button>
+          <Button onClick={handleEditClick}>{isEditing ? 'Cancel' : 'Edit'}</Button>
           {isEditing && (
             <>
               <DialogClose asChild>
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
+                  className="bg-primary text-primary-foreground"
                 >
                   Save
                 </Button>
               </DialogClose>
-
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                >
-                  Save & Close
-                </Button>
-              </DialogClose>
             </>
           )}
+          <DialogClose asChild>
+            <Button
+              onClick={handleDeleteClick}
+              variant="destructive"
+              className="bg-red-600 text-white"
+            >
+              Delete
+            </Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default EmployeeDataViewDialog;

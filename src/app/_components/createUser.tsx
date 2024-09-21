@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 
 import {
   Dialog,
@@ -12,13 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
+} from '~/components/ui/dialog';
 
-import { Button as ButtonUI } from "~/components/ui/button";
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { useRouter } from 'next/navigation';
 
-import type { Org } from "../../server/types/org";
-import React, { useEffect, useState, useMemo } from "react";
-import { Input, Button } from "@nextui-org/react";
+import type { Org } from '../../server/types/org';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   DropdownMenu,
@@ -28,27 +29,28 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 
-import type { CreateUserResponse } from "../../server/types/api";
-import { useRouter } from "next/navigation";
-import { cn } from "~/lib/utils";
+import type { CreateUserResponse } from '../../server/types/api';
+import { useToast } from '~/components/hooks/use-toast';
+import { cn } from '~/lib/utils';
 
 export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
-    firstName: "",
-    lastName: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    firstName: '',
+    lastName: '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
-  const [role, setRole] = useState(orgs[0]!.name);
 
+  const [selectedRole, setSelectedRole] = useState<string>('');
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
     const isUsernameValid = validateUsername(formValues.username);
@@ -63,7 +65,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
         isNameValid &&
         isLastNameValid &&
         isPasswordValid &&
-        isPasswordsMatch,
+        isPasswordsMatch
     );
   }, [formValues]);
 
@@ -73,105 +75,111 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   };
 
   const handleSaveClick = async (): Promise<boolean> => {
-    const { confirmPassword, ...formValuesWithoutConfirm } = formValues;
-    const { email, ...formValuesCrop } = formValuesWithoutConfirm;
-    const emails = [email];
-    const formValuesF = { email: emails, ...formValuesCrop };
-
-    const selectedDepartment = orgs.find((org) => org.name === role);
-    const organizationId = selectedDepartment ? selectedDepartment.id : "";
-
-    const formValuesWithOrg = { ...formValuesF, organizationId };
-
     try {
-      const response = await fetch("/api/createUser", {
-        method: "POST",
+      const { confirmPassword, email, ...restFormValues } = formValues;
+      const formData = {
+        ...restFormValues,
+        email: [email],
+        organizationId: orgs.find((org) => org.name === selectedRole)?.id ?? '',
+      };
+
+      const response = await fetch('/api/createUser', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formValuesWithOrg),
+        body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to process user");
-      }
-
       const data: CreateUserResponse = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Failed to process user');
       }
 
-      setIsEditing(false);
+      toast({
+        title: 'Success',
+        description: 'User created successfully',
+      });
       return true;
     } catch (error) {
-      console.error("Failed to process user:", error);
+      console.error('Error creating user:', error);
+
+      let errorMessage = 'An unknown error occurred';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      if (errorMessage.includes('username is taken')) {
+        setFormValues((prev) => ({ ...prev, username: '' }));
+      }
+
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
       return false;
     }
   };
 
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
+    setIsEditing(true);
     if (saveSuccessful) {
       setFormValues({
-        firstName: "",
-        lastName: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
+        firstName: '',
+        lastName: '',
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
       });
       router.refresh();
     }
   };
 
-  const validateEmail = (email: string) =>
-    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
-  const validateUsername = (username: string) =>
-    /^[a-zA-Z0-9]+$/.test(username);
-  const validateName = (name: string) => /^[a-zA-Z]+$/.test(name);
-  const validatePassword = (password: string) =>
-    /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+  const validateEmail = (email: string) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
+  const validateUsername = (username: string) => /^[a-zA-Z0-9]+$/.test(username);
+  const validateName = (name: string) => /^[a-zA-Z\s]+$/.test(name);
+  const validatePassword = (password: string) => /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const isEmailInvalid = useMemo(
-    () => formValues.email !== "" && !validateEmail(formValues.email),
-    [formValues.email],
+    () => formValues.email !== '' && !validateEmail(formValues.email),
+    [formValues.email]
   );
   const isUsernameInvalid = useMemo(
-    () => formValues.username !== "" && !validateUsername(formValues.username),
-    [formValues.username],
+    () => formValues.username !== '' && !validateUsername(formValues.username),
+    [formValues.username]
   );
   const isNameInvalid = useMemo(
-    () => formValues.firstName !== "" && !validateName(formValues.firstName),
-    [formValues.firstName],
+    () => formValues.firstName !== '' && !validateName(formValues.firstName),
+    [formValues.firstName]
   );
   const isLastNameInvalid = useMemo(
-    () => formValues.lastName !== "" && !validateName(formValues.lastName),
-    [formValues.lastName],
+    () => formValues.lastName !== '' && !validateName(formValues.lastName),
+    [formValues.lastName]
   );
   const isPasswordInvalid = useMemo(
-    () => formValues.password !== "" && !validatePassword(formValues.password),
-    [formValues.password],
+    () => formValues.password !== '' && !validatePassword(formValues.password),
+    [formValues.password]
   );
   const isConfirmPasswordInvalid = useMemo(
-    () =>
-      formValues.confirmPassword !== "" &&
-      formValues.password !== formValues.confirmPassword,
-    [formValues.password, formValues.confirmPassword],
+    () => formValues.confirmPassword !== '' && formValues.password !== formValues.confirmPassword,
+    [formValues.password, formValues.confirmPassword]
   );
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <ButtonUI className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
           Create User
-        </ButtonUI>
+        </Button>
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-primary">Create User</DialogTitle>
-          <DialogDescription>
-            This will create a new user in the system.
-          </DialogDescription>
+          <DialogTitle>Create User</DialogTitle>
+          <DialogDescription>This will create a new user in the system.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
@@ -183,136 +191,140 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
             />
           </div>
           <div className="w-full">
-            <form className="flex flex-col space-y-4">
-              <Input
-                required
-                type="text"
-                label="First Name"
-                name="firstName"
-                value={formValues.firstName}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isNameInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isNameInvalid &&
-                    "border-destructive text-destructive-foreground",
+            <form className="flex flex-col space-y-4" onSubmit={(e) => e.preventDefault()}>
+              <div>
+                <Input
+                  required
+                  type="text"
+                  placeholder="First Name"
+                  name="firstName"
+                  value={formValues.firstName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isNameInvalid && 'border-destructive'
+                  )}
+                />
+                {isNameInvalid && (
+                  <p className="text-sm text-destructive">Name can only contain letters</p>
                 )}
-                errorMessage={isNameInvalid && "Name can only contain letters"}
-              />
-              <Input
-                required
-                type="text"
-                label="Last Name"
-                name="lastName"
-                value={formValues.lastName}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isLastNameInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isLastNameInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="text"
+                  placeholder="Last Name"
+                  name="lastName"
+                  value={formValues.lastName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isLastNameInvalid && 'border-destructive'
+                  )}
+                />
+                {isLastNameInvalid && (
+                  <p className="text-sm text-destructive">Last Name can only contain letters</p>
                 )}
-                errorMessage={
-                  isLastNameInvalid && "Last Name can only contain letters"
-                }
-              />
-              <Input
-                required
-                type="text"
-                label="Username"
-                name="username"
-                pattern="[a-zA-Z0-9]+"
-                value={formValues.username}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isUsernameInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isUsernameInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="text"
+                  placeholder="Username"
+                  name="username"
+                  pattern="[a-zA-Z0-9]+"
+                  value={formValues.username}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isUsernameInvalid && 'border-destructive'
+                  )}
+                />
+                {isUsernameInvalid && (
+                  <p className="text-sm text-destructive">
+                    Username can only contain letters and numbers
+                  </p>
                 )}
-                errorMessage={
-                  isUsernameInvalid &&
-                  "Username can only contain letters and numbers"
-                }
-              />
-              <Input
-                required
-                type="email"
-                label="Email"
-                name="email"
-                value={formValues.email}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isEmailInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isEmailInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="email"
+                  placeholder="Email"
+                  name="email"
+                  value={formValues.email}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isEmailInvalid && 'border-destructive'
+                  )}
+                />
+                {isEmailInvalid && (
+                  <p className="text-sm text-destructive">Please enter a valid email</p>
                 )}
-                errorMessage={isEmailInvalid && "Please enter a valid email"}
-              />
-              <Input
-                required
-                type="password"
-                label="Password"
-                name="password"
-                value={formValues.password}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isPasswordInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isPasswordInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  value={formValues.password}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isPasswordInvalid && 'border-destructive'
+                  )}
+                />
+                {isPasswordInvalid && (
+                  <p className="text-sm text-destructive">
+                    Password must contain at least 8 characters, one uppercase letter, and one
+                    number
+                  </p>
                 )}
-                errorMessage={
-                  isPasswordInvalid &&
-                  "Password must contain at least 8 characters, one uppercase letter, and one number"
-                }
-              />
-              <Input
-                required
-                type="password"
-                label="Confirm Password"
-                name="confirmPassword"
-                value={formValues.confirmPassword}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isConfirmPasswordInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isConfirmPasswordInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="password"
+                  placeholder="Confirm Password"
+                  name="confirmPassword"
+                  value={formValues.confirmPassword}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isConfirmPasswordInvalid && 'border-destructive'
+                  )}
+                />
+                {isConfirmPasswordInvalid && (
+                  <p className="text-sm text-destructive">Passwords do not match</p>
                 )}
-                errorMessage={
-                  isConfirmPasswordInvalid && "Passwords do not match"
-                }
-              />
+              </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <ButtonUI
-                    variant="outline"
-                    className="w-full border border-border bg-background text-foreground"
-                  >
-                    {role}
-                  </ButtonUI>
+                  <Button className="w-full border border-border bg-background text-foreground">
+                    {selectedRole || 'Select a role'}
+                  </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background text-foreground">
-                  <DropdownMenuLabel className="text-primary">
-                    Roles
-                  </DropdownMenuLabel>
+                <DropdownMenuContent className="w-full bg-background text-foreground">
+                  <DropdownMenuLabel>Roles</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={role} onValueChange={setRole}>
-                    <DropdownMenuRadioItem value="Administrador">
-                      Administrador
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Jefes">
-                      Jefes
-                    </DropdownMenuRadioItem>
+                  <DropdownMenuRadioGroup
+                    value={selectedRole}
+                    onValueChange={(value: string) => setSelectedRole(value)}
+                  >
+                    {orgs.map((org) => (
+                      <DropdownMenuRadioItem key={org.name} value={org.name}>
+                        {org.name}
+                      </DropdownMenuRadioItem>
+                    ))}
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -321,18 +333,18 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 <DialogClose asChild>
                   <Button
                     type="button"
-                    variant="bordered"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary"
+                    variant="secondary"
                     onClick={() => {
                       setFormValues({
-                        firstName: "",
-                        lastName: "",
-                        username: "",
-                        email: "",
-                        password: "",
-                        confirmPassword: "",
+                        firstName: '',
+                        lastName: '',
+                        username: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
                       });
                     }}
+                    className="bg-secondary text-secondary-foreground"
                   >
                     Close
                   </Button>
@@ -341,16 +353,14 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 <Button
                   onClick={handleSaveAndCloseClick}
                   disabled={!isFormValid}
-                  className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+                  className="bg-primary text-primary-foreground"
                 >
-                  Save & Close
+                  Save
                 </Button>
               </div>
             </form>
           </div>
         </div>
-
-        <DialogFooter className="sm:justify-start"></DialogFooter>
       </DialogContent>
     </Dialog>
   );
