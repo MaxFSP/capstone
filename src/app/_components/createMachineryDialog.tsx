@@ -176,7 +176,7 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
     <form
       className="space-y-4"
       onSubmit={async (e) => {
-        e.preventDefault(); // Prevents default form submission
+        e.preventDefault();
         await handleSaveAndCloseClick();
       }}
     >
@@ -191,10 +191,13 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
             value={machineryFormValues.brand}
             onChange={handleMachineryInputChange}
             disabled={!isEditing}
-            className={cn(isBrandInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isBrandInvalid && 'border-destructive'
+            )}
           />
           {isBrandInvalid && (
-            <p className="text-sm text-red-500">Brand can only contain letters and spaces.</p>
+            <p className="text-sm text-destructive">Brand can only contain letters and spaces.</p>
           )}
         </div>
         <div className="flex-1">
@@ -207,10 +210,13 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
             value={machineryFormValues.model}
             onChange={handleMachineryInputChange}
             disabled={!isEditing}
-            className={cn(isModelInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isModelInvalid && 'border-destructive'
+            )}
           />
           {isModelInvalid && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-destructive">
               Model can only contain letters, numbers, and spaces.
             </p>
           )}
@@ -228,9 +234,14 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
             value={machineryFormValues.year}
             onChange={handleMachineryInputChange}
             disabled={!isEditing}
-            className={cn(isYearInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isYearInvalid && 'border-destructive'
+            )}
           />
-          {isYearInvalid && <p className="text-sm text-red-500">Year must be a 4-digit number.</p>}
+          {isYearInvalid && (
+            <p className="text-sm text-destructive">Year must be a 4-digit number.</p>
+          )}
         </div>
         <div className="flex-1">
           <Label htmlFor="serial_number">Serial Number</Label>
@@ -242,10 +253,13 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
             value={machineryFormValues.serial_number}
             onChange={handleMachineryInputChange}
             disabled={!isEditing}
-            className={cn(isSerialNumberInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isSerialNumberInvalid && 'border-destructive'
+            )}
           />
           {isSerialNumberInvalid && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-destructive">
               Serial Number can only contain letters, numbers, and spaces.
             </p>
           )}
@@ -262,10 +276,13 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
             value={machineryFormValues.observations}
             onChange={handleMachineryInputChange}
             disabled={!isEditing}
-            className={cn(isObservationsInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isObservationsInvalid && 'border-destructive'
+            )}
           />
           {isObservationsInvalid && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-destructive">
               Observations can only contain letters, numbers, and spaces.
             </p>
           )}
@@ -277,11 +294,11 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
           <Label>Location</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {locationValue || 'Select Location'}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="w-full bg-background text-foreground">
               <DropdownMenuLabel>Locations</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
@@ -298,11 +315,11 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
           <Label>State</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {stateValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="w-full bg-background text-foreground">
               <DropdownMenuLabel>State</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -327,7 +344,7 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
             <Button
               variant={'outline'}
               className={cn(
-                'w-[240px] justify-start text-left font-normal',
+                'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
                 !date && 'text-muted-foreground'
               )}
             >
@@ -335,7 +352,7 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
               {date ? format(date, 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto bg-background p-0 text-foreground" align="start">
             <Calendar
               mode="single"
               selected={date}
@@ -357,7 +374,7 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
       <AlertDialogFooter className="sm:justify-start">
         <AlertDialogCancel asChild>
           <Button
-            type="button" // Ensure it's a button to prevent form submission
+            type="button"
             variant="secondary"
             onClick={() => {
               setMachineryFormValues({
@@ -374,17 +391,17 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
               setLocationValue(locations[0]?.name ?? '');
               setStateValue('Available');
               setIsEditing(true);
-              // Optionally, close the dialog here if applicable
             }}
+            className="bg-secondary text-secondary-foreground"
           >
             Close
           </Button>
         </AlertDialogCancel>
 
         <Button
-          type="submit" // Set as submit to trigger form submission
-          variant="default"
+          type="submit"
           disabled={!isMachineryFormValid}
+          className="bg-primary text-primary-foreground"
         >
           Save
         </Button>

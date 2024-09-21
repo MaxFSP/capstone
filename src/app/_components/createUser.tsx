@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 
 import {
   Dialog,
@@ -12,14 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
+} from '~/components/ui/dialog';
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { useRouter } from "next/navigation";
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { useRouter } from 'next/navigation';
 
-import type { Org } from "../../server/types/org";
-import React, { useEffect, useState, useMemo } from "react";
+import type { Org } from '../../server/types/org';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   DropdownMenu,
@@ -29,28 +29,28 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 
-import type { CreateUserResponse } from "../../server/types/api";
-import { useToast } from "~/components/hooks/use-toast";
-import { cn } from "~/lib/utils";
+import type { CreateUserResponse } from '../../server/types/api';
+import { useToast } from '~/components/hooks/use-toast';
+import { cn } from '~/lib/utils';
 
 export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
-    firstName: "",
-    lastName: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    firstName: '',
+    lastName: '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>('');
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
     const isUsernameValid = validateUsername(formValues.username);
@@ -65,7 +65,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
         isNameValid &&
         isLastNameValid &&
         isPasswordValid &&
-        isPasswordsMatch,
+        isPasswordsMatch
     );
   }, [formValues]);
 
@@ -80,114 +80,106 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
       const formData = {
         ...restFormValues,
         email: [email],
-        organizationId: orgs.find((org) => org.name === selectedRole)?.id ?? "",
+        organizationId: orgs.find((org) => org.name === selectedRole)?.id ?? '',
       };
-  
-      const response = await fetch("/api/createUser", {
-        method: "POST",
+
+      const response = await fetch('/api/createUser', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-  
+
       const data: CreateUserResponse = await response.json();
-  
+
       if (!response.ok) {
-        throw new Error(data.error ?? "Failed to process user");
+        throw new Error(data.error ?? 'Failed to process user');
       }
 
       toast({
-        title: "Success",
-        description: "User created successfully",
+        title: 'Success',
+        description: 'User created successfully',
       });
       return true;
-  
     } catch (error) {
-      console.error("Error creating user:", error);
-  
-      let errorMessage = "An unknown error occurred";
+      console.error('Error creating user:', error);
+
+      let errorMessage = 'An unknown error occurred';
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-  
-      if (errorMessage.includes("username is taken")) {
-        setFormValues(prev => ({ ...prev, username: '' }));
+
+      if (errorMessage.includes('username is taken')) {
+        setFormValues((prev) => ({ ...prev, username: '' }));
       }
-  
+
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return false;
     }
   };
-  
+
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
     setIsEditing(true);
     if (saveSuccessful) {
       setFormValues({
-        firstName: "",
-        lastName: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
+        firstName: '',
+        lastName: '',
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
       });
       router.refresh();
     }
   };
 
-  const validateEmail = (email: string) =>
-    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
-  const validateUsername = (username: string) =>
-    /^[a-zA-Z0-9]+$/.test(username);
+  const validateEmail = (email: string) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
+  const validateUsername = (username: string) => /^[a-zA-Z0-9]+$/.test(username);
   const validateName = (name: string) => /^[a-zA-Z\s]+$/.test(name);
-  const validatePassword = (password: string) =>
-    /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+  const validatePassword = (password: string) => /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const isEmailInvalid = useMemo(
-    () => formValues.email !== "" && !validateEmail(formValues.email),
-    [formValues.email],
+    () => formValues.email !== '' && !validateEmail(formValues.email),
+    [formValues.email]
   );
   const isUsernameInvalid = useMemo(
-    () => formValues.username !== "" && !validateUsername(formValues.username),
-    [formValues.username],
+    () => formValues.username !== '' && !validateUsername(formValues.username),
+    [formValues.username]
   );
   const isNameInvalid = useMemo(
-    () => formValues.firstName !== "" && !validateName(formValues.firstName),
-    [formValues.firstName],
+    () => formValues.firstName !== '' && !validateName(formValues.firstName),
+    [formValues.firstName]
   );
   const isLastNameInvalid = useMemo(
-    () => formValues.lastName !== "" && !validateName(formValues.lastName),
-    [formValues.lastName],
+    () => formValues.lastName !== '' && !validateName(formValues.lastName),
+    [formValues.lastName]
   );
   const isPasswordInvalid = useMemo(
-    () => formValues.password !== "" && !validatePassword(formValues.password),
-    [formValues.password],
+    () => formValues.password !== '' && !validatePassword(formValues.password),
+    [formValues.password]
   );
   const isConfirmPasswordInvalid = useMemo(
-    () =>
-      formValues.confirmPassword !== "" &&
-      formValues.password !== formValues.confirmPassword,
-    [formValues.password, formValues.confirmPassword],
+    () => formValues.confirmPassword !== '' && formValues.password !== formValues.confirmPassword,
+    [formValues.password, formValues.confirmPassword]
   );
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
           Create User
         </Button>
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-primary">Create User</DialogTitle>
-          <DialogDescription>
-            This will create a new user in the system.
-          </DialogDescription>
+          <DialogTitle>Create User</DialogTitle>
+          <DialogDescription>This will create a new user in the system.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
@@ -199,10 +191,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
             />
           </div>
           <div className="w-full">
-            <form
-              className="flex flex-col space-y-4"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <form className="flex flex-col space-y-4" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <Input
                   required
@@ -212,12 +201,13 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   value={formValues.firstName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isNameInvalid && "border-red-500")}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isNameInvalid && 'border-destructive'
+                  )}
                 />
                 {isNameInvalid && (
-                  <p className="text-sm text-red-500">
-                    Name can only contain letters
-                  </p>
+                  <p className="text-sm text-destructive">Name can only contain letters</p>
                 )}
               </div>
               <div>
@@ -229,12 +219,13 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   value={formValues.lastName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isLastNameInvalid && "border-red-500")}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isLastNameInvalid && 'border-destructive'
+                  )}
                 />
                 {isLastNameInvalid && (
-                  <p className="text-sm text-red-500">
-                    Last Name can only contain letters
-                  </p>
+                  <p className="text-sm text-destructive">Last Name can only contain letters</p>
                 )}
               </div>
               <div>
@@ -247,10 +238,13 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   value={formValues.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isUsernameInvalid && "border-red-500")}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isUsernameInvalid && 'border-destructive'
+                  )}
                 />
                 {isUsernameInvalid && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-destructive">
                     Username can only contain letters and numbers
                   </p>
                 )}
@@ -264,12 +258,13 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   value={formValues.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isEmailInvalid && "border-red-500")}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isEmailInvalid && 'border-destructive'
+                  )}
                 />
                 {isEmailInvalid && (
-                  <p className="text-sm text-red-500">
-                    Please enter a valid email
-                  </p>
+                  <p className="text-sm text-destructive">Please enter a valid email</p>
                 )}
               </div>
               <div>
@@ -281,12 +276,15 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   value={formValues.password}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isPasswordInvalid && "border-red-500")}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isPasswordInvalid && 'border-destructive'
+                  )}
                 />
                 {isPasswordInvalid && (
-                  <p className="text-sm text-red-500">
-                    Password must contain at least 8 characters, one uppercase
-                    letter, and one number
+                  <p className="text-sm text-destructive">
+                    Password must contain at least 8 characters, one uppercase letter, and one
+                    number
                   </p>
                 )}
               </div>
@@ -299,20 +297,23 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                   value={formValues.confirmPassword}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isConfirmPasswordInvalid && "border-red-500")}
+                  className={cn(
+                    'border border-border bg-background text-foreground',
+                    isConfirmPasswordInvalid && 'border-destructive'
+                  )}
                 />
                 {isConfirmPasswordInvalid && (
-                  <p className="text-sm text-red-500">Passwords do not match</p>
+                  <p className="text-sm text-destructive">Passwords do not match</p>
                 )}
               </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full">
-                    {selectedRole || "Select a role"}
+                  <Button className="w-full border border-border bg-background text-foreground">
+                    {selectedRole || 'Select a role'}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="w-full bg-background text-foreground">
                   <DropdownMenuLabel>Roles</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
@@ -335,14 +336,15 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                     variant="secondary"
                     onClick={() => {
                       setFormValues({
-                        firstName: "",
-                        lastName: "",
-                        username: "",
-                        email: "",
-                        password: "",
-                        confirmPassword: "",
+                        firstName: '',
+                        lastName: '',
+                        username: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
                       });
                     }}
+                    className="bg-secondary text-secondary-foreground"
                   >
                     Close
                   </Button>
@@ -351,7 +353,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 <Button
                   onClick={handleSaveAndCloseClick}
                   disabled={!isFormValid}
-                  variant="default"
+                  className="bg-primary text-primary-foreground"
                 >
                   Save
                 </Button>

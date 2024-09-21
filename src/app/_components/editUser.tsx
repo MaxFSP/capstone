@@ -3,10 +3,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 
-import type { ClerkUser } from "../../server/types/IClerkUser";
-import React, { useEffect, useState, useMemo } from "react";
+import type { ClerkUser } from '../../server/types/IClerkUser';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   Dialog,
@@ -16,16 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "~/components/ui/dialog";
+} from '~/components/ui/dialog';
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Switch } from "~/components/ui/switch";
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Switch } from '~/components/ui/switch';
 
-import type {
-  UpdateUserRequest,
-  UpdateUserResponse,
-} from "../../server/types/api";
+import type { UpdateUserRequest, UpdateUserResponse } from '../../server/types/api';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,29 +31,23 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import type { UpdateClerkUser } from "../../server/types/IClerkUser";
-import { useRouter } from "next/navigation";
-import { Label } from "~/components/ui/label";
-import { type Org } from "~/server/types/org";
-import { cn } from "~/lib/utils";
+} from '~/components/ui/dropdown-menu';
+import type { UpdateClerkUser } from '../../server/types/IClerkUser';
+import { useRouter } from 'next/navigation';
+import { Label } from '~/components/ui/label';
+import { type Org } from '~/server/types/org';
+import { cn } from '~/lib/utils';
 
-export default function EditUser({
-  user,
-  orgs,
-}: {
-  user: ClerkUser;
-  orgs: Org[];
-}) {
+export default function EditUser({ user, orgs }: { user: ClerkUser; orgs: Org[] }) {
   const router = useRouter();
 
-  let current_role = "";
+  let current_role = '';
 
   if (Array.isArray(orgs)) {
-    if (orgs.some((o) => o.name?.includes("Administrator"))) {
-      current_role = "Administrator";
+    if (orgs.some((o) => o.name?.includes('Administrator'))) {
+      current_role = 'Administrator';
     } else {
-      current_role = orgs[0]?.name || "";
+      current_role = orgs[0]?.name ?? '';
     }
   }
 
@@ -69,8 +60,8 @@ export default function EditUser({
     username: user.username,
     email: user.email[0],
     online: user.online,
-    password: "",
-    confirmPassword: "",
+    password: '',
+    confirmPassword: '',
   });
 
   const [initialFormValues, setInitialFormValues] = useState({ ...formValues });
@@ -87,30 +78,27 @@ export default function EditUser({
   }, [formValues, role]);
 
   const validateForm = () => {
-    const email = formValues.email ?? "";
+    const email = formValues.email ?? '';
     const isEmailValid = validateEmail(email);
     const isUsernameValid = validateUsername(formValues.username);
     const isNameValid = validateName(formValues.firstName);
     const isLastNameValid = validateName(formValues.lastName);
     const isPasswordValid = validatePassword(formValues.password);
-    const isConfirmPasswordValid =
-      formValues.password === formValues.confirmPassword;
+    const isConfirmPasswordValid = formValues.password === formValues.confirmPassword;
 
     setIsFormValid(
       isEmailValid &&
         isUsernameValid &&
         isNameValid &&
         isLastNameValid &&
-        (formValues.password === "" ||
-          (isPasswordValid && isConfirmPasswordValid)),
+        (formValues.password === '' || (isPasswordValid && isConfirmPasswordValid))
     );
   };
 
   const checkForChanges = () => {
     const hasChanges =
-      JSON.stringify({ ...formValues, confirmPassword: "" }) !==
-        JSON.stringify({ ...initialFormValues, confirmPassword: "" }) ||
-      role !== current_role;
+      JSON.stringify({ ...formValues, confirmPassword: '' }) !==
+        JSON.stringify({ ...initialFormValues, confirmPassword: '' }) || role !== current_role;
     setHasChanges(hasChanges);
   };
 
@@ -126,31 +114,28 @@ export default function EditUser({
   const handleEditClick = () => setIsEditing((prev) => !prev);
 
   const handleSaveClick = async (): Promise<boolean> => {
-    const { password, confirmPassword, ...formValuesWithoutPassword } =
-      formValues;
+    const { password, confirmPassword, ...formValuesWithoutPassword } = formValues;
 
     const changes: Partial<UpdateClerkUser> = {};
 
-    (
-      Object.keys(
-        formValuesWithoutPassword,
-      ) as (keyof typeof formValuesWithoutPassword)[]
-    ).forEach((key) => {
-      if (formValuesWithoutPassword[key] !== initialFormValues[key]) {
-        changes[key] = formValuesWithoutPassword[key] as any;
+    (Object.keys(formValuesWithoutPassword) as (keyof typeof formValuesWithoutPassword)[]).forEach(
+      (key) => {
+        if (formValuesWithoutPassword[key] !== initialFormValues[key]) {
+          changes[key] = formValuesWithoutPassword[key] as any;
+        }
       }
-    });
+    );
 
     if (password) {
       changes.password = password;
     }
 
     if (!changes.email) {
-      changes.email = [formValues.email!];
+      changes.email = [formValues.email];
     }
 
     const selectedDepartment = orgs.find((org) => org.name === role);
-    const orgVal = selectedDepartment ? selectedDepartment.id : "";
+    const orgVal = selectedDepartment ? selectedDepartment.id : '';
 
     const finalChanges: UpdateUserRequest = {
       userId: user.id,
@@ -162,16 +147,16 @@ export default function EditUser({
     };
 
     try {
-      const response = await fetch("/api/updateUser", {
-        method: "POST",
+      const response = await fetch('/api/updateUser', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(finalChanges),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update user");
+        throw new Error('Failed to update user');
       }
 
       const data: UpdateUserResponse = await response.json();
@@ -185,7 +170,7 @@ export default function EditUser({
       router.refresh();
       return true;
     } catch (error) {
-      console.error("Failed to update user:", error);
+      console.error('Failed to update user:', error);
       return false;
     }
   };
@@ -195,54 +180,47 @@ export default function EditUser({
     setIsEditing(false);
   };
 
-  const validateEmail = (email: string) =>
-    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
-  const validateUsername = (username: string) =>
-    /^[a-zA-Z0-9]+$/.test(username);
-  const validateName = (name: string) => /^[a-zA-Z]+$/.test(name);
-  const validatePassword = (password: string) =>
-    /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+  const validateEmail = (email: string) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
+  const validateUsername = (username: string) => /^[a-zA-Z0-9]+$/.test(username);
+  const validateName = (name: string) => /^[a-zA-Z\s]+$/.test(name);
+  const validatePassword = (password: string) => /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const isEmailInvalid = useMemo(
     () => formValues.email && !validateEmail(formValues.email),
-    [formValues.email],
+    [formValues.email]
   );
   const isUsernameInvalid = useMemo(
     () => formValues.username && !validateUsername(formValues.username),
-    [formValues.username],
+    [formValues.username]
   );
 
   const isNameInvalid = useMemo(
-    () => formValues.firstName !== "" && !validateName(formValues.firstName),
-    [formValues.firstName],
+    () => formValues.firstName !== '' && !validateName(formValues.firstName),
+    [formValues.firstName]
   );
   const isLastNameInvalid = useMemo(
-    () => formValues.lastName !== "" && !validateName(formValues.lastName),
-    [formValues.lastName],
+    () => formValues.lastName !== '' && !validateName(formValues.lastName),
+    [formValues.lastName]
   );
   const isPasswordInvalid = useMemo(
-    () => formValues.password !== "" && !validatePassword(formValues.password),
-    [formValues.password],
+    () => formValues.password !== '' && !validatePassword(formValues.password),
+    [formValues.password]
   );
   const isConfirmPasswordInvalid = useMemo(
-    () =>
-      formValues.confirmPassword !== "" &&
-      formValues.password !== formValues.confirmPassword,
-    [formValues.password, formValues.confirmPassword],
+    () => formValues.confirmPassword !== '' && formValues.password !== formValues.confirmPassword,
+    [formValues.password, formValues.confirmPassword]
   );
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">
-          View
-        </p>
+        <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">View</p>
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
           <DialogDescription>
-            This will update the user's details in the system.
+            This will update the user&lsquo;s details in the system.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
@@ -254,13 +232,8 @@ export default function EditUser({
             />
           </div>
           <div className="w-full">
-            <h3 className="mb-4 text-2xl font-semibold text-foreground">
-              Edit User
-            </h3>
-            <form
-              className="flex flex-col space-y-4"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <h3 className="mb-4 text-2xl font-semibold text-foreground">Edit User</h3>
+            <form className="flex flex-col space-y-4" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <Label>User Id</Label>
                 <Input type="text" defaultValue={`${user.id}`} disabled />
@@ -273,12 +246,10 @@ export default function EditUser({
                   value={formValues.firstName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isNameInvalid && "border-red-500")}
+                  className={cn(isNameInvalid && 'border-red-500')}
                 />
                 {isNameInvalid && (
-                  <p className="text-sm text-red-500">
-                    Name can only contain letters
-                  </p>
+                  <p className="text-sm text-red-500">Name can only contain letters</p>
                 )}
               </div>
               <div>
@@ -289,12 +260,10 @@ export default function EditUser({
                   value={formValues.lastName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isLastNameInvalid && "border-red-500")}
+                  className={cn(isLastNameInvalid && 'border-red-500')}
                 />
                 {isLastNameInvalid && (
-                  <p className="text-sm text-red-500">
-                    Last Name can only contain letters
-                  </p>
+                  <p className="text-sm text-red-500">Last Name can only contain letters</p>
                 )}
               </div>
               <div>
@@ -305,7 +274,7 @@ export default function EditUser({
                   value={formValues.username}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isUsernameInvalid && "border-red-500")}
+                  className={cn(isUsernameInvalid && 'border-red-500')}
                 />
                 {isUsernameInvalid && (
                   <p className="text-sm text-red-500">
@@ -321,12 +290,10 @@ export default function EditUser({
                   value={formValues.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isEmailInvalid && "border-red-500")}
+                  className={cn(isEmailInvalid && 'border-red-500')}
                 />
                 {isEmailInvalid && (
-                  <p className="text-sm text-red-500">
-                    Please enter a valid email
-                  </p>
+                  <p className="text-sm text-red-500">Please enter a valid email</p>
                 )}
               </div>
               <div>
@@ -337,12 +304,12 @@ export default function EditUser({
                   value={formValues.password}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isPasswordInvalid && "border-red-500")}
+                  className={cn(isPasswordInvalid && 'border-red-500')}
                 />
                 {isPasswordInvalid && (
                   <p className="text-sm text-red-500">
-                    Password must be at least 8 characters long and contain at
-                    least one uppercase letter and one number
+                    Password must be at least 8 characters long and contain at least one uppercase
+                    letter and one number
                   </p>
                 )}
               </div>
@@ -354,7 +321,7 @@ export default function EditUser({
                   value={formValues.confirmPassword}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={cn(isConfirmPasswordInvalid && "border-red-500")}
+                  className={cn(isConfirmPasswordInvalid && 'border-red-500')}
                 />
                 {isConfirmPasswordInvalid && (
                   <p className="text-sm text-red-500">Passwords do not match</p>
@@ -400,11 +367,8 @@ export default function EditUser({
                     <Button>Close</Button>
                   </DialogClose>
                 )}
-                <Button
-                  type="button"
-                  onClick={isEditing ? handleCancelClick : handleEditClick}
-                >
-                  {isEditing ? "Cancel" : "Edit"}
+                <Button type="button" onClick={isEditing ? handleCancelClick : handleEditClick}>
+                  {isEditing ? 'Cancel' : 'Edit'}
                 </Button>
                 {isEditing && (
                   <DialogClose asChild>

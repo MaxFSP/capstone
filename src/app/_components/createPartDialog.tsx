@@ -180,9 +180,12 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={cn(isNameInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isNameInvalid && 'border-destructive'
+            )}
           />
-          {isNameInvalid && <p className="text-sm text-red-500">Name cannot be empty</p>}
+          {isNameInvalid && <p className="text-sm text-destructive">Name cannot be empty</p>}
         </div>
         <div className="flex-1">
           <Label>Part Number</Label>
@@ -190,10 +193,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             name="part_number"
             value={formData.part_number}
             onChange={handleChange}
-            className={cn(isPartNumberInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isPartNumberInvalid && 'border-destructive'
+            )}
           />
           {isPartNumberInvalid && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-destructive">
               Part number can only contain letters, numbers, and hyphens
             </p>
           )}
@@ -207,10 +213,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             name="compatible_machines"
             value={formData.compatible_machines}
             onChange={handleChange}
-            className={cn(isCompatibleMachinesInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isCompatibleMachinesInvalid && 'border-destructive'
+            )}
           />
           {isCompatibleMachinesInvalid && (
-            <p className="text-sm text-red-500">Compatible machines cannot be empty</p>
+            <p className="text-sm text-destructive">Compatible machines cannot be empty</p>
           )}
         </div>
         <div className="w-[100px]">
@@ -219,10 +228,13 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             name="quantity"
             value={formData.quantity}
             onChange={handleChange}
-            className={cn(isQuantityInvalid && 'border-red-500')}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isQuantityInvalid && 'border-destructive'
+            )}
           />
           {isQuantityInvalid && (
-            <p className="text-sm text-red-500">Quantity must be greater than 0</p>
+            <p className="text-sm text-destructive">Quantity must be greater than 0</p>
           )}
         </div>
       </div>
@@ -238,15 +250,18 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               name="length"
               value={formData.length}
               onChange={handleChange}
-              className={cn('m-2 w-1/6', isDimensionsInvalid && 'border-red-500')}
+              className={cn(
+                'm-2 w-1/6 border border-border bg-background text-foreground',
+                isDimensionsInvalid && 'border-destructive'
+              )}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="m-2 w-1/6" variant="outline">
+                <Button className="m-2 w-1/6 border border-border bg-background text-foreground">
                   {length}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="bg-background text-foreground">
                 <DropdownMenuLabel>Unit</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
@@ -263,15 +278,18 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               name="width"
               value={formData.width}
               onChange={handleChange}
-              className={cn('m-2 w-1/6', isDimensionsInvalid && 'border-red-500')}
+              className={cn(
+                'm-2 w-1/6 border border-border bg-background text-foreground',
+                isDimensionsInvalid && 'border-destructive'
+              )}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="m-2 w-1/6" variant="outline">
+                <Button className="m-2 w-1/6 border border-border bg-background text-foreground">
                   {width}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="bg-background text-foreground">
                 <DropdownMenuLabel>Unit</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
@@ -288,15 +306,18 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               name="height"
               value={formData.height}
               onChange={handleChange}
-              className={cn('m-2 w-1/6', isDimensionsInvalid && 'border-red-500')}
+              className={cn(
+                'm-2 w-1/6 border border-border bg-background text-foreground',
+                isDimensionsInvalid && 'border-destructive'
+              )}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="m-2 w-1/6" variant="outline">
+                <Button className="m-2 w-1/6 border border-border bg-background text-foreground">
                   {height}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="bg-background text-foreground">
                 <DropdownMenuLabel>Unit</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
@@ -310,7 +331,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             </DropdownMenu>
           </div>
           {isDimensionsInvalid && (
-            <p className="text-sm text-red-500">Please enter valid dimensions</p>
+            <p className="text-sm text-destructive">Please enter valid dimensions</p>
           )}
         </div>
       </div>
@@ -320,11 +341,11 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           <Label>Location</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {locationValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-background text-foreground">
               <DropdownMenuLabel>Locations</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
@@ -341,11 +362,11 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           <Label>Condition</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {conditionValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-background text-foreground">
               <DropdownMenuLabel>Condition</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -369,7 +390,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
             <Button
               variant={'outline'}
               className={cn(
-                'w-[240px] justify-start text-left font-normal',
+                'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
                 !date && 'text-muted-foreground'
               )}
             >
@@ -377,7 +398,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               {date ? format(date, 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto bg-background p-0 text-foreground" align="start">
             <Calendar
               mode="single"
               selected={date}
@@ -419,11 +440,16 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
               setLocationValue(locations[0]!.name);
               setConditionValue('Good');
             }}
+            className="bg-secondary text-secondary-foreground"
           >
             Close
           </Button>
         </AlertDialogCancel>
-        <Button onClick={handleSaveClick} disabled={!isFormValid}>
+        <Button
+          onClick={handleSaveClick}
+          disabled={!isFormValid}
+          className="bg-primary text-primary-foreground"
+        >
           Save
         </Button>
       </AlertDialogFooter>

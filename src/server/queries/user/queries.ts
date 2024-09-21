@@ -1,9 +1,9 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { users } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { db } from '../../db';
+import { users } from '../../db/schema';
+import { eq } from 'drizzle-orm';
 
 // Users Table --------------------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ export async function createUser(
   imageUrl: string,
   imageKey: string,
   clerkRole: string,
-  clerk_id: string,
+  clerk_id: string
 ) {
   const newUser = await db
     .insert(users)
@@ -56,7 +56,7 @@ export async function updateUser(
   imageUrl?: string,
   imageKey?: string,
   clerkRole?: string,
-  clerk_id?: string,
+  clerk_id?: string
 ) {
   const updatedUser = await db
     .update(users)
@@ -78,10 +78,7 @@ export async function updateUser(
 
 // Delete User
 export async function deleteUser(userId: number) {
-  const deletedUser = await db
-    .delete(users)
-    .where(eq(users.user_id, userId))
-    .returning();
+  const deletedUser = await db.delete(users).where(eq(users.user_id, userId)).returning();
   return deletedUser;
 }
 
@@ -96,11 +93,7 @@ export async function deleteImageUser(user_id: number) {
     .returning();
 }
 
-export async function addImageToUser(
-  user_id: number,
-  imageUrl: string,
-  imageKey: string,
-) {
+export async function addImageToUser(user_id: number, imageUrl: string, imageKey: string) {
   await db
     .update(users)
     .set({
@@ -109,4 +102,11 @@ export async function addImageToUser(
     })
     .where(eq(users.user_id, user_id))
     .returning();
+}
+
+export async function getUserByClerkId(clerk_id: string) {
+  const user = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.clerk_id, clerk_id),
+  });
+  return user;
 }

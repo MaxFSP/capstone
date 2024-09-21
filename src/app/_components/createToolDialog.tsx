@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from 'react';
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,40 +12,33 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import {
-  AlertDialogCancel,
-  AlertDialogFooter,
-} from "~/components/ui/alert-dialog";
-import { Label } from "~/components/ui/label";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { type ILocation } from "~/server/types/ILocation";
-import { type ToolCondition } from "~/server/types/ITool";
+} from '~/components/ui/dropdown-menu';
+import { AlertDialogCancel, AlertDialogFooter } from '~/components/ui/alert-dialog';
+import { Label } from '~/components/ui/label';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { type ILocation } from '~/server/types/ILocation';
+import { type ToolCondition } from '~/server/types/ITool';
 
 export function CreateToolDialog(props: { locations: ILocation[] }) {
   const { locations } = props;
 
   const [locationValue, setLocationValue] = useState(locations[0]!.name);
-  const [conditionValue, setConditionValue] = useState<ToolCondition>("Good");
+  const [conditionValue, setConditionValue] = useState<ToolCondition>('Good');
 
   const [toolFormValues, setToolFormValues] = useState({
-    name: "",
-    brand: "",
-    category: "",
-    tool_type: "",
-    condition: "",
-    quantity: "",
+    name: '',
+    brand: '',
+    category: '',
+    tool_type: '',
+    condition: '',
+    quantity: '',
     acquisition_date: new Date(),
     location_id: 0,
-    observations: "",
+    observations: '',
   });
 
   const [date, setDate] = useState<Date>(new Date());
@@ -59,12 +52,8 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
     const isToolTypeValid = validateToolType(toolFormValues.tool_type);
     const isCategoryValid = validateCategory(toolFormValues.category);
     const isQuantityValid = validateQuantity(toolFormValues.quantity);
-    const isObservationsValid = validateObservations(
-      toolFormValues.observations,
-    );
-    const isAquisitionDateValid = validateAquisitionDate(
-      toolFormValues.acquisition_date,
-    );
+    const isObservationsValid = validateObservations(toolFormValues.observations);
+    const isAquisitionDateValid = validateAquisitionDate(toolFormValues.acquisition_date);
 
     setIsToolFormValid(
       isNameValid &&
@@ -73,20 +62,17 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         isCategoryValid &&
         isQuantityValid &&
         isObservationsValid &&
-        isAquisitionDateValid,
+        isAquisitionDateValid
     );
   }, [toolFormValues]);
 
   const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name);
   const validateBrand = (brand: string) => /^[A-Za-z\s]+$/.test(brand);
-  const validateToolType = (tool_type: string) =>
-    /^[A-Za-z\s]+$/.test(tool_type);
+  const validateToolType = (tool_type: string) => /^[A-Za-z\s]+$/.test(tool_type);
   const validateCategory = (category: string) => /^[A-Za-z\s]+$/.test(category);
   const validateQuantity = (quantity: string) => /^[0-9]+$/.test(quantity);
-  const validateAquisitionDate = (aquisition_date: Date) =>
-    aquisition_date !== null;
-  const validateObservations = (observations: string) =>
-    /^[A-Za-z0-9\s]+$/.test(observations);
+  const validateAquisitionDate = (aquisition_date: Date) => aquisition_date !== null;
+  const validateObservations = (observations: string) => /^[A-Za-z0-9\s]+$/.test(observations);
 
   const handleToolInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -95,28 +81,26 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
 
   const handleSaveClick = async (): Promise<boolean> => {
     try {
-      const locationId = locations.find(
-        (location) => location.name === locationValue,
-      )!.location_id;
+      const locationId = locations.find((location) => location.name === locationValue)!.location_id;
       toolFormValues.location_id = locationId;
       toolFormValues.condition = conditionValue;
 
-      const response = await fetch("/api/createTool", {
-        method: "POST",
+      const response = await fetch('/api/createTool', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(toolFormValues),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create tool");
+        throw new Error('Failed to create tool');
       }
 
       setIsEditing(false);
       return true;
     } catch (error) {
-      console.error("Failed to create tool:", error);
+      console.error('Failed to create tool:', error);
       return false;
     }
   };
@@ -124,53 +108,45 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
   const handleSaveAndCloseClick = async () => {
     await handleSaveClick();
     setToolFormValues({
-      name: "",
-      brand: "",
-      category: "",
-      tool_type: "",
-      condition: "",
-      quantity: "",
+      name: '',
+      brand: '',
+      category: '',
+      tool_type: '',
+      condition: '',
+      quantity: '',
       acquisition_date: new Date(),
       location_id: 0,
-      observations: "",
+      observations: '',
     });
   };
 
   const isNameInvalid = useMemo(
-    () => toolFormValues.name !== "" && !validateName(toolFormValues.name),
-    [toolFormValues.name],
+    () => toolFormValues.name !== '' && !validateName(toolFormValues.name),
+    [toolFormValues.name]
   );
   const isBrandInvalid = useMemo(
-    () => toolFormValues.brand !== "" && !validateBrand(toolFormValues.brand),
-    [toolFormValues.brand],
+    () => toolFormValues.brand !== '' && !validateBrand(toolFormValues.brand),
+    [toolFormValues.brand]
   );
   const isToolTypeInvalid = useMemo(
-    () =>
-      toolFormValues.tool_type !== "" &&
-      !validateToolType(toolFormValues.tool_type),
-    [toolFormValues.tool_type],
+    () => toolFormValues.tool_type !== '' && !validateToolType(toolFormValues.tool_type),
+    [toolFormValues.tool_type]
   );
   const isCategoryInvalid = useMemo(
-    () =>
-      toolFormValues.category !== "" &&
-      !validateCategory(toolFormValues.category),
-    [toolFormValues.category],
+    () => toolFormValues.category !== '' && !validateCategory(toolFormValues.category),
+    [toolFormValues.category]
   );
   const isQuantityInvalid = useMemo(
-    () =>
-      toolFormValues.quantity !== "" &&
-      !validateQuantity(toolFormValues.quantity),
-    [toolFormValues.quantity],
+    () => toolFormValues.quantity !== '' && !validateQuantity(toolFormValues.quantity),
+    [toolFormValues.quantity]
   );
   const isObservationsInvalid = useMemo(
-    () =>
-      toolFormValues.observations !== "" &&
-      !validateObservations(toolFormValues.observations),
-    [toolFormValues.observations],
+    () => toolFormValues.observations !== '' && !validateObservations(toolFormValues.observations),
+    [toolFormValues.observations]
   );
 
   return (
-    <form className="space-y-4">
+    <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
       <div className="flex space-x-4">
         <div className="flex-1">
           <Label>Name</Label>
@@ -181,12 +157,13 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             value={toolFormValues.name}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            className={cn(isNameInvalid && "border-red-500")}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isNameInvalid && 'border-destructive'
+            )}
           />
           {isNameInvalid && (
-            <p className="text-sm text-red-500">
-              Name can only contain letters
-            </p>
+            <p className="text-sm text-destructive">Name can only contain letters</p>
           )}
         </div>
         <div className="flex-1">
@@ -198,12 +175,13 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             value={toolFormValues.brand}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            className={cn(isBrandInvalid && "border-red-500")}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isBrandInvalid && 'border-destructive'
+            )}
           />
           {isBrandInvalid && (
-            <p className="text-sm text-red-500">
-              Brand can only contain letters
-            </p>
+            <p className="text-sm text-destructive">Brand can only contain letters</p>
           )}
         </div>
       </div>
@@ -218,12 +196,13 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             value={toolFormValues.category}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            className={cn(isCategoryInvalid && "border-red-500")}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isCategoryInvalid && 'border-destructive'
+            )}
           />
           {isCategoryInvalid && (
-            <p className="text-sm text-red-500">
-              Category can only contain letters
-            </p>
+            <p className="text-sm text-destructive">Category can only contain letters</p>
           )}
         </div>
         <div className="flex-1">
@@ -235,12 +214,13 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             value={toolFormValues.tool_type}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            className={cn(isToolTypeInvalid && "border-red-500")}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isToolTypeInvalid && 'border-destructive'
+            )}
           />
           {isToolTypeInvalid && (
-            <p className="text-sm text-red-500">
-              Tool Type can only contain letters
-            </p>
+            <p className="text-sm text-destructive">Tool Type can only contain letters</p>
           )}
         </div>
       </div>
@@ -253,10 +233,13 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             value={toolFormValues.observations}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            className={cn(isObservationsInvalid && "border-red-500")}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isObservationsInvalid && 'border-destructive'
+            )}
           />
           {isObservationsInvalid && (
-            <p className="text-sm text-red-500">
+            <p className="text-sm text-destructive">
               Observations can only contain letters and spaces
             </p>
           )}
@@ -269,12 +252,13 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             value={toolFormValues.quantity}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            className={cn(isQuantityInvalid && "border-red-500")}
+            className={cn(
+              'border border-border bg-background text-foreground',
+              isQuantityInvalid && 'border-destructive'
+            )}
           />
           {isQuantityInvalid && (
-            <p className="text-sm text-red-500">
-              Quantity can only contain numbers
-            </p>
+            <p className="text-sm text-destructive">Quantity can only contain numbers</p>
           )}
         </div>
       </div>
@@ -284,22 +268,16 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Label>Location</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {locationValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-background text-foreground">
               <DropdownMenuLabel>Locations</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={locationValue}
-                onValueChange={setLocationValue}
-              >
+              <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                 {locations.map((location) => (
-                  <DropdownMenuRadioItem
-                    key={location.name}
-                    value={location.name}
-                  >
+                  <DropdownMenuRadioItem key={location.name} value={location.name}>
                     {location.name}
                   </DropdownMenuRadioItem>
                 ))}
@@ -311,24 +289,20 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Label>Condition</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full" variant="outline">
+              <Button className="w-full border border-border bg-background text-foreground">
                 {conditionValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-background text-foreground">
               <DropdownMenuLabel>Condition</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={conditionValue}
-                onValueChange={(value: string) =>
-                  setConditionValue(value as ToolCondition)
-                }
+                onValueChange={(value: string) => setConditionValue(value as ToolCondition)}
               >
                 <DropdownMenuRadioItem value="Good">Good</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Bad">Bad</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Excellent">
-                  Excellent
-                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="Excellent">Excellent</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Poor">Poor</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
@@ -341,17 +315,17 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className={cn(
-                "w-[240px] justify-start text-left font-normal",
-                !date && "text-muted-foreground",
+                'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
+                !date && 'text-muted-foreground'
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
+              {date ? format(date, 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto bg-background p-0 text-foreground" align="start">
             <Calendar
               mode="single"
               selected={date}
@@ -377,17 +351,18 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             variant="secondary"
             onClick={() => {
               setToolFormValues({
-                name: "",
-                brand: "",
-                category: "",
-                tool_type: "",
-                condition: "",
-                quantity: "",
+                name: '',
+                brand: '',
+                category: '',
+                tool_type: '',
+                condition: '',
+                quantity: '',
                 acquisition_date: new Date(),
                 location_id: 0,
-                observations: "",
+                observations: '',
               });
             }}
+            className="bg-secondary text-secondary-foreground"
           >
             Close
           </Button>
@@ -395,8 +370,8 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
 
         <Button
           onClick={handleSaveAndCloseClick}
-          variant="default"
           disabled={!isToolFormValid}
+          className="bg-primary text-primary-foreground"
         >
           Save
         </Button>
