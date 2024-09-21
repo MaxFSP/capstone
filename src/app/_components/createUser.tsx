@@ -14,11 +14,12 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 
-import { Button as ButtonUI } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { useRouter } from "next/navigation";
 
 import type { Org } from "../../server/types/org";
 import React, { useEffect, useState, useMemo } from "react";
-import { Input, Button } from "@nextui-org/react";
 
 import {
   DropdownMenu,
@@ -31,11 +32,12 @@ import {
 } from "~/components/ui/dropdown-menu";
 
 import type { CreateUserResponse } from "../../server/types/api";
-import { useRouter } from "next/navigation";
+import { useToast } from "~/components/hooks/use-toast";
 import { cn } from "~/lib/utils";
 
 export default function CreateUser({ orgs }: { orgs: Org[] }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(true);
   const [formValues, setFormValues] = useState({
     firstName: "",
@@ -47,8 +49,8 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
-  const [role, setRole] = useState(orgs[0]!.name);
 
+  const [selectedRole, setSelectedRole] = useState<string>("");
   useEffect(() => {
     const isEmailValid = validateEmail(formValues.email);
     const isUsernameValid = validateUsername(formValues.username);
@@ -73,44 +75,58 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   };
 
   const handleSaveClick = async (): Promise<boolean> => {
-    const { confirmPassword, ...formValuesWithoutConfirm } = formValues;
-    const { email, ...formValuesCrop } = formValuesWithoutConfirm;
-    const emails = [email];
-    const formValuesF = { email: emails, ...formValuesCrop };
-
-    const selectedDepartment = orgs.find((org) => org.name === role);
-    const organizationId = selectedDepartment ? selectedDepartment.id : "";
-
-    const formValuesWithOrg = { ...formValuesF, organizationId };
-
     try {
+      const { confirmPassword, email, ...restFormValues } = formValues;
+      const formData = {
+        ...restFormValues,
+        email: [email],
+        organizationId: orgs.find((org) => org.name === selectedRole)?.id ?? "",
+      };
+  
       const response = await fetch("/api/createUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formValuesWithOrg),
+        body: JSON.stringify(formData),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to process user");
-      }
-
+  
       const data: CreateUserResponse = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+  
+      if (!response.ok) {
+        throw new Error(data.error ?? "Failed to process user");
       }
 
-      setIsEditing(false);
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      });
       return true;
+  
     } catch (error) {
-      console.error("Failed to process user:", error);
+      console.error("Error creating user:", error);
+  
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+  
+      if (errorMessage.includes("username is taken")) {
+        setFormValues(prev => ({ ...prev, username: '' }));
+      }
+  
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return false;
     }
   };
-
+  
   const handleSaveAndCloseClick = async () => {
     const saveSuccessful = await handleSaveClick();
+    setIsEditing(true);
     if (saveSuccessful) {
       setFormValues({
         firstName: "",
@@ -128,7 +144,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email);
   const validateUsername = (username: string) =>
     /^[a-zA-Z0-9]+$/.test(username);
-  const validateName = (name: string) => /^[a-zA-Z]+$/.test(name);
+  const validateName = (name: string) => /^[a-zA-Z\s]+$/.test(name);
   const validatePassword = (password: string) =>
     /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
@@ -162,9 +178,9 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <ButtonUI className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary">
           Create User
-        </ButtonUI>
+        </Button>
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
@@ -183,136 +199,131 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
             />
           </div>
           <div className="w-full">
-            <form className="flex flex-col space-y-4">
-              <Input
-                required
-                type="text"
-                label="First Name"
-                name="firstName"
-                value={formValues.firstName}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isNameInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isNameInvalid &&
-                    "border-destructive text-destructive-foreground",
+            <form
+              className="flex flex-col space-y-4"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div>
+                <Input
+                  required
+                  type="text"
+                  placeholder="First Name"
+                  name="firstName"
+                  value={formValues.firstName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(isNameInvalid && "border-red-500")}
+                />
+                {isNameInvalid && (
+                  <p className="text-sm text-red-500">
+                    Name can only contain letters
+                  </p>
                 )}
-                errorMessage={isNameInvalid && "Name can only contain letters"}
-              />
-              <Input
-                required
-                type="text"
-                label="Last Name"
-                name="lastName"
-                value={formValues.lastName}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isLastNameInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isLastNameInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="text"
+                  placeholder="Last Name"
+                  name="lastName"
+                  value={formValues.lastName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(isLastNameInvalid && "border-red-500")}
+                />
+                {isLastNameInvalid && (
+                  <p className="text-sm text-red-500">
+                    Last Name can only contain letters
+                  </p>
                 )}
-                errorMessage={
-                  isLastNameInvalid && "Last Name can only contain letters"
-                }
-              />
-              <Input
-                required
-                type="text"
-                label="Username"
-                name="username"
-                pattern="[a-zA-Z0-9]+"
-                value={formValues.username}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isUsernameInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isUsernameInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="text"
+                  placeholder="Username"
+                  name="username"
+                  pattern="[a-zA-Z0-9]+"
+                  value={formValues.username}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(isUsernameInvalid && "border-red-500")}
+                />
+                {isUsernameInvalid && (
+                  <p className="text-sm text-red-500">
+                    Username can only contain letters and numbers
+                  </p>
                 )}
-                errorMessage={
-                  isUsernameInvalid &&
-                  "Username can only contain letters and numbers"
-                }
-              />
-              <Input
-                required
-                type="email"
-                label="Email"
-                name="email"
-                value={formValues.email}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isEmailInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isEmailInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="email"
+                  placeholder="Email"
+                  name="email"
+                  value={formValues.email}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(isEmailInvalid && "border-red-500")}
+                />
+                {isEmailInvalid && (
+                  <p className="text-sm text-red-500">
+                    Please enter a valid email
+                  </p>
                 )}
-                errorMessage={isEmailInvalid && "Please enter a valid email"}
-              />
-              <Input
-                required
-                type="password"
-                label="Password"
-                name="password"
-                value={formValues.password}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isPasswordInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isPasswordInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  value={formValues.password}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(isPasswordInvalid && "border-red-500")}
+                />
+                {isPasswordInvalid && (
+                  <p className="text-sm text-red-500">
+                    Password must contain at least 8 characters, one uppercase
+                    letter, and one number
+                  </p>
                 )}
-                errorMessage={
-                  isPasswordInvalid &&
-                  "Password must contain at least 8 characters, one uppercase letter, and one number"
-                }
-              />
-              <Input
-                required
-                type="password"
-                label="Confirm Password"
-                name="confirmPassword"
-                value={formValues.confirmPassword}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isConfirmPasswordInvalid}
-                className={cn(
-                  "border border-border bg-background text-foreground",
-                  isConfirmPasswordInvalid &&
-                    "border-destructive text-destructive-foreground",
+              </div>
+              <div>
+                <Input
+                  required
+                  type="password"
+                  placeholder="Confirm Password"
+                  name="confirmPassword"
+                  value={formValues.confirmPassword}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={cn(isConfirmPasswordInvalid && "border-red-500")}
+                />
+                {isConfirmPasswordInvalid && (
+                  <p className="text-sm text-red-500">Passwords do not match</p>
                 )}
-                errorMessage={
-                  isConfirmPasswordInvalid && "Passwords do not match"
-                }
-              />
+              </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <ButtonUI
-                    variant="outline"
-                    className="w-full border border-border bg-background text-foreground"
-                  >
-                    {role}
-                  </ButtonUI>
+                  <Button variant="outline" className="w-full">
+                    {selectedRole || "Select a role"}
+                  </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background text-foreground">
-                  <DropdownMenuLabel className="text-primary">
-                    Roles
-                  </DropdownMenuLabel>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Roles</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={role} onValueChange={setRole}>
-                    <DropdownMenuRadioItem value="Administrador">
-                      Administrador
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Jefes">
-                      Jefes
-                    </DropdownMenuRadioItem>
+                  <DropdownMenuRadioGroup
+                    value={selectedRole}
+                    onValueChange={(value: string) => setSelectedRole(value)}
+                  >
+                    {orgs.map((org) => (
+                      <DropdownMenuRadioItem key={org.name} value={org.name}>
+                        {org.name}
+                      </DropdownMenuRadioItem>
+                    ))}
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -321,8 +332,7 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 <DialogClose asChild>
                   <Button
                     type="button"
-                    variant="bordered"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary-foreground hover:text-secondary"
+                    variant="secondary"
                     onClick={() => {
                       setFormValues({
                         firstName: "",
@@ -341,9 +351,9 @@ export default function CreateUser({ orgs }: { orgs: Org[] }) {
                 <Button
                   onClick={handleSaveAndCloseClick}
                   disabled={!isFormValid}
-                  className="bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+                  variant="default"
                 >
-                  Save & Close
+                  Save
                 </Button>
               </div>
             </form>

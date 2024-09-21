@@ -1,15 +1,26 @@
-export interface Org {
-  id: string;
-  name: string;
-}
+import { z } from "zod";
 
-export interface EmployeeInOrg {
-  orgId: string;
-  userId: string;
-}
+// Org schema
+export const orgSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Organization name is required")
+});
 
-export interface AddEmployee {
-  organizationId: string;
-  userId: string;
-  role: string;
-}
+export type Org = z.infer<typeof orgSchema>;
+
+// EmployeeInOrg schema
+export const employeeInOrgSchema = z.object({
+  orgId: z.string(),
+  userId: z.string()
+});
+
+export type EmployeeInOrg = z.infer<typeof employeeInOrgSchema>;
+
+// AddEmployee schema
+export const addEmployeeSchema = z.object({
+  organizationId: z.string(),
+  userId: z.string(),
+  role: z.string().min(1, "Role is required")
+});
+
+export type AddEmployee = z.infer<typeof addEmployeeSchema>;

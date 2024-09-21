@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 
 import { Button } from "~/components/ui/button";
-import { Input } from "@nextui-org/react";
+import { Input } from "~/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,16 +79,16 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
   }, [machineryFormValues]);
 
   // MACHINERY VALIDATIONS
-  const validateBrand = (brand: string) => /^[A-Za-z\s]+$/.test(brand); // Only letters and spaces
+  const validateBrand = (brand: string) => /^[A-Za-z\s]+$/.test(brand);
   const validateMachineryModel = (model: string) =>
-    /^[A-Za-z0-9\s]+$/.test(model); // Only letters numbers and spaces
-  const validateMachineryYear = (year: string) => /^[0-9]+$/.test(year); // Only numbers
+    /^[A-Za-z0-9\s]+$/.test(model);
+  const validateMachineryYear = (year: string) => /^[0-9]+$/.test(year);
   const validateMachinerySerialNumber = (serial_number: string) =>
-    /^[A-Za-z0-9\s]+$/.test(serial_number); // Only letters, numbers and spaces
+    /^[A-Za-z0-9\s]+$/.test(serial_number);
   const validateAquisitionDate = (aquisition_date: Date) =>
     aquisition_date !== null;
   const validateObservations = (observations: string) =>
-    /^[A-Za-z\s]+$/.test(observations); // Only letters and spaces
+    /^[A-Za-z0-9\s]+$/.test(observations);
 
   // Form Input Change Handler
   const handleMachineryInputChange = (
@@ -159,7 +159,6 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
       !validateMachineryYear(machineryFormValues.year),
     [machineryFormValues.year],
   );
-
   const isSerialNumberInvalid = useMemo(
     () =>
       machineryFormValues.serial_number !== "" &&
@@ -177,123 +176,105 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
     <form className="space-y-4">
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label className="text-muted-foreground">Brand</Label>
+          <Label>Brand</Label>
           <Input
             required
             type="text"
-            label="Brand"
             name="brand"
             value={machineryFormValues.brand}
             onChange={handleMachineryInputChange}
-            isDisabled={!isEditing}
-            isInvalid={isBrandInvalid}
-            className={cn(
-              "border border-border bg-background text-foreground",
-              isBrandInvalid && "border-destructive text-destructive",
-            )}
-            errorMessage={isBrandInvalid && "Brand can only contain letters"}
+            disabled={!isEditing}
+            className={cn(isBrandInvalid && "border-red-500")}
           />
+          {isBrandInvalid && (
+            <p className="text-sm text-red-500">
+              Brand can only contain letters
+            </p>
+          )}
         </div>
         <div className="flex-1">
-          <Label className="text-muted-foreground">Model</Label>
+          <Label>Model</Label>
           <Input
             required
             type="text"
-            label="Model"
             name="model"
             value={machineryFormValues.model}
             onChange={handleMachineryInputChange}
-            isDisabled={!isEditing}
-            isInvalid={isModelInvalid}
-            className={cn(
-              "border border-border bg-background text-foreground",
-              isModelInvalid && "border-destructive text-destructive",
-            )}
-            errorMessage={isModelInvalid && "Model can only contain letters"}
+            disabled={!isEditing}
+            className={cn(isModelInvalid && "border-red-500")}
           />
+          {isModelInvalid && (
+            <p className="text-sm text-red-500">
+              Model can only contain letters and numbers
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label className="text-muted-foreground">Year</Label>
+          <Label>Year</Label>
           <Input
             required
             type="text"
-            label="Year"
             name="year"
             value={machineryFormValues.year}
             onChange={handleMachineryInputChange}
-            isDisabled={!isEditing}
-            isInvalid={isYearInvalid}
-            className={cn(
-              "border border-border bg-background text-foreground",
-              isYearInvalid && "border-destructive text-destructive",
-            )}
-            errorMessage={isYearInvalid && "Year must be a number"}
+            disabled={!isEditing}
+            className={cn(isYearInvalid && "border-red-500")}
           />
+          {isYearInvalid && (
+            <p className="text-sm text-red-500">Year must be a number</p>
+          )}
         </div>
         <div className="flex-1">
-          <Label className="text-muted-foreground">Serial Number</Label>
+          <Label>Serial Number</Label>
           <Input
             required
             type="text"
-            label="Serial Number"
             name="serial_number"
             value={machineryFormValues.serial_number}
             onChange={handleMachineryInputChange}
-            isDisabled={!isEditing}
-            isInvalid={isSerialNumberInvalid}
-            className={cn(
-              "border border-border bg-background text-foreground",
-              isSerialNumberInvalid && "border-destructive text-destructive",
-            )}
-            errorMessage={
-              isSerialNumberInvalid &&
-              "Serial Number can only contain letters, numbers, and spaces"
-            }
+            disabled={!isEditing}
+            className={cn(isSerialNumberInvalid && "border-red-500")}
           />
+          {isSerialNumberInvalid && (
+            <p className="text-sm text-red-500">
+              Serial Number can only contain letters, numbers, and spaces
+            </p>
+          )}
         </div>
       </div>
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label className="text-muted-foreground">Observations</Label>
+          <Label>Observations</Label>
           <Input
             type="text"
-            label="Observations"
             name="observations"
             value={machineryFormValues.observations}
             onChange={handleMachineryInputChange}
-            isDisabled={!isEditing}
-            isInvalid={isObservationsInvalid}
-            className={cn(
-              "border border-border bg-background text-foreground",
-              isObservationsInvalid && "border-destructive text-destructive",
-            )}
-            errorMessage={
-              isObservationsInvalid &&
-              "Observations can only contain letters and spaces"
-            }
+            disabled={!isEditing}
+            className={cn(isObservationsInvalid && "border-red-500")}
           />
+          {isObservationsInvalid && (
+            <p className="text-sm text-red-500">
+              Observations can only contain letters and spaces
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label className="text-muted-foreground">Location</Label>
+          <Label>Location</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="w-full border border-border bg-background text-foreground"
-                variant="outline"
-              >
+              <Button className="w-full" variant="outline">
                 {locationValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel className="text-muted-foreground">
-                Locations
-              </DropdownMenuLabel>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Locations</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={locationValue}
@@ -303,7 +284,6 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
                   <DropdownMenuRadioItem
                     key={location.name}
                     value={location.name}
-                    className="text-foreground"
                   >
                     {location.name}
                   </DropdownMenuRadioItem>
@@ -313,20 +293,15 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
           </DropdownMenu>
         </div>
         <div className="flex-1">
-          <Label className="text-muted-foreground">State</Label>
+          <Label>State</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                className="w-full border border-border bg-background text-foreground"
-                variant="outline"
-              >
+              <Button className="w-full" variant="outline">
                 {stateValue}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel className="text-muted-foreground">
-                State
-              </DropdownMenuLabel>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>State</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={stateValue}
@@ -346,13 +321,13 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
       </div>
 
       <div className="flex flex-col">
-        <Label className="text-muted-foreground">Acquisition Date</Label>
+        <Label>Acquisition Date</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
               className={cn(
-                "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
+                "w-[240px] justify-start text-left font-normal",
                 !date && "text-muted-foreground",
               )}
             >
@@ -360,10 +335,7 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
               {date ? format(date, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent
-            className="w-auto bg-background p-0 text-foreground"
-            align="start"
-          >
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={date}
@@ -387,7 +359,6 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
           <Button
             type="button"
             variant="secondary"
-            className="bg-secondary text-secondary-foreground"
             onClick={() => {
               setMachineryFormValues({
                 brand: "",
@@ -408,10 +379,9 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
         <Button
           onClick={handleSaveAndCloseClick}
           variant="default"
-          className="bg-primary text-primary-foreground"
           disabled={!isMachineryFormValid}
         >
-          Save & Close
+          Save
         </Button>
       </AlertDialogFooter>
     </form>

@@ -1,33 +1,28 @@
-import { getFullName } from "~/server/queries/queries";
-import HomeView from "./_components/homeView";
-import { getWorkOrderBySessionId } from "~/server/queries/workOrder/queries";
-import { getColumnTasksByWorkOrderId } from "~/server/queries/columnsWorkOrder/queries";
-import {
-  getMachineryById,
-  totalMachines,
-} from "~/server/queries/machinery/queries";
-import { getTasksByColumnId } from "~/server/queries/columnTasks/queries";
-import { getEmployees } from "~/server/queries/employee/queries";
-import { totalTools } from "~/server/queries/tool/queries";
-import { totalParts } from "~/server/queries/part/queries";
-import { type Task } from "~/server/types/ITasks";
-import { type Employee } from "~/server/types/IEmployee";
-import { type Column } from "~/server/types/IColumns";
+import { getFullName } from '~/server/queries/queries';
+import HomeView from './_components/homeView';
+import { getWorkOrderBySessionId } from '~/server/queries/workOrder/queries';
+import { getColumnTasksByWorkOrderId } from '~/server/queries/columnsWorkOrder/queries';
+import { getMachineryById, totalMachines } from '~/server/queries/machinery/queries';
+import { getTasksByColumnId } from '~/server/queries/columnTasks/queries';
+import { getEmployees } from '~/server/queries/employee/queries';
+import { totalTools } from '~/server/queries/tool/queries';
+import { totalParts } from '~/server/queries/part/queries';
+import { type Task } from '~/server/types/ITasks';
+import { type Employee } from '~/server/types/IEmployee';
+import { type Column } from '~/server/types/IColumns';
 
 export default async function HomePage() {
   const user = await getFullName();
   const workOrder = await getWorkOrderBySessionId();
 
-  const enabledWorkOrders = workOrder.filter(
-    (workOrders) => workOrders.state === 1,
-  );
+  const enabledWorkOrders = workOrder.filter((workOrders) => workOrders.state === 1);
 
   const currentWorkOrder = enabledWorkOrders[0];
 
   const userName = user;
-  let machineName = "";
-  let machineSerial = "";
-  let workOrderDescription = "";
+  let machineName = '';
+  let machineSerial = '';
+  let workOrderDescription = '';
   let totalOngoingTasks = 0;
   let completedTasks = 0;
   let latestTasks: Task[] = [];
@@ -44,7 +39,7 @@ export default async function HomePage() {
     if (machine) {
       machineName = `${machine.brand} ${machine.model}`;
       machineSerial = machine.serial_number;
-      workOrderDescription = currentWorkOrder.observations ?? "";
+      workOrderDescription = currentWorkOrder.observations ?? '';
       columns = await getColumnTasksByWorkOrderId(currentWorkOrder.order_id);
       if (columns) {
         const columnIds = columns.map((column) => column.column_id);
@@ -58,25 +53,27 @@ export default async function HomePage() {
               .filter((task) => task.column_id === lastColumn.column_id)
               .map((task) => ({
                 ...task,
-                description: task.description ?? "",
+                description: task.description ?? '',
               }));
             completedTasks = tasksInLastColumn.length;
             totalOngoingTasks = totalTasks - completedTasks;
+
             latestTasks = tasks
               .filter((task) => task.state === 1)
               .map((task) => ({
                 ...task,
-                description: task.description ?? "",
+                description: task.description ?? '',
+                priority: task.priority as '0' | '1' | '2',
               }))
-              .sort(
-                (a, b) =>
-                  new Date(b.created_at).getTime() -
-                  new Date(a.created_at).getTime(),
-              )
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
               .slice(0, 10);
           }
         }
-        employees = await getEmployees();
+        employees = (await getEmployees()).map((employee) => ({
+          ...employee,
+          bloodType: employee.bloodType as 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-',
+        }));
+        employees = employees.filter((employee) => employee.state === 1);
         keyMetrics.totalMachines = await totalMachines();
         keyMetrics.totalParts = await totalParts();
         keyMetrics.totalTool = await totalTools();

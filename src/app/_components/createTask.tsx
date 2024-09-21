@@ -590,7 +590,7 @@ export function CreateTaskDialog(props: {
               className="hover:bg-primary-dark bg-primary text-primary-foreground"
               disabled={!isOrderFormValid}
             >
-              Save & Close
+              Save
             </Button>
           </AlertDialogCancel>
         </AlertDialogFooter>

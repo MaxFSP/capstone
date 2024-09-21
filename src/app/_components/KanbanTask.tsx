@@ -694,7 +694,12 @@ export default function KanbanTask(props: {
           <AlertDialogFooter className="sm:justify-start">
             {!isEditing && (
               <AlertDialogCancel asChild>
-                <Button type="button">Close</Button>
+                <Button
+                  type="button"
+                  className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                >
+                  Close
+                </Button>
               </AlertDialogCancel>
             )}
             <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
@@ -711,17 +716,6 @@ export default function KanbanTask(props: {
                     disabled={!isFormValid || !hasChanges}
                   >
                     Save
-                  </Button>
-                </AlertDialogCancel>
-
-                <AlertDialogCancel asChild>
-                  <Button
-                    type="button"
-                    variant={"default"}
-                    onClick={handleSaveAndCloseClick}
-                    disabled={!isFormValid || !hasChanges}
-                  >
-                    Save & Close
                   </Button>
                 </AlertDialogCancel>
               </>

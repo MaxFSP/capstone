@@ -277,7 +277,7 @@ export function SellDataViewDialog(props: { data: SellDataValues }) {
               disabled={!isFormValid}
               className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
             >
-              Save & Close
+              Mark as sold
             </Button>
           </AlertDialogCancel>
         </AlertDialogFooter>

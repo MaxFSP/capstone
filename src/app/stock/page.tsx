@@ -1,27 +1,27 @@
-import { getParts } from "~/server/queries/part/queries";
-import { getTools } from "~/server/queries/tool/queries";
-import { getMachineries } from "~/server/queries/machinery/queries";
-import { getLocations } from "~/server/queries/location/queries";
-import TableComponent from "../_components/tableComponent";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { getParts } from '~/server/queries/part/queries';
+import { getTools } from '~/server/queries/tool/queries';
+import { getMachineries } from '~/server/queries/machinery/queries';
+import { getLocations } from '~/server/queries/location/queries';
+import TableComponent from '../_components/tableComponent';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 const partsColumns = [
-  { key: "name", label: "Name" },
-  { key: "condition", label: "Condition" },
-  { key: "quantity", label: "Quantity" },
+  { key: 'name', label: 'Name' },
+  { key: 'condition', label: 'Condition' },
+  { key: 'quantity', label: 'Quantity' },
 ];
 
 const toolsColumns = [
-  { key: "name", label: "Name" },
-  { key: "condition", label: "Condition" },
-  { key: "quantity", label: "Quantity" },
+  { key: 'name', label: 'Name' },
+  { key: 'condition', label: 'Condition' },
+  { key: 'quantity', label: 'Quantity' },
 ];
 
 const machineryColumns = [
-  { key: "brand", label: "Brand" },
-  { key: "model", label: "Model" },
-  { key: "serial_number", label: "Serial Number" },
-  { key: "state", label: "State" },
+  { key: 'brand', label: 'Brand' },
+  { key: 'model', label: 'Model' },
+  { key: 'serial_number', label: 'Serial Number' },
+  { key: 'state', label: 'State' },
 ];
 
 export default async function StockPage() {
@@ -61,9 +61,12 @@ export default async function StockPage() {
             locations={locations}
           />
         ) : (
-          <div className="flex min-h-[50vh] items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--primary))]">
-            <p className="text-xl font-bold">No machines available.</p>
-          </div>
+          <TableComponent
+            data={[]}
+            columns={machineryColumns}
+            valueType="Machinery"
+            locations={locations}
+          />
         )}
       </TabsContent>
       <TabsContent value="parts">
@@ -75,9 +78,7 @@ export default async function StockPage() {
             locations={locations}
           />
         ) : (
-          <div className="flex min-h-[50vh] items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--primary))]">
-            <p className="text-xl font-bold">No parts available.</p>
-          </div>
+          <TableComponent data={[]} columns={partsColumns} valueType="Part" locations={locations} />
         )}
       </TabsContent>
 
@@ -90,9 +91,7 @@ export default async function StockPage() {
             locations={locations}
           />
         ) : (
-          <div className="flex min-h-[50vh] items-center justify-center bg-[hsl(var(--background))] text-[hsl(var(--primary))]">
-            <p className="text-xl font-bold">No tools available.</p>
-          </div>
+          <TableComponent data={[]} columns={toolsColumns} valueType="Tool" locations={locations} />
         )}
       </TabsContent>
     </Tabs>

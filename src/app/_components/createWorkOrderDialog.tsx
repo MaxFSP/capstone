@@ -254,6 +254,7 @@ export function CreateWorkOrderDialog(props: {
       <AlertDialogFooter className="sm:justify-start">
         <AlertDialogCancel asChild>
           <Button
+            className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             type="button"
             onClick={() => {
               setOrderFormValue({
@@ -273,8 +274,9 @@ export function CreateWorkOrderDialog(props: {
           <Button
             onClick={handleSaveAndCloseClick}
             disabled={!isOrderFormValid}
+            className="hover:bg-primary-dark bg-primary text-primary-foreground"
           >
-            Save & Close
+            Save
           </Button>
         </AlertDialogCancel>
       </AlertDialogFooter>

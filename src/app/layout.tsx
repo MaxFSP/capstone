@@ -20,6 +20,7 @@ import { Providers } from "./providers";
 
 // Components
 import SidebarContainer from "./_components/sidebarContainer";
+import { Toaster } from "~/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: "Capstone",
@@ -42,10 +43,7 @@ export default function RootLayout({
   const themeClass = getInitialTheme(); // Custom server-side function to determine initial theme
 
   return (
-    <html
-      lang="es"
-      className={`${themeClass} ${GeistSans.variable} flex flex-col gap-4`}
-    >
+    <html className={`${themeClass} ${GeistSans.variable} flex flex-col gap-4`}>
       <body className="bg-background text-foreground">
         <Providers>
           <SignedIn>
@@ -57,6 +55,7 @@ export default function RootLayout({
               <main className="mt-14 w-screen flex-grow transition-all duration-300 ease-in-out">
                 {children}
               </main>
+              <Toaster />
             </div>
           </SignedIn>
           <SignedOut>{children}</SignedOut>

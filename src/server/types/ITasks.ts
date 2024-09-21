@@ -1,56 +1,81 @@
-import { type Part } from "./IPart";
-import { type Tool } from "./ITool";
+import { z } from "zod";
+import { partSchema } from "./IPart";
+import { toolSchema } from "./ITool";
 
-export interface Task {
-  task_id: number;
-  title: string;
-  description: string;
-  position: number;
-  start_date: Date;
-  end_date: Date;
-  column_id: number;
-  assigned_to: number;
-  priority: string;
-  state: number;
-}
+// Task schema
+export const taskSchema = z.object({
+  task_id: z.number().nonnegative(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  position: z.number().int().nonnegative(),
+  start_date: z.date(),
+  end_date: z.date(),
+  column_id: z.number().nonnegative(),
+  assigned_to: z.number().nonnegative(),
+  priority: z.enum(["0", "1", "2"]), // 0 = low, 1 = medium, 2 = high
+  state: z.number().int().min(0).max(1)
+});
 
-export interface MovingTask {
-  task_id: number;
-  new_column_id: number;
-  new_position: number;
-}
+export type Task = z.infer<typeof taskSchema>;
 
-export interface CreateTask {
-  title: string;
-  description: string;
-  position: number;
-  start_date: Date;
-  end_date: Date;
-  column_id: number;
-  assigned_to: number;
-  priority: string; // 0 = low, 1 = medium, 2 = high
-}
+// MovingTask schema
+export const movingTaskSchema = z.object({
+  task_id: z.number().nonnegative(),
+  new_column_id: z.number().nonnegative(),
+  new_position: z.number().int().nonnegative()
+});
 
-export type TasksOnColumns = Record<string, Task[]>;
+export type MovingTask = z.infer<typeof movingTaskSchema>;
 
-export interface ToolInTask {
-  task_id: number;
-  tool_id: number;
-}
+// CreateTask schema
+export const createTaskSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  position: z.number().int().nonnegative(),
+  start_date: z.date(),
+  end_date: z.date(),
+  column_id: z.number().nonnegative(),
+  assigned_to: z.number().nonnegative(),
+  priority: z.enum(["0", "1", "2"]) // 0 = low, 1 = medium, 2 = high
+});
 
-export interface PartInTask {
-  task_id: number;
-  part_id: number;
-}
+export type CreateTask = z.infer<typeof createTaskSchema>;
 
-export interface ToolsAndParts {
-  task_id: number;
-  tools: number[];
-  parts: number[];
-}
+// TasksOnColumns schema
+export const tasksOnColumnsSchema = z.record(z.string(), z.array(taskSchema));
 
-export interface taskWithToolsAndParts {
-  task: Task;
-  toolsInTask: Tool[];
-  partsInTask: Part[];
-}
+export type TasksOnColumns = z.infer<typeof tasksOnColumnsSchema>;
+
+// ToolInTask schema
+export const toolInTaskSchema = z.object({
+  task_id: z.number().nonnegative(),
+  tool_id: z.number().nonnegative()
+});
+
+export type ToolInTask = z.infer<typeof toolInTaskSchema>;
+
+// PartInTask schema
+export const partInTaskSchema = z.object({
+  task_id: z.number().nonnegative(),
+  part_id: z.number().nonnegative()
+});
+
+export type PartInTask = z.infer<typeof partInTaskSchema>;
+
+// ToolsAndParts schema
+export const toolsAndPartsSchema = z.object({
+  task_id: z.number().nonnegative(),
+  tools: z.array(z.number().nonnegative()),
+  parts: z.array(z.number().nonnegative())
+});
+
+export type ToolsAndParts = z.infer<typeof toolsAndPartsSchema>;
+
+// taskWithToolsAndParts schema
+export const taskWithToolsAndPartsSchema = z.object({
+  task: taskSchema,
+  toolsInTask: z.array(toolSchema),
+  partsInTask: z.array(partSchema)
+});
+
+export type taskWithToolsAndParts = z.infer<typeof taskWithToolsAndPartsSchema>;

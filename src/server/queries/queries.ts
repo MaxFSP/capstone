@@ -42,7 +42,7 @@ export async function getActiveOrg(): Promise<string> {
   if (!user.userId) throw new Error("Unauthorized");
 
   const userOrg = user.orgSlug;
-  if (!userOrg) return "Null";
+  if (!userOrg) return "jefe";
 
   return userOrg;
 }
@@ -59,7 +59,7 @@ export async function getAllUsers(): Promise<ClerkUser[]> {
       const id = user.id;
       const email = user.emailAddresses[0]?.emailAddress ?? "Unknown";
       const status = await userStatus(email);
-      const currentOrg = await getOrgByUserId(id);
+      const currentOrg = await getAllOrgsByUserId(id);
 
       return {
         id: id,
@@ -149,6 +149,24 @@ export async function getOrgByUserId(userId: string): Promise<Org> {
   }
 
   return orgs[0]!;
+}
+
+export async function getAllOrgsByUserId(userId: string): Promise<Org[]> {
+  const user = auth();
+
+  if (!user.userId) throw new Error("Unauthorized");
+
+  const allOrgs = await getAllOrgs();
+
+  const orgs: Org[] = [];
+
+  for (const org of allOrgs) {
+    const members = await getMembersFromOrg(org.id);
+    if (members.some((member) => member.userId === userId)) {
+      orgs.push(org);
+    }
+  }
+  return orgs;
 }
 
 export async function userStatus(email: string): Promise<boolean> {

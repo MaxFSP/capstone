@@ -528,19 +528,9 @@ export function SmallMachineryDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
-                  className="hover:bg-accent-dark bg-accent text-accent-foreground"
+                  className="hover:bg-primary-dark bg-primary text-primary-foreground"
                 >
                   Save
-                </Button>
-              </DialogClose>
-
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                  className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
-                >
-                  Save & Close
                 </Button>
               </DialogClose>
             </>

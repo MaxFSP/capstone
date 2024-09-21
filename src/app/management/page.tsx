@@ -1,48 +1,46 @@
-import EmployeeTable from "../_components/employeeTable";
-import { getAllOrgs, getAllUsers } from "~/server/queries/queries";
-import { getLocations } from "~/server/queries/location/queries";
-import { getEmployees } from "~/server/queries/employee/queries";
-import CardLayout from "../_components/cardLayout";
-import CreateUser from "../_components/createUser";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import TableComponent from "../_components/tableComponent";
-import { getMachineries } from "~/server/queries/machinery/queries";
-import { getUsers } from "~/server/queries/user/queries";
-import { getWorkOrders } from "~/server/queries/workOrder/queries";
+import EmployeeTable from '../_components/employeeTable';
+import { getAllOrgs, getAllUsers } from '~/server/queries/queries';
+import { getLocations } from '~/server/queries/location/queries';
+import { getEmployees } from '~/server/queries/employee/queries';
+import CardLayout from '../_components/cardLayout';
+import CreateUser from '../_components/createUser';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import TableComponent from '../_components/tableComponent';
+import { getMachineries } from '~/server/queries/machinery/queries';
+import { getUsers } from '~/server/queries/user/queries';
+import { getWorkOrders } from '~/server/queries/workOrder/queries';
 
 const employeeColumns = [
-  { key: "firstName", label: "First Name" },
-  { key: "lastName", label: "Last Name" },
-  { key: "job", label: "Job" },
+  { key: 'firstName', label: 'First Name' },
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'job', label: 'Job' },
 ];
 
 const workOrderColumns = [
-  { key: "name", label: "Name" },
-  { key: "machine_serial", label: "Machine" },
-  { key: "userName", label: "Assigned User" },
+  { key: 'name', label: 'Name' },
+  { key: 'machine_serial', label: 'Machine' },
+  { key: 'userName', label: 'Assigned User' },
 ];
 
 async function UserManagement() {
   const users = await getAllUsers();
   const orgs = await getAllOrgs();
   const locations = await getLocations();
-  const employees = await getEmployees();
+  let employees = await getEmployees();
   const machines = await getMachineries();
   const userData = await getUsers();
   const workOrders = await getWorkOrders();
+  // Filter out employees that are not active
+  employees = employees.filter((employee) => employee.state === 1);
 
   // Find the serial and the username of the ids in workOrders
   const workOrdersWithSerial = workOrders.map((workOrder) => {
-    const machine = machines.find(
-      (machine) => machine.machine_id === workOrder.machine_id,
-    );
+    const machine = machines.find((machine) => machine.machine_id === workOrder.machine_id);
     return { ...workOrder, machine_serial: machine?.serial_number };
   });
 
   const workOrdersWithUsername = workOrdersWithSerial.map((workOrder) => {
-    const user = userData.find(
-      (user) => user.user_id === workOrder.assigned_user,
-    );
+    const user = userData.find((user) => user.user_id === workOrder.assigned_user);
     return {
       ...workOrder,
       userName: `${user?.first_name} ${user?.last_name}`,
