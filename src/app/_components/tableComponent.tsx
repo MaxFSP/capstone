@@ -24,7 +24,7 @@ import EmployeeDataViewDialog from './ViewEmployeeDialog';
 interface TableColumn {
   key: string;
   label: string;
-  type?: string; // Optional type to handle special rendering cases
+  type?: string;
 }
 
 const TableComponent = (props: {

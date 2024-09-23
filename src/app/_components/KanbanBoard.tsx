@@ -1,27 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-export const dynamic = "force-dynamic";
+import { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
 
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  type DropResult,
-} from "@hello-pangea/dnd";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import KanbanTask from "./KanbanTask";
-import { type WorkOrders } from "~/server/types/IOrders";
-import { type TasksOnColumns } from "~/server/types/ITasks";
-import { type Column } from "~/server/types/IColumns";
-import { CreateTaskDialog } from "./createTask";
-import { type Employee } from "~/server/types/IEmployee";
-import { type Tool } from "~/server/types/ITool";
-import { type Part } from "~/server/types/IPart";
-import { useRouter } from "next/navigation";
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import KanbanTask from './KanbanTask';
+import { type WorkOrders } from '~/server/types/IOrders';
+import { type TasksOnColumns } from '~/server/types/ITasks';
+import { type Column } from '~/server/types/IColumns';
+import { CreateTaskDialog } from './createTask';
+import { type Employee } from '~/server/types/IEmployee';
+import { type Tool } from '~/server/types/ITool';
+import { type Part } from '~/server/types/IPart';
+import { useRouter } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
 
 function KanbanBoard(props: {
   workOrder: WorkOrders;
@@ -32,15 +28,7 @@ function KanbanBoard(props: {
   parts: Part[];
   triggerRefresh: () => void;
 }) {
-  const {
-    workOrder,
-    tasksOnColumns,
-    allColumns,
-    employees,
-    tools,
-    parts,
-    triggerRefresh,
-  } = props;
+  const { workOrder, tasksOnColumns, allColumns, employees, tools, parts, triggerRefresh } = props;
   const router = useRouter();
 
   useEffect(() => {
@@ -50,19 +38,17 @@ function KanbanBoard(props: {
   }, [tasksOnColumns, triggerRefresh, allColumns]);
 
   const [tasks, setTasks] = useState<TasksOnColumns>(tasksOnColumns);
-  const [columnOrder, setColumnOrder] = useState<string[]>(
-    Object.keys(tasksOnColumns),
-  );
+  const [columnOrder, setColumnOrder] = useState<string[]>(Object.keys(tasksOnColumns));
 
-  const [newColumnName, setNewColumnName] = useState<string>("");
+  const [newColumnName, setNewColumnName] = useState<string>('');
   const [columnList, setColumnList] = useState<Column[]>(allColumns);
   const [isAddingColumn, setIsAddingColumn] = useState<boolean>(false);
 
   const addColumn = async () => {
-    if (newColumnName.trim() !== "" && !tasks[newColumnName]) {
+    if (newColumnName.trim() !== '' && !tasks[newColumnName]) {
       setTasks((prev) => ({ ...prev, [newColumnName]: [] }));
       setColumnOrder([...columnOrder, newColumnName]);
-      setNewColumnName("");
+      setNewColumnName('');
       setIsAddingColumn(false);
 
       const newColumn = {
@@ -72,31 +58,31 @@ function KanbanBoard(props: {
       };
 
       try {
-        const response = await fetch("/api/createColumn", {
-          method: "POST",
+        const response = await fetch('/api/createColumn', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(newColumn),
         });
         if (response.ok) {
-          console.log("Column added successfully:", newColumnName);
+          console.log('Column added successfully:', newColumnName);
           const responseData = await response.json();
           if (responseData.data) {
             const newColumnData = responseData.data;
             setColumnList([...columnList, newColumnData[0]]);
           }
         } else {
-          console.error("Failed to add column:", response.statusText);
+          console.error('Failed to add column:', response.statusText);
         }
       } catch (error) {
-        console.error("Error adding column:", error);
+        console.error('Error adding column:', error);
       }
     }
   };
 
   const cancelAddColumn = () => {
-    setNewColumnName("");
+    setNewColumnName('');
     setIsAddingColumn(false);
   };
 
@@ -110,7 +96,7 @@ function KanbanBoard(props: {
 
     if (!destination) return;
 
-    if (type === "COLUMN") {
+    if (type === 'COLUMN') {
       const newColumnOrder = Array.from(columnOrder);
       const [movedColumn] = newColumnOrder.splice(source.index, 1) as [string];
       newColumnOrder.splice(destination.index, 0, movedColumn);
@@ -123,19 +109,19 @@ function KanbanBoard(props: {
       });
 
       try {
-        const response = await fetch("/api/updateColumns", {
-          method: "POST",
+        const response = await fetch('/api/updateColumns', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(newestColumnOrder),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to update columns");
+          throw new Error('Failed to update columns');
         }
       } catch (error) {
-        console.error("Error updating columns:", error);
+        console.error('Error updating columns:', error);
       }
       return;
     }
@@ -144,12 +130,8 @@ function KanbanBoard(props: {
     const finishColumnName = destination.droppableId;
     const finishColumnId = getColumnIdByName(finishColumnName);
 
-    const startTasks = tasks[startColumnId]
-      ? Array.from(tasks[startColumnId]!)
-      : [];
-    const finishTasks = tasks[finishColumnName]
-      ? Array.from(tasks[finishColumnName]!)
-      : [];
+    const startTasks = tasks[startColumnId] ? Array.from(tasks[startColumnId]!) : [];
+    const finishTasks = tasks[finishColumnName] ? Array.from(tasks[finishColumnName]!) : [];
 
     const movedTask = startTasks.splice(source.index, 1)[0];
 
@@ -165,22 +147,22 @@ function KanbanBoard(props: {
 
       console.log(
         `API Request: Update task positions in column ${startColumnId} at endpoint /api/updateTaskPositions with data:`,
-        startTasks,
+        startTasks
       );
       try {
-        const response = await fetch("/api/updateTaskPositions", {
-          method: "POST",
+        const response = await fetch('/api/updateTaskPositions', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(startTasks),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to update task positions");
+          throw new Error('Failed to update task positions');
         }
       } catch (error) {
-        console.error("Error updating task positions:", error);
+        console.error('Error updating task positions:', error);
       }
     } else {
       movedTask.column_id = finishColumnId; // Ensure column_id is a number
@@ -198,14 +180,14 @@ function KanbanBoard(props: {
           task_id: movedTask.task_id,
           new_column_id: movedTask.column_id,
           new_position: destination.index,
-        },
+        }
       );
 
       try {
-        const response = await fetch("/api/moveTask", {
-          method: "POST",
+        const response = await fetch('/api/moveTask', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             task_id: movedTask.task_id,
@@ -215,15 +197,15 @@ function KanbanBoard(props: {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to move task");
+          throw new Error('Failed to move task');
         }
         router.refresh();
       } catch (error) {
-        console.error("Error moving task:", error);
+        console.error('Error moving task:', error);
       }
     }
 
-    console.log("Updated state of columns and tasks:", {
+    console.log('Updated state of columns and tasks:', {
       [startColumnId]: startTasks,
       [finishColumnName]: finishTasks,
     });
@@ -252,9 +234,7 @@ function KanbanBoard(props: {
                         {...provided.dragHandleProps}
                       >
                         <h2 className="break-words text-center text-base font-semibold text-secondary-foreground">
-                          {columnId.length > 27
-                            ? columnId.slice(0, 27) + "..."
-                            : columnId}
+                          {columnId.length > 27 ? columnId.slice(0, 27) + '...' : columnId}
                         </h2>
                       </div>
                       <Droppable droppableId={columnId} type="TASK">
@@ -278,7 +258,7 @@ function KanbanBoard(props: {
                                     className="m-1 mb-4 p-1"
                                   >
                                     <KanbanTask
-                                      key={task.task_id + "KanbanTask"}
+                                      key={task.task_id + 'KanbanTask'}
                                       task={task}
                                       employees={employees}
                                       column_id={getColumnIdByName(columnId)}
@@ -342,13 +322,37 @@ function KanbanBoard(props: {
                       </Button>
                     </div>
                   </>
-                ) : (
+                ) : employees &&
+                  employees.length > 0 &&
+                  tools &&
+                  tools.length > 0 &&
+                  parts &&
+                  parts.length > 0 ? (
                   <Button
                     onClick={() => setIsAddingColumn(true)}
                     className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
                   >
                     + Add Column
                   </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button
+                          disabled
+                          className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
+                        >
+                          + Add Column
+                        </Button>{' '}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Make sure to populate the employees, tools, and parts lists before adding
+                          a new column this will prevent errors when adding a task.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </div>
