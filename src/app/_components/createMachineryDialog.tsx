@@ -25,6 +25,8 @@ import { Calendar } from '~/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { type States } from '~/server/types/IMachinery';
 import { type ILocation } from '~/server/types/ILocation';
+import { useToast } from '~/components/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export function CreateMachineryDialog(props: { locations: ILocation[] }) {
   const { locations } = props;
@@ -49,7 +51,8 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
   // Form validation state
   const [isEditing, setIsEditing] = useState(true);
   const [isMachineryFormValid, setIsMachineryFormValid] = useState(false);
-
+  const { toast } = useToast();
+  const router = useRouter();
   useEffect(() => {
     const isBrandValid = validateBrand(machineryFormValues.brand);
     const isModelValid = validateMachineryModel(machineryFormValues.model);
@@ -109,6 +112,13 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
         },
         body: JSON.stringify(machineryData),
       });
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Machinery created successfully.',
+        });
+        router.refresh();
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -118,7 +128,11 @@ export function CreateMachineryDialog(props: { locations: ILocation[] }) {
       setIsEditing(false);
       return true;
     } catch (error) {
-      console.error('Failed to create machinery:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create machinery.',
+        variant: 'destructive',
+      });
       return false;
     }
   };

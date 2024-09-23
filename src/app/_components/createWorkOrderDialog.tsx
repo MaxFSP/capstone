@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-
+import { useToast } from '~/components/hooks/use-toast';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import {
@@ -30,6 +30,7 @@ export function CreateWorkOrderDialog(props: { users: User[]; machines: Machiner
   const first_user = users[0]!.first_name + ' ' + users[0]!.last_name;
   const [assigned_user, setAssignedUser] = useState(first_user);
   const [machinery, setMachine] = useState(machines[0]!.serial_number);
+  const { toast } = useToast();
 
   const [orderFormValue, setOrderFormValue] = useState({
     name: '',
@@ -76,6 +77,13 @@ export function CreateWorkOrderDialog(props: { users: User[]; machines: Machiner
         },
         body: JSON.stringify(orderFormValue),
       });
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Work order created successfully.',
+        });
+        router.refresh();
+      }
 
       if (!response.ok) {
         throw new Error('Failed to create work order');
@@ -83,7 +91,11 @@ export function CreateWorkOrderDialog(props: { users: User[]; machines: Machiner
 
       return true;
     } catch (error) {
-      console.error('Failed to create work order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create work order.',
+        variant: 'destructive',
+      });
       return false;
     }
   };

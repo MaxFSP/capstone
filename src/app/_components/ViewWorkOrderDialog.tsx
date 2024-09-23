@@ -37,7 +37,7 @@ import { useFormValidation } from '~/hooks/useFormValidation';
 import { workOrderSchema } from '~/server/types/IOrders';
 import LabeledInput from './LabeledInput';
 import { Label } from '~/components/ui/label';
-
+import { useToast } from '~/components/hooks/use-toast';
 type WorkOrderFormData = z.infer<typeof workOrderSchema>;
 
 export function WorkOrderDataViewDialog(props: {
@@ -63,7 +63,7 @@ export function WorkOrderDataViewDialog(props: {
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [hasChanges, setHasChanges] = useState(false);
   const [currentStateBoolean, setCurrentStateBoolean] = useState<boolean>(data.state === 1);
-
+  const { toast } = useToast();
   const { formData, setFormData, isFormValid, errors, validateForm } =
     useFormValidation<WorkOrderFormData>({
       schema: workOrderSchema,
@@ -143,6 +143,10 @@ export function WorkOrderDataViewDialog(props: {
           body: JSON.stringify(updatedFormData),
         });
         if (response.ok) {
+          toast({
+            title: 'Success',
+            description: 'Work order edited successfully.',
+          });
           router.refresh();
         } else {
           console.error('Failed to update work order');

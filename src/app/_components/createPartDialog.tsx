@@ -160,7 +160,7 @@ export default function CreatePartDialog(props: { locations: ILocation[] }) {
           length_unit: length,
           width_unit: width,
           height_unit: height,
-          acquisition_date: date, // Ensure Date object is set
+          acquisition_date: date,
         };
 
         const response = await fetch('/api/createPart', {

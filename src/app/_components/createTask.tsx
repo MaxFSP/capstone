@@ -28,9 +28,6 @@ import {
 } from '~/components/ui/command';
 import { Drawer, DrawerContent, DrawerTrigger } from '~/components/ui/drawer';
 
-import { ScrollArea } from '~/components/ui/scroll-area';
-import { Separator } from '~/components/ui/separator';
-
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -57,6 +54,7 @@ import { useRouter } from 'next/navigation';
 import { Textarea } from '~/components/ui/textarea';
 import { type Tool } from '~/server/types/ITool';
 import { type Part } from '~/server/types/IPart';
+import { useToast } from '~/components/hooks/use-toast';
 
 export function CreateTaskDialog(props: {
   employees: Employee[];
@@ -83,6 +81,7 @@ export function CreateTaskDialog(props: {
   const [partList, setPartList] = useState<Part[]>([]);
   const [toolList, setToolList] = useState<Tool[]>([]);
 
+  const { toast } = useToast();
   const [taskFormValue, setTaskFormValue] = useState({
     title: '',
     description: '',
@@ -161,17 +160,31 @@ export function CreateTaskDialog(props: {
             if (!addToolandPart.ok) {
               throw new Error('Failed to add tools and parts to task');
             }
-            triggerRefresh();
-            router.refresh();
+            if (addToolandPart.ok) {
+              toast({
+                title: 'Success',
+                description: 'Tools and parts added successfully.',
+              });
+              triggerRefresh();
+              router.refresh();
+            }
           } catch (error) {
-            console.error('Failed to add tools and parts to task:', error);
+            toast({
+              title: 'Error',
+              description: 'Failed to add tools and parts to task.',
+              variant: 'destructive',
+            });
           }
         }
       });
 
       return true;
     } catch (error) {
-      console.error('Failed to create work order:', error);
+      toast({
+        title: 'Success',
+        description: 'Task could not be created.',
+      });
+
       return false;
     }
   };
