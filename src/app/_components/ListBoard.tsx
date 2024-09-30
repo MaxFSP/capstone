@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 
-import { type WorkOrders } from '~/server/types/IOrders';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
 import { type TasksOnColumns, type Task } from '~/server/types/ITasks';
 import { type Column } from '~/server/types/IColumns';
 import { type Employee } from '~/server/types/IEmployee';
@@ -22,7 +22,7 @@ import { type Part } from '~/server/types/IPart';
 import KanbanTask from './KanbanTask';
 
 function ListBoard(props: {
-  workOrder: WorkOrders;
+  workOrder: RegularWorkOrder;
   tasksOnColumns: TasksOnColumns;
   allColumns: Column[];
   employees: Employee[];

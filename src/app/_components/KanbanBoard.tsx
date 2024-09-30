@@ -10,7 +10,7 @@ import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import KanbanTask from './KanbanTask';
 import { CreateTaskDialog } from './createTask';
-import { type WorkOrders } from '~/server/types/IOrders';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
 import { type TasksOnColumns } from '~/server/types/ITasks';
 import { type Column } from '~/server/types/IColumns';
 import { type Employee } from '~/server/types/IEmployee';
@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/comp
 import { FiPlus, FiX } from 'react-icons/fi';
 
 function KanbanBoard(props: {
-  workOrder: WorkOrders;
+  workOrder: RegularWorkOrder;
   tasksOnColumns: TasksOnColumns;
   allColumns: Column[];
   employees: Employee[];

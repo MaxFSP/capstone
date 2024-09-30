@@ -1,12 +1,13 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { workColumns, workOrders, workTasks } from "../../db/schema";
-import { eq, inArray } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
-import { type TasksOnColumns } from "~/server/types/ITasks";
-import { type Column } from "~/server/types/IColumns";
+import { db } from '../../db';
+import { workColumns, workOrders, workTasks } from '../../db/schema';
+import { eq, inArray } from 'drizzle-orm';
+import { auth } from '@clerk/nextjs/server';
+import { type TasksOnColumns } from '~/server/types/ITasks';
+import { type Column } from '~/server/types/IColumns';
+import { RegularWorkOrder } from '~/server/types/IOrders';
 
 // Employees Table --------------------------------------------------------------------------------------------
 
@@ -17,7 +18,7 @@ export async function createWorkOrder(
   observations: string,
   start_date: Date,
   assigned_user: number,
-  state: number,
+  state: number
 ) {
   const newEmployee = await db
     .insert(workOrders)
@@ -51,21 +52,20 @@ export async function getWorkOrderById(orderId: number) {
 
 export async function getWorkOrderBySessionId() {
   const user = auth();
-  if (!user.userId) throw new Error("Unauthorized");
+  if (!user.userId) throw new Error('Unauthorized');
   const userId = user.userId;
 
   const getClerkUser = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.clerk_id, userId),
   });
 
-  if (!getClerkUser) throw new Error("The user does not exist");
+  if (!getClerkUser) throw new Error('The user does not exist');
 
   const workOrder = await db.query.workOrders.findMany({
-    where: (workOrders, { eq }) =>
-      eq(workOrders.assigned_user, getClerkUser.user_id),
+    where: (workOrders, { eq }) => eq(workOrders.assigned_user, getClerkUser.user_id),
   });
 
-  return workOrder;
+  return workOrder as RegularWorkOrder[];
 }
 
 // Update Emmployee
@@ -76,7 +76,7 @@ export async function updateWorkOrder(
   observations?: string,
   start_date?: Date,
   assigned_user?: number,
-  state?: number,
+  state?: number
 ) {
   const updatedEmployee = await db
     .update(workOrders)
@@ -114,11 +114,7 @@ export async function deteWorkOrder(order_id: number) {
   return deletedWorkOrder;
 }
 
-export async function workOrderDone(
-  order_id: number,
-  taskIds: number[],
-  columnIds: number[],
-) {
+export async function workOrderDone(order_id: number, taskIds: number[], columnIds: number[]) {
   try {
     const updatedWorkOrder = await db
       .update(workOrders)
@@ -144,6 +140,6 @@ export async function workOrderDone(
       .where(inArray(workColumns.column_id, columnIds))
       .returning();
   } catch (error) {
-    console.error("Error updating work order:", error);
+    console.error('Error updating work order:', error);
   }
 }
