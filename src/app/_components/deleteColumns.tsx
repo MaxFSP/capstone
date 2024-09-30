@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Button } from "~/components/ui/button";
+import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -9,11 +9,13 @@ import {
   AlertDialogTrigger,
   AlertDialogDescription,
   AlertDialogCancel,
-} from "~/components/ui/alert-dialog";
+} from '~/components/ui/alert-dialog';
 
-import { type Column } from "~/server/types/IColumns";
+import { type Column } from '~/server/types/IColumns';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
+
+import { FiTrash2 } from 'react-icons/fi';
 
 export default function DeleteColumnDialog(props: {
   columnsWorkOrder: Column[];
@@ -22,17 +24,17 @@ export default function DeleteColumnDialog(props: {
   const router = useRouter();
 
   const deleteColumns = async (columnId: number) => {
-    const response = await fetch("/api/deleteColumn", {
-      method: "POST",
+    const response = await fetch('/api/deleteColumn', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(columnId),
     });
     if (response.ok) {
       router.refresh();
     } else {
-      console.error("Failed to delete columns:", response.statusText);
+      console.error('Failed to delete columns:', response.statusText);
     }
   };
 
@@ -42,9 +44,11 @@ export default function DeleteColumnDialog(props: {
       <AlertDialogTrigger asChild>
         <Button
           variant="destructive"
-          className="w-full bg-destructive text-destructive-foreground sm:w-auto"
+          className="flex items-center justify-center space-x-0 md:space-x-2 bg-destructive text-destructive-foreground hover:bg-destructive-dark px-4 py-2"
+          aria-label="Delete Column"
         >
-          Delete Columns
+          <span className="hidden md:inline">Delete Column</span>
+          <FiTrash2 className="md:hidden" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
@@ -53,22 +57,20 @@ export default function DeleteColumnDialog(props: {
             Delete Columns
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            Make sure you are not deleting any column with tasks. If you are,
-            they will be deleted as well.
+            Make sure you are not deleting any column with tasks. If you are, they will be deleted
+            as well.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
           <h3 className="text-lg text-primary">Columns to be deleted:</h3>
           <div>
             {columnsWorkOrder.map((column) => (
-              <div key={column.column_id + "column" + column.title}>
+              <div key={column.column_id + 'column' + column.title}>
                 <div className="mt-2 flex flex-col items-center justify-between border-b border-border pb-2 sm:flex-row">
-                  <p className="text-base font-semibold text-foreground">
-                    {column.title}
-                  </p>
+                  <p className="text-base font-semibold text-foreground">{column.title}</p>
                   <div className="mt-2 flex items-center gap-2 sm:mt-0">
                     <Button
-                      variant={"destructive"}
+                      variant={'destructive'}
                       className="w-full bg-destructive text-destructive-foreground sm:w-auto"
                       onClick={() => deleteColumns(column.column_id)}
                     >

@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
+import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
+import Autoplay from 'embla-carousel-autoplay';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,13 +12,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "~/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from '~/components/ui/carousel';
 import {
   Dialog,
   DialogClose,
@@ -28,43 +24,31 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { type ToolCondition, type Tool } from "~/server/types/ITool";
-import { type ILocation } from "~/server/types/ILocation";
-import { UploadButton } from "../utils/uploadthing";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { type Image } from "~/server/types/IImages";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { type ToolCondition, type Tool } from '~/server/types/ITool';
+import { type ILocation } from '~/server/types/ILocation';
+import { UploadButton } from '../utils/uploadthing';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { type Image } from '~/server/types/IImages';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
 
-export function SmallToolDialog(props: {
-  data: Tool;
-  index: number;
-  locations: ILocation[];
-}) {
+export function SmallToolDialog(props: { data: Tool; index: number; locations: ILocation[] }) {
   const { index, data, locations } = props;
   const current_date = data.acquisition_date;
   const router = useRouter();
   const current_location: string = locations.find(
-    (location) => data.location_name === location.name,
+    (location) => data.location_name === location.name
   )!.name;
   const curret_condition = data.condition;
-  const [conditionValue, setConditionValue] = useState<ToolCondition>(
-    data.condition as ToolCondition,
-  );
-  const [dateValue, setDateValue] = useState<Date>(
-    new Date(data.acquisition_date),
-  );
+  const [conditionValue, setConditionValue] = useState<ToolCondition>(data.condition);
+  const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
 
   const [locationValue, setLocationValue] = useState<string>(current_location);
   const [isEditing, setIsEditing] = useState(false);
@@ -77,7 +61,7 @@ export function SmallToolDialog(props: {
     if (!isEditing) {
       setLocationValue(current_location);
       setFormData({ ...data });
-      setConditionValue(data.condition as ToolCondition);
+      setConditionValue(data.condition);
       setDateValue(data.acquisition_date);
     }
   }, [isEditing, data]);
@@ -92,16 +76,13 @@ export function SmallToolDialog(props: {
   };
 
   const validateForm = () => {
-    const isDataValid =
-      formData.tool_id !== null && formData.tool_id !== undefined;
+    const isDataValid = formData.tool_id !== null && formData.tool_id !== undefined;
     setIsFormValid(isDataValid);
   };
 
   const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
+    const dateWithoutTime = dateValue.toISOString().split('T')[0];
+    const dateWithoutTimeCurrent = new Date(current_date).toISOString().split('T')[0];
 
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
@@ -133,12 +114,12 @@ export function SmallToolDialog(props: {
     if (isFormValid && hasChanges) {
       try {
         formData.location_id = locations.find(
-          (location) => location.name === locationValue,
+          (location) => location.name === locationValue
         )!.location_id;
-        const response = await fetch("/api/updateTool", {
-          method: "POST",
+        const response = await fetch('/api/updateTool', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(formData),
         });
@@ -148,7 +129,7 @@ export function SmallToolDialog(props: {
           // console.error("Failed to update tool:", result.error);
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error('Error updating tool:', error);
       }
     }
   };
@@ -172,17 +153,13 @@ export function SmallToolDialog(props: {
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">
-              Condition
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Condition</p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground">{data.condition}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">
-              Quantity
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Quantity</p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground">{data.quantity}</span>
             </div>
@@ -191,9 +168,7 @@ export function SmallToolDialog(props: {
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto rounded-lg border border-border bg-background lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large text-primary">
-            Edit Tool
-          </DialogTitle>
+          <DialogTitle className="text-large text-primary">Edit Tool</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Anyone who has this link will be able to view this.
           </DialogDescription>
@@ -222,7 +197,7 @@ export function SmallToolDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Tool",
+                            type: 'Tool',
                           }}
                         />
                       </div>
@@ -310,18 +285,14 @@ export function SmallToolDialog(props: {
               <Popover>
                 <PopoverTrigger asChild disabled={!isEditing}>
                   <Button
-                    variant={"outline"}
+                    variant={'outline'}
                     className={cn(
-                      "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
-                      !dateValue && "text-muted-foreground",
+                      'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
+                      !dateValue && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 text-foreground" />
-                    {dateValue ? (
-                      format(dateValue, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {dateValue ? format(dateValue, 'PPP') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -352,7 +323,7 @@ export function SmallToolDialog(props: {
               <Label>Observations</Label>
               <Input
                 name="observations"
-                value={formData.observations ?? "N/A"}
+                value={formData.observations ?? 'N/A'}
                 readOnly={!isEditing}
                 onChange={handleChange}
                 disabled={!isEditing}
@@ -373,15 +344,9 @@ export function SmallToolDialog(props: {
                 <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={locationValue}
-                    onValueChange={setLocationValue}
-                  >
+                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                     {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                      >
+                      <DropdownMenuRadioItem key={location.name} value={location.name}>
                         {location.name}
                       </DropdownMenuRadioItem>
                     ))}
@@ -402,22 +367,12 @@ export function SmallToolDialog(props: {
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={conditionValue}
-                    onValueChange={(value) =>
-                      setConditionValue(value as ToolCondition)
-                    }
+                    onValueChange={(value) => setConditionValue(value as ToolCondition)}
                   >
-                    <DropdownMenuRadioItem value="Good">
-                      Good
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Bad">
-                      Bad
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Excellent">
-                      Excellent
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Poor">
-                      Poor
-                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Good">Good</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Bad">Bad</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Excellent">Excellent</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Poor">Poor</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -458,7 +413,7 @@ export function SmallToolDialog(props: {
             onClick={isEditing ? handleCancelClick : handleEditClick}
             className="bg-primary text-primary-foreground"
           >
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
             <>

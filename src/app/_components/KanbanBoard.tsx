@@ -9,15 +9,16 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import KanbanTask from './KanbanTask';
+import { CreateTaskDialog } from './createTask';
 import { type WorkOrders } from '~/server/types/IOrders';
 import { type TasksOnColumns } from '~/server/types/ITasks';
 import { type Column } from '~/server/types/IColumns';
-import { CreateTaskDialog } from './createTask';
 import { type Employee } from '~/server/types/IEmployee';
 import { type Tool } from '~/server/types/ITool';
 import { type Part } from '~/server/types/IPart';
 import { useRouter } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
+import { FiPlus, FiX } from 'react-icons/fi';
 
 function KanbanBoard(props: {
   workOrder: WorkOrders;
@@ -42,14 +43,23 @@ function KanbanBoard(props: {
 
   const [newColumnName, setNewColumnName] = useState<string>('');
   const [columnList, setColumnList] = useState<Column[]>(allColumns);
-  const [isAddingColumn, setIsAddingColumn] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+    setNewColumnName('');
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setNewColumnName('');
+  };
 
   const addColumn = async () => {
     if (newColumnName.trim() !== '' && !tasks[newColumnName]) {
       setTasks((prev) => ({ ...prev, [newColumnName]: [] }));
       setColumnOrder([...columnOrder, newColumnName]);
-      setNewColumnName('');
-      setIsAddingColumn(false);
+      closeModal();
 
       const newColumn = {
         title: newColumnName,
@@ -79,11 +89,6 @@ function KanbanBoard(props: {
         console.error('Error adding column:', error);
       }
     }
-  };
-
-  const cancelAddColumn = () => {
-    setNewColumnName('');
-    setIsAddingColumn(false);
   };
 
   const getColumnIdByName = (name: string): number => {
@@ -213,152 +218,223 @@ function KanbanBoard(props: {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
-        {(provided) => (
-          <div className="flex h-full w-full ">
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="flex h-full w-fit flex-col space-y-4 p-4 lg:flex-row lg:space-x-4 lg:space-y-0"
+      <div className="relative flex flex-col flex-grow">
+        {/* Add Column Button - Top Right for Larger Screens */}
+        <div className="absolute top-4 right-4 hidden sm:block">
+          {employees &&
+          employees.length > 0 &&
+          tools &&
+          tools.length > 0 &&
+          parts &&
+          parts.length > 0 ? (
+            <Button
+              onClick={openModal}
+              className="bg-primary py-2 px-4 sm:py-3 sm:px-6 text-primary-foreground flex items-center space-x-2 rounded-md shadow-lg hover:bg-primary-dark transition-colors duration-200 ease-in-out"
+              aria-label="Add Column"
             >
-              {columnOrder.map((columnId, index) => (
-                <Draggable draggableId={columnId} index={index} key={columnId}>
-                  {(provided) => (
-                    <div
-                      {...provided.draggableProps}
-                      ref={provided.innerRef}
-                      className="flex min-w-[300px] max-w-[400px] flex-col rounded-sm border border-border p-1 shadow-md"
-                    >
-                      <div
-                        className="mb-4 rounded bg-secondary p-4 shadow"
-                        {...provided.dragHandleProps}
-                      >
-                        <h2 className="break-words text-center text-base font-semibold text-secondary-foreground">
-                          {columnId.length > 27 ? columnId.slice(0, 27) + '...' : columnId}
-                        </h2>
-                      </div>
-                      <Droppable droppableId={columnId} type="TASK">
-                        {(provided) => (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            className="mb-2 flex-grow overflow-auto"
-                          >
-                            {tasks[columnId]?.map((task, index) => (
-                              <Draggable
-                                draggableId={task.task_id.toString()}
-                                index={index}
-                                key={task.task_id}
-                              >
-                                {(provided) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className="m-1 mb-4 p-1"
-                                  >
-                                    <KanbanTask
-                                      key={task.task_id + 'KanbanTask'}
-                                      task={task}
-                                      employees={employees}
-                                      column_id={getColumnIdByName(columnId)}
-                                      tools={tools}
-                                      parts={parts}
-                                      onGone={() => {
-                                        const newTasks = { ...tasks };
-                                        delete newTasks[columnId]![index];
-                                        setTasks(newTasks);
-                                      }}
-                                      triggerRefresh={() => {
-                                        triggerRefresh();
-                                      }}
-                                    />
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                            <div className="mt-2 w-full text-center">
-                              <CreateTaskDialog
-                                employees={employees}
-                                pos={tasks[columnId]?.length ?? 0}
-                                column_id={getColumnIdByName(columnId)}
-                                tools={tools}
-                                parts={parts}
-                                triggerRefresh={() => {
-                                  triggerRefresh();
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </Droppable>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-              <div className="flex h-full min-w-[300px] max-w-[400px] flex-col items-center justify-center">
-                {isAddingColumn ? (
-                  <>
-                    <Input
-                      placeholder="New Column Name"
-                      value={newColumnName}
-                      onChange={(e) => setNewColumnName(e.target.value)}
-                      className="border border-border bg-background text-foreground"
-                    />
-                    <div className="mt-4 flex">
-                      <Button
-                        onClick={addColumn}
-                        className="mr-2 bg-primary text-primary-foreground"
-                      >
-                        Add Column
-                      </Button>
-                      <Button
-                        onClick={cancelAddColumn}
-                        className="bg-destructive text-destructive-foreground"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </>
-                ) : employees &&
-                  employees.length > 0 &&
-                  tools &&
-                  tools.length > 0 &&
-                  parts &&
-                  parts.length > 0 ? (
+              <FiPlus className="text-xl" />
+              <span className="hidden sm:inline text-sm sm:text-base">Add Column</span>
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
                   <Button
-                    onClick={() => setIsAddingColumn(true)}
-                    className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
+                    disabled
+                    className="bg-primary py-2 px-4 sm:py-3 sm:px-6 text-primary-foreground cursor-not-allowed flex items-center space-x-2 rounded-md shadow-lg"
+                    aria-label="Add Column Disabled"
                   >
-                    + Add Column
+                    <FiPlus className="text-xl" />
+                    <span className="hidden sm:inline text-sm sm:text-base">Add Column</span>
                   </Button>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Button
-                          disabled
-                          className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground"
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Populate employees, tools, and parts lists before adding a new column to prevent
+                    errors when adding a task.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
+        {/* Floating Action Button for Mobile Devices */}
+        <div className="fixed bottom-6 right-6 sm:hidden">
+          {employees &&
+          employees.length > 0 &&
+          tools &&
+          tools.length > 0 &&
+          parts &&
+          parts.length > 0 ? (
+            <Button
+              onClick={openModal}
+              className="bg-primary text-primary-foreground flex items-center justify-center w-14 h-14 rounded-full shadow-lg hover:bg-primary-dark transition-colors duration-200 ease-in-out"
+              aria-label="Add Column"
+            >
+              <FiPlus className="text-2xl" />
+            </Button>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    disabled
+                    className="bg-primary text-primary-foreground cursor-not-allowed flex items-center justify-center w-14 h-14 rounded-full shadow-lg"
+                    aria-label="Add Column Disabled"
+                  >
+                    <FiPlus className="text-2xl" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    Populate employees, tools, and parts lists before adding a new column to prevent
+                    errors when adding a task.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
+        {/* Columns Section */}
+        <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
+          {(provided) => (
+            <div className="flex flex-grow w-full overflow-x-auto custom-scrollbar p-8">
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="flex flex-row space-x-4"
+              >
+                {columnOrder.map((columnId, index) => (
+                  <Draggable draggableId={columnId} index={index} key={columnId}>
+                    {(provided) => (
+                      <div
+                        {...provided.draggableProps}
+                        ref={provided.innerRef}
+                        className="flex-shrink-0 w-[250px] sm:w-[250px] md:w-[350px] flex flex-col rounded-md border border-border p-4 shadow-md  overflow-x-hidden"
+                      >
+                        {/* Column Header without h2 */}
+                        <div
+                          className="mb-4 rounded bg-secondary p-3 shadow cursor-pointer flex items-center justify-center"
+                          {...provided.dragHandleProps}
                         >
-                          + Add Column
-                        </Button>{' '}
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Make sure to populate the employees, tools, and parts lists before adding
-                          a new column this will prevent errors when adding a task.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                          <span className="break-words text-sm sm:text-base font-semibold text-secondary-foreground text-center">
+                            {columnId.length > 20 ? `${columnId.slice(0, 20)}...` : columnId}
+                          </span>
+                        </div>
+
+                        {/* Tasks List */}
+                        <Droppable droppableId={columnId} type="TASK">
+                          {(provided) => (
+                            <div
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                              className="flex-grow overflow-y-auto overflow-x-hidden custom-scrollbar"
+                            >
+                              {tasks[columnId]?.map((task, index) => (
+                                <Draggable
+                                  draggableId={task.task_id.toString()}
+                                  index={index}
+                                  key={task.task_id}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      className="m-1 mb-4 p-1"
+                                    >
+                                      <KanbanTask
+                                        key={`${task.task_id}-KanbanTask`}
+                                        task={task}
+                                        employees={employees}
+                                        column_id={getColumnIdByName(columnId)}
+                                        tools={tools}
+                                        parts={parts}
+                                        onGone={() => {
+                                          const newTasks = { ...tasks };
+                                          newTasks[columnId]?.splice(index, 1);
+                                          setTasks(newTasks);
+                                        }}
+                                        triggerRefresh={triggerRefresh}
+                                        type="kanban"
+                                      />
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+
+                              {/* Create Task Dialog */}
+                              <div className="mt-2 w-full text-center">
+                                <CreateTaskDialog
+                                  employees={employees}
+                                  pos={tasks[columnId]?.length ?? 0}
+                                  column_id={getColumnIdByName(columnId)}
+                                  tools={tools}
+                                  parts={parts}
+                                  triggerRefresh={triggerRefresh}
+                                  type="kanban"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </Droppable>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            </div>
+          )}
+        </Droppable>
+
+        {/* Custom Modal for Adding Column */}
+        {isModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            {/* Overlay */}
+            <div className="absolute inset-0  opacity-50" onClick={closeModal}></div>
+
+            {/* Modal Content */}
+            <div className=" rounded-lg shadow-lg z-10 w-11/12 max-w-md mx-auto p-6 relative">
+              {/* Close Button */}
+              <button
+                className="absolute top-3 right-3 text-primary-foreground hover:text-primary-dark"
+                onClick={closeModal}
+                aria-label="Close Add Column Modal"
+              >
+                <FiX size={24} />
+              </button>
+
+              <h3 className="text-xl font-semibold mb-4 text-primary-foreground">Add New Column</h3>
+              <Input
+                placeholder="Column Name"
+                value={newColumnName}
+                onChange={(e) => setNewColumnName(e.target.value)}
+                className="w-full border border-border bg-background text-primary-foreground mb-4 rounded-md px-3 py-2"
+              />
+              <div className="flex justify-end space-x-2">
+                <Button
+                  onClick={closeModal}
+                  className="bg-primary text-primary-foreground hover:bg-primary-dark px-4 py-2 rounded-md transition-colors duration-200 ease-in-out"
+                  aria-label="Cancel Add Column"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={addColumn}
+                  className="bg-primary text-primary-foreground hover:bg-primary-dark px-4 py-2 rounded-md transition-colors duration-200 ease-in-out"
+                  aria-label="Confirm Add Column"
+                >
+                  Add
+                </Button>
               </div>
             </div>
           </div>
         )}
-      </Droppable>
+      </div>
     </DragDropContext>
   );
 }

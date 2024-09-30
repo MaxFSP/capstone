@@ -49,7 +49,7 @@ export const machineryStock = createTable(
     brand: text('brand').notNull(),
     model: text('model').notNull(),
     year: integer('year').notNull(),
-    serial_number: text('serial_number').notNull(),
+    serial_number: text('serial_number').unique().notNull(), // SERIAL SHOULD BE UNIQUE DO THIS CHANGE
     acquisition_date: timestamp('acquisition_date').notNull(),
     location_id: serial('location_id').references(() => locations.location_id),
     observations: text('observations'),

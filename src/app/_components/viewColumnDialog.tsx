@@ -18,6 +18,8 @@ import { Input } from '~/components/ui/input';
 
 import { useState } from 'react';
 
+import { FiEdit2 } from 'react-icons/fi';
+
 export default function EditColumnDialog(props: {
   columnsWorkOrder: Column[];
   triggerRefresh: () => void;
@@ -72,9 +74,10 @@ export default function EditColumnDialog(props: {
       <AlertDialogTrigger asChild>
         <Button
           variant="outline"
-          className="w-full border border-border bg-background text-foreground sm:w-auto"
+          className="flex items-center justify-center space-x-0 md:space-x-2 bg-secondary text-secondary-foreground hover:bg-secondary-dark px-4 py-2"
         >
-          Edit Columns
+          <span className="hidden md:inline">Edit Columns</span>
+          <FiEdit2 className="md:hidden" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">

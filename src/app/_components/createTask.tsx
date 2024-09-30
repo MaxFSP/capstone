@@ -62,9 +62,10 @@ export function CreateTaskDialog(props: {
   column_id: number;
   tools: Tool[];
   parts: Part[];
+  type: string;
   triggerRefresh: () => void;
 }) {
-  const { employees, pos, column_id, tools, parts, triggerRefresh } = props;
+  const { employees, pos, column_id, tools, parts, triggerRefresh, type } = props;
   const router = useRouter();
   const [assigned_employee, setAssignedEmployee] = useState(
     employees[0]!.firstName + ' ' + employees[0]!.lastName
@@ -219,9 +220,19 @@ export function CreateTaskDialog(props: {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="h-full min-w-[300px] max-w-[400px] bg-primary p-4 text-primary-foreground hover:bg-primary/90">
-          + Add Task
-        </Button>
+        {type === 'kanban' ? (
+          <Button className="bg-primary text-primary-foreground hover:bg-primary-dark px-4 py-2 rounded-md transition-colors duration-200 ease-in-out flex items-center space-x-2">
+            + Add Task
+          </Button>
+        ) : type === 'edit' ? (
+          <Button variant="outline" size="sm">
+            Open Task Information
+          </Button>
+        ) : (
+          <Button className="bg-primary text-primary-foreground hover:bg-primary-dark px-4 py-2 rounded-md transition-colors duration-200 ease-in-out flex items-center space-x-2">
+            + Add Task
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto bg-background text-foreground lg:max-w-2xl">
         <AlertDialogHeader>

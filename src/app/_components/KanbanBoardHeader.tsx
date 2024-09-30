@@ -1,12 +1,16 @@
-"use client";
-import { Button } from "~/components/ui/button";
-import { type WorkOrders } from "~/server/types/IOrders";
-import { useRouter } from "next/navigation";
-import DeleteColumnDialog from "./deleteColumns";
-import { type Column } from "~/server/types/IColumns";
-import EditColumnDialog from "./viewColumnDialog";
-import WorkOrderDoneDialog from "./WorkOrderDoneDialog";
-import { type TasksOnColumns } from "~/server/types/ITasks";
+'use client';
+
+import { Button } from '~/components/ui/button';
+import { type WorkOrders } from '~/server/types/IOrders';
+import { useRouter } from 'next/navigation';
+import DeleteColumnDialog from './deleteColumns';
+import { type Column } from '~/server/types/IColumns';
+import EditColumnDialog from './viewColumnDialog';
+import WorkOrderDoneDialog from './WorkOrderDoneDialog';
+import { type TasksOnColumns } from '~/server/types/ITasks';
+
+// Import icons from React Icons
+import { FiRefreshCcw, FiTrash2, FiEdit2, FiCheck } from 'react-icons/fi';
 
 export default function KanbanBoardHeader(props: {
   workOrder: WorkOrders;
@@ -18,35 +22,38 @@ export default function KanbanBoardHeader(props: {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-      <div>
+    <div className="flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between md:items-center">
+      {/* Title Section */}
+      <div className="text-center md:text-left">
         <h1 className="mb-2 text-xl font-bold text-foreground md:text-2xl">
-          {workOrder.name + " - " + workOrder.order_id}
+          {workOrder.name + ' - ' + workOrder.order_id}
         </h1>
-        <h1 className="mb-2 text-xl font-bold text-foreground md:text-2xl">
-          Dashboard
-        </h1>
+        <h1 className="mb-2 text-xl font-bold text-foreground md:text-2xl">Dashboard</h1>
       </div>
-      <div className="flex flex-col items-start gap-2 md:flex-row md:items-center">
+
+      {/* Buttons Section */}
+      <div className="flex flex-row items-center gap-2 justify-center">
+        {/* Update Page Button */}
         <Button
-          className="w-full bg-primary text-primary-foreground sm:w-auto"
+          className="flex items-center justify-center space-x-0 md:space-x-2 bg-primary text-primary-foreground hover:bg-primary-dark px-4 py-2"
           onClick={() => {
             triggerRefresh(); // Trigger the refresh in DashboardPage
-            router.refresh(); // Optional: Keep this if you want to re-fetch data
+            router.refresh(); // Optional: Re-fetch data
           }}
+          aria-label="Update Page"
         >
-          Update page
+          {/* Show text on medium and larger screens, icon on small screens */}
+          <span className="hidden md:inline">Update Page</span>
+          <FiRefreshCcw className="md:hidden text-xl" />
         </Button>
 
-        <DeleteColumnDialog
-          triggerRefresh={triggerRefresh}
-          columnsWorkOrder={columnsWorkOrder}
-        />
+        {/* Delete Column Dialog Button */}
+        <DeleteColumnDialog triggerRefresh={triggerRefresh} columnsWorkOrder={columnsWorkOrder} />
 
-        <EditColumnDialog
-          triggerRefresh={triggerRefresh}
-          columnsWorkOrder={columnsWorkOrder}
-        />
+        {/* Edit Column Dialog Button */}
+        <EditColumnDialog triggerRefresh={triggerRefresh} columnsWorkOrder={columnsWorkOrder} />
+
+        {/* Work Order Done Dialog Button */}
         <WorkOrderDoneDialog
           triggerRefresh={triggerRefresh}
           workOrder={workOrder}

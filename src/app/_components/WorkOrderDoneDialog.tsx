@@ -18,6 +18,7 @@ import { type TasksOnColumns } from '~/server/types/ITasks';
 import { Label } from '~/components/ui/label';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { useToast } from '~/components/hooks/use-toast';
+import { FiCheck } from 'react-icons/fi';
 
 export default function WorkOrderDoneDialog(props: {
   columnsWorkOrder: Column[];
@@ -86,10 +87,12 @@ export default function WorkOrderDoneDialog(props: {
       <AlertDialogTrigger asChild>
         <Button
           variant="secondary"
-          className="w-full bg-secondary text-secondary-foreground sm:w-auto"
+          className="flex items-center justify-center space-x-0 md:space-x-2 bg-success text-success-foreground hover:bg-success-dark px-4 py-2"
           disabled={isDone}
+          aria-label="Mark Work Order as Done"
         >
-          Mark as done
+          <span className="hidden md:inline">Mark as done</span>
+          <FiCheck className="md:hidden" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">

@@ -25,6 +25,7 @@ export async function getFullName(): Promise<string> {
   if (!user.userId) throw new Error('Unauthorized');
 
   const userData = await currentUser();
+
   if (!userData) throw new Error('User not found');
 
   const userName: string = userData.firstName + ' ' + userData.lastName;
