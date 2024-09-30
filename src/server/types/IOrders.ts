@@ -1,11 +1,10 @@
-import { z } from "zod";
-
+import { z } from 'zod';
 
 export const workOrderSchema = z.object({
   order_id: z.number().nonnegative(),
-  name: z.string().min(1, "Name is required"),
-  machine_serial: z.string().min(1, "Machine serial is required"),
-  userName: z.string().min(1, "User name is required"),
+  name: z.string().min(1, 'Name is required'),
+  machine_serial: z.string().min(1, 'Machine serial is required'),
+  userName: z.string().min(1, 'User name is required'),
   observations: z.string().nullable(),
   start_date: z.date(),
   end_date: z.date().nullable(),
@@ -14,7 +13,29 @@ export const workOrderSchema = z.object({
   assigned_user: z.number(),
 });
 
+// created_at: Date;
+//   name: string;
+//   machine_id: number;
+//   observations: string | null;
+//   state: number;
+//   order_id: number;
+//   start_date: Date;
+//   end_date: Date | null;
+//   assigned_user: number;
 
+export const regularWorkOrderSchema = z.object({
+  created_at: z.date(),
+  name: z.string(),
+  machine_id: z.number(),
+  observations: z.string().nullable(),
+  state: z.number().int().min(0).max(1),
+  order_id: z.number(),
+  start_date: z.date(),
+  end_date: z.date().nullable(),
+  assigned_user: z.number(),
+});
+
+export type RegularWorkOrder = z.infer<typeof regularWorkOrderSchema>;
 export type WorkOrders = z.infer<typeof workOrderSchema>;
 
 export const workOrdersWithUserSchema = workOrderSchema.extend({

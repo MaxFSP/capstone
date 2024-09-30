@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '~/components/ui/button';
-import { type WorkOrders } from '~/server/types/IOrders';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
 import { useRouter } from 'next/navigation';
 import DeleteColumnDialog from './deleteColumns';
 import { type Column } from '~/server/types/IColumns';
@@ -13,7 +13,7 @@ import { type TasksOnColumns } from '~/server/types/ITasks';
 import { FiRefreshCcw, FiTrash2, FiEdit2, FiCheck } from 'react-icons/fi';
 
 export default function KanbanBoardHeader(props: {
-  workOrder: WorkOrders;
+  workOrder: RegularWorkOrder;
   triggerRefresh: () => void;
   tasksOnColumns: TasksOnColumns;
   columnsWorkOrder: Column[];

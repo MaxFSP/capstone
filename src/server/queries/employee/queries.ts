@@ -4,6 +4,7 @@ import 'server-only';
 import { db } from '../../db';
 import { employees } from '../../db/schema';
 import { eq } from 'drizzle-orm';
+import { Employee } from '~/server/types/IEmployee';
 
 // Employees Table --------------------------------------------------------------------------------------------
 
@@ -39,7 +40,7 @@ export async function getEmployees() {
   const allEmployees = await db.query.employees.findMany({
     orderBy: (employees, { asc }) => asc(employees.employee_id),
   });
-  return allEmployees;
+  return allEmployees as Employee[];
 }
 
 export async function getEmployeeById(employeeId: number) {

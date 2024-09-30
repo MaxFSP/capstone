@@ -1,17 +1,18 @@
 'use client';
 
-import WorkOrderView from './WorkOrderView';
 import { type TasksOnColumns } from '~/server/types/ITasks';
 import { type Column } from '~/server/types/IColumns';
 import KanbanBoardHeader from './KanbanBoardHeader';
 import { type Employee } from '~/server/types/IEmployee';
-import { type WorkOrders } from '~/server/types/IOrders';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
 import { type Part } from '~/server/types/IPart';
 import { type Tool } from '~/server/types/ITool';
 import { useState, useEffect } from 'react';
+import KanbanBoard from './KanbanBoard';
+import ListBoard from './ListBoard';
 
 export default function DashboardView(props: {
-  workOrder: WorkOrders | undefined;
+  workOrder: RegularWorkOrder | undefined;
   tasksOnColumns: TasksOnColumns;
   columnsWorkOrder: Column[];
   employees: Employee[];
@@ -19,6 +20,7 @@ export default function DashboardView(props: {
   parts: Part[];
 }) {
   const { workOrder, tasksOnColumns, columnsWorkOrder, employees, tools, parts } = props;
+  const [boardType, setBoardType] = useState('list');
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -38,7 +40,6 @@ export default function DashboardView(props: {
     });
   }, [tasksOnColumns, columnsWorkOrder]);
 
-  console.log(kanbanData.tasksOnColumns);
   return (
     <div className="min-h-screen p-4 flex flex-col">
       {workOrder ? (
@@ -50,16 +51,29 @@ export default function DashboardView(props: {
             tasksOnColumns={kanbanData.tasksOnColumns}
             columnsWorkOrder={columnsWorkOrder}
           />
-          <WorkOrderView
-            key={`${refreshTrigger}-${workOrder.order_id}`}
-            workOrder={workOrder}
-            tasksOnColumns={kanbanData.tasksOnColumns}
-            allColumns={kanbanData.columnsWorkOrder}
-            employees={employees}
-            tools={tools}
-            parts={parts}
-            triggerRefresh={triggerRefresh}
-          />
+          {boardType === 'kanban' ? (
+            <KanbanBoard
+              key={`${workOrder.order_id}-${refreshTrigger}`}
+              workOrder={workOrder}
+              tasksOnColumns={kanbanData.tasksOnColumns}
+              allColumns={kanbanData.columnsWorkOrder}
+              employees={employees}
+              tools={tools}
+              parts={parts}
+              triggerRefresh={triggerRefresh}
+            />
+          ) : (
+            <ListBoard
+              key={`${workOrder.order_id}-${refreshTrigger}`}
+              workOrder={workOrder}
+              tasksOnColumns={kanbanData.tasksOnColumns}
+              allColumns={kanbanData.columnsWorkOrder}
+              employees={employees}
+              tools={tools}
+              parts={parts}
+              triggerRefresh={triggerRefresh}
+            />
+          )}
         </div>
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center  rounded-lg p-6 shadow-md">

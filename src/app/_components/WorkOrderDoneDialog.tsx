@@ -13,7 +13,7 @@ import {
 import { type Column } from '~/server/types/IColumns';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { type WorkOrders } from '~/server/types/IOrders';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
 import { type TasksOnColumns } from '~/server/types/ITasks';
 import { Label } from '~/components/ui/label';
 import { ScrollArea } from '~/components/ui/scroll-area';
@@ -23,7 +23,7 @@ import { FiCheck } from 'react-icons/fi';
 export default function WorkOrderDoneDialog(props: {
   columnsWorkOrder: Column[];
   tasksOnColumns: TasksOnColumns;
-  workOrder: WorkOrders;
+  workOrder: RegularWorkOrder;
   triggerRefresh: () => void;
 }) {
   const router = useRouter();
