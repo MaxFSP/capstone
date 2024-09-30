@@ -27,21 +27,26 @@ export function PercentageChart({
   tasksOngoing,
 }: PercentageChartProps) {
   const totalTasks = completedTasks + tasksOngoing;
+  const hasNoTasks = totalTasks === 0;
 
   const chartData = React.useMemo(
     () => [
       {
-        status: "completed",
-        tasks: completedTasks,
-        fill: "hsl(var(--chart-1))", // Brighter Caterpillar Yellow
+        status: hasNoTasks ? "No tasks" : "completed",
+        tasks: hasNoTasks ? 1 : completedTasks,
+        fill: "hsl(var(--chart-2))", // Darker Gray
       },
-      {
-        status: "ongoing",
-        tasks: tasksOngoing,
-        fill: "hsl(var(--chart-2))", // Darker Gray for better contrast
-      },
+      ...(hasNoTasks
+        ? []
+        : [
+            {
+              status: "ongoing",
+              tasks: tasksOngoing,
+              fill: "hsl(var(--chart-2))",
+            },
+          ]),
     ],
-    [completedTasks, tasksOngoing],
+    [completedTasks, tasksOngoing, hasNoTasks],
   );
 
   const chartConfig = {
@@ -59,8 +64,8 @@ export function PercentageChart({
   } satisfies ChartConfig;
 
   const completedPercentage = React.useMemo(() => {
-    return ((completedTasks / totalTasks) * 100).toFixed(2);
-  }, [completedTasks, totalTasks]);
+    return hasNoTasks ? "0" : ((completedTasks / totalTasks) * 100).toFixed(2);
+  }, [completedTasks, totalTasks, hasNoTasks]);
 
   return (
     <Card className="mx-auto flex w-full max-w-md flex-col bg-card text-card-foreground md:max-w-full">
@@ -109,7 +114,7 @@ export function PercentageChart({
                           y={(viewBox.cy ?? 0) + 24}
                           className="fill-foreground"
                         >
-                          Completed
+                          {hasNoTasks ? "No Tasks" : "Completed"}
                         </tspan>
                       </text>
                     );

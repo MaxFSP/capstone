@@ -8,6 +8,7 @@ import type { CreateUserResponse } from "~/server/types/api";
 import type { CreateClerkEmployeeWithOrg } from "~/server/types/IClerkUser";
 import type { AddEmployee } from "~/server/types/org";
 import { createUser } from "~/server/queries/user/queries";
+import type { ClerkAPIError } from "@clerk/types";
 
 export async function POST(req: NextRequest) {
   const { userId } = getAuth(req);
@@ -66,10 +67,30 @@ export async function POST(req: NextRequest) {
       message: "User created, role assigned, and user allowed successfully",
     } as CreateUserResponse);
   } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "errors" in error &&
+      Array.isArray(error.errors)
+    ) {
+      const clerkError = error as { errors: ClerkAPIError[] };
+      const usernameError = clerkError.errors.find(
+        (e) => e.code === "form_identifier_exists"
+      );
+  
+      if (usernameError) {
+        return NextResponse.json(
+          { error: usernameError.message || "That username is taken. Please try another." },
+          { status: 422 }
+        );
+      }
+    }
+  
+    // For any other errors
     console.error("Failed to process user:", error);
     return NextResponse.json(
       { error: "Failed to process user" },
-      { status: 500 },
-    );
+      { status: 500 }
+    );  
   }
 }

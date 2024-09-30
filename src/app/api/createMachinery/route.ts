@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { createMachinery } from "~/server/queries/machinery/queries";
-import { type CreateMachinery } from "~/server/types/IMachinery";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { createMachinery } from '~/server/queries/machinery/queries';
+import { type CreateMachinery } from '~/server/types/IMachinery';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,14 +18,14 @@ export async function POST(req: NextRequest) {
       machineryData.serial_number,
       machineryData.location_id,
       machineryData.state,
-      machineryData.observations,
+      machineryData.observations ?? undefined
     );
     return NextResponse.json({ data: result }, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error('Error creating machinery:', error);
     return NextResponse.json(
-      { error: "Failed to create Machinery" },
-      { status: 500 },
+      { error: (error as Error).message || 'Failed to create Machinery' },
+      { status: 500 }
     );
   }
 }

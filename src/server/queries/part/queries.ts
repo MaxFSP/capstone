@@ -1,10 +1,10 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { locations, partImages, partStock } from "../../db/schema";
-import { eq, asc, count } from "drizzle-orm";
-import { type Part } from "~/server/types/IPart";
+import { db } from '../../db';
+import { locations, partImages, partStock } from '../../db/schema';
+import { eq, asc, count } from 'drizzle-orm';
+import { type Part } from '~/server/types/IPart';
 
 // Part Stock Table --------------------------------------------------------------------------------------------
 
@@ -12,16 +12,16 @@ import { type Part } from "~/server/types/IPart";
 export async function createPart(
   name: string,
   part_number: string,
-  condition: string, // MAYBE MAKE AN ENUM
+  condition: string,
   length: number,
   quantity: number,
   location_id: number,
-  length_unit: string, // MAYBE MAKE AN ENUM
+  length_unit: string,
   width: number,
   width_unit: string,
   height: number,
   height_unit: string,
-  compatible_machines?: string,
+  compatible_machines?: string
 ) {
   const newPart = await db
     .insert(partStock)
@@ -68,9 +68,9 @@ export async function getParts() {
     if (!partMap.has(partId)) {
       partMap.set(partId, {
         ...part_stock,
-        location_name: location?.name ?? "",
+        location_name: location?.name ?? '',
         images: [],
-        compatible_machines: part_stock.compatible_machines ?? "",
+        compatible_machines: part_stock.compatible_machines ?? '',
       });
     }
 
@@ -113,7 +113,7 @@ export async function updatePart(
   widthUnitValue?: string,
   heightValue?: number,
   heightUnitValue?: string,
-  compatibleMachinesValue?: string,
+  compatibleMachinesValue?: string
 ) {
   const updatedPart = await db
     .update(partStock)
@@ -138,10 +138,7 @@ export async function updatePart(
 
 // Delete Part
 export async function deletePart(partId: number) {
-  const deletedPart = await db
-    .delete(partStock)
-    .where(eq(partStock.part_id, partId))
-    .returning();
+  const deletedPart = await db.delete(partStock).where(eq(partStock.part_id, partId)).returning();
   return deletedPart;
 }
 

@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
@@ -30,22 +30,22 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        continue-on-error: true 
+        continue-on-error: true
         
       - name: Run TypeScript Type Check
         run: npm run typecheck
-        continue-on-error: true 
-        
+        continue-on-error: true
+
       - name: Upload ESLint Report
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: eslint-report
           path: eslint-report.json
 
       - name: Upload TypeScript Report
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: typescript-report
           path: ts-report.json

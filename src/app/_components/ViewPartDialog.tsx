@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useState, useEffect } from "react";
-
-import { Button } from "~/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-} from "~/components/ui/carousel";
+} from '~/components/ui/carousel';
 import {
   Dialog,
   DialogClose,
@@ -20,10 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { type PartCondition, type Part } from "~/server/types/IPart";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,70 +33,76 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { type ILocation } from "~/server/types/ILocation";
-import { UploadButton } from "../utils/uploadthing";
-import { type Image } from "~/server/types/IImages";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
+} from '~/components/ui/dropdown-menu';
+import { UploadButton } from '../utils/uploadthing';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
+import { useFormValidation } from '~/hooks/useFormValidation';
+import { partSchema } from '~/server/types/IPart';
+import type { ILocation } from '~/server/types/ILocation';
+import type { Image } from '~/server/types/IImages';
+import type { PartCondition, Part, partUnitEnum } from '~/server/types/IPart';
+import type { z } from 'zod';
+import { useToast } from '~/components/hooks/use-toast';
+import { deleteEntity } from '~/lib/api-utils';
 
-export function PartDataViewDialog(props: {
-  title: string;
-  data: Part;
-  locations: ILocation[];
-}) {
+type PartFormData = z.infer<typeof partSchema>;
+
+export function PartDataViewDialog(props: { title: string; data: Part; locations: ILocation[] }) {
   const { title, data, locations } = props;
   const router = useRouter();
+  const { toast } = useToast();
 
   const current_location: string = locations.find(
-    (location) => data.location_name === location.name,
+    (location) => data.location_name === location.name
   )!.name;
 
   const current_condition = data.condition;
 
-  const [conditionValue, setConditionValue] = useState<PartCondition>(
-    data.condition as PartCondition,
-  );
-
+  const [conditionValue, setConditionValue] = useState<PartCondition>(data.condition);
   const [locationValue, setLocationValue] = useState<string>(current_location);
   const [length, setLength] = useState(data.length_unit);
   const [width, setWidth] = useState(data.width_unit);
   const [height, setHeight] = useState(data.height_unit);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ ...data });
   const [initialFormData, setInitialFormData] = useState({ ...data });
-  const [isFormValid, setIsFormValid] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const { formData, setFormData, isFormValid, errors, validateForm } =
+    useFormValidation<PartFormData>({
+      schema: partSchema,
+      initialData: { ...data },
+    });
 
   useEffect(() => {
     if (!isEditing) {
       setLocationValue(current_location);
-      setConditionValue(data.condition as PartCondition);
+      setConditionValue(data.condition);
       setFormData({ ...data });
     }
   }, [isEditing, data]);
 
   useEffect(() => {
-    validateForm();
     checkForChanges();
-  }, [formData, locationValue, conditionValue]);
+  }, [formData, locationValue, conditionValue, length, width, height]);
 
   const handleUploadComplete = () => {
+    toast({
+      title: 'Success',
+      description: 'Image uploaded successfully.',
+    });
     router.refresh();
-  };
-
-  const validateForm = () => {
-    const isDataValid =
-      formData.part_id !== null && formData.part_id !== undefined;
-    setIsFormValid(isDataValid);
   };
 
   const checkForChanges = () => {
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
       locationValue !== current_location ||
-      conditionValue !== current_condition;
+      conditionValue !== current_condition ||
+      length !== data.length_unit ||
+      width !== data.width_unit ||
+      height !== data.height_unit;
     setHasChanges(hasChanges);
   };
 
@@ -108,7 +115,18 @@ export function PartDataViewDialog(props: {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let parsedValue: string | number = value;
+
+    // Convert to number for specific fields
+    if (['quantity', 'length', 'width', 'height'].includes(name)) {
+      parsedValue = value === '' ? 0 : Number(value);
+      if (isNaN(parsedValue)) {
+        parsedValue = 0;
+      }
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: parsedValue }));
+    validateForm();
   };
 
   const handleCancelClick = () => {
@@ -119,31 +137,58 @@ export function PartDataViewDialog(props: {
   const handleSaveClick = async () => {
     if (isFormValid && hasChanges) {
       try {
-        formData.location_id = locations.find(
-          (location) => location.name === locationValue,
-        )!.location_id;
-        formData.condition = conditionValue;
-        const response = await fetch("/api/updatePart", {
-          method: "POST",
+        const updatedFormData: PartFormData = {
+          ...formData,
+          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          condition: conditionValue,
+          length_unit: length,
+          width_unit: width,
+          height_unit: height,
+        };
+
+        const response = await fetch('/api/updatePart', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedFormData),
         });
+
         if (response.ok) {
+          toast({
+            title: 'Success',
+            description: 'Part updated successfully.',
+          });
           router.refresh();
+          setIsEditing(false);
         } else {
-          console.error("Failed to update part");
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to update part.');
         }
       } catch (error) {
-        console.error("Error updating part:", error);
+        console.error('Error updating part:', error);
+        let errorMessage = 'An unknown error occurred.';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
       }
     }
   };
-
-  const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setIsEditing(false);
+  const handleDeleteClick = async () => {
+    try {
+      await deleteEntity({
+        endpoint: '/api/deletePart',
+        entityId: data.part_id,
+        entityName: 'employee',
+        onSuccess: () => router.refresh(),
+      });
+    } catch (error) {}
   };
 
   return (
@@ -154,9 +199,7 @@ export function PartDataViewDialog(props: {
       <DialogContent className="h-auto max-h-[90vh] overflow-auto border border-border bg-background text-foreground lg:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-large">{title}</DialogTitle>
-          <DialogDescription>
-            Anyone who has this link will be able to view this.
-          </DialogDescription>
+          <DialogDescription>Anyone who has this link will be able to view this.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -176,7 +219,7 @@ export function PartDataViewDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Part",
+                            type: 'Part',
                           }}
                         />
                       </div>
@@ -197,7 +240,7 @@ export function PartDataViewDialog(props: {
                 value={formData.part_id}
                 readOnly
                 disabled
-                className="text-muted-background bg-muted-foreground"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
             <div className="flex-1">
@@ -210,6 +253,11 @@ export function PartDataViewDialog(props: {
                 onChange={handleChange}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === name) && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === name)?.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -224,6 +272,11 @@ export function PartDataViewDialog(props: {
                 disabled={!isEditing}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'name') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'name')?.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -238,6 +291,11 @@ export function PartDataViewDialog(props: {
                 onChange={handleChange}
                 className="border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'quantity') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'quantity')?.message}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label>Creation Date</Label>
@@ -246,7 +304,7 @@ export function PartDataViewDialog(props: {
                 value={formData.created_at.toLocaleDateString()}
                 readOnly
                 disabled
-                className="text-muted-background bg-muted-foreground"
+                className="border border-border bg-muted text-muted-foreground"
               />
             </div>
           </div>
@@ -266,6 +324,11 @@ export function PartDataViewDialog(props: {
                 disabled={!isEditing}
                 className="m-2 w-1/6 border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'length') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'length')?.message}
+                </p>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
@@ -282,8 +345,11 @@ export function PartDataViewDialog(props: {
                   <DropdownMenuRadioGroup
                     value={formData.length_unit}
                     onValueChange={(e) => {
-                      setLength(e);
-                      setFormData((prev) => ({ ...prev, length_unit: e }));
+                      setLength(e as typeof partUnitEnum._type);
+                      setFormData((prev) => ({
+                        ...prev,
+                        length_unit: e as typeof partUnitEnum._type,
+                      }));
                     }}
                   >
                     <DropdownMenuRadioItem
@@ -310,6 +376,11 @@ export function PartDataViewDialog(props: {
                 disabled={!isEditing}
                 className="m-2 w-1/6 border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'width') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'width')?.message}
+                </p>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
                   <Button
@@ -325,8 +396,11 @@ export function PartDataViewDialog(props: {
                   <DropdownMenuRadioGroup
                     value={formData.width_unit}
                     onValueChange={(e) => {
-                      setWidth(e);
-                      setFormData((prev) => ({ ...prev, width_unit: e }));
+                      setWidth(e as typeof partUnitEnum._type);
+                      setFormData((prev) => ({
+                        ...prev,
+                        width_unit: e as typeof partUnitEnum._type,
+                      }));
                     }}
                   >
                     <DropdownMenuRadioItem
@@ -352,6 +426,11 @@ export function PartDataViewDialog(props: {
                 disabled={!isEditing}
                 className="m-2 w-1/6 border border-border bg-background text-foreground"
               />
+              {errors.find((e) => e.path[0] === 'height') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'height')?.message}
+                </p>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild disabled={!isEditing}>
                   <Button
@@ -367,8 +446,11 @@ export function PartDataViewDialog(props: {
                   <DropdownMenuRadioGroup
                     value={formData.height_unit}
                     onValueChange={(e) => {
-                      setHeight(e);
-                      setFormData((prev) => ({ ...prev, height_unit: e }));
+                      setHeight(e as typeof partUnitEnum._type);
+                      setFormData((prev) => ({
+                        ...prev,
+                        height_unit: e as typeof partUnitEnum._type,
+                      }));
                     }}
                   >
                     <DropdownMenuRadioItem
@@ -404,10 +486,7 @@ export function PartDataViewDialog(props: {
                 <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={locationValue}
-                    onValueChange={setLocationValue}
-                  >
+                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                     {locations.map((location) => (
                       <DropdownMenuRadioItem
                         key={location.name}
@@ -437,9 +516,7 @@ export function PartDataViewDialog(props: {
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={conditionValue}
-                    onValueChange={(value) =>
-                      setConditionValue(value as PartCondition)
-                    }
+                    onValueChange={(value) => setConditionValue(value as PartCondition)}
                   >
                     <DropdownMenuRadioItem
                       value="Good"
@@ -477,7 +554,7 @@ export function PartDataViewDialog(props: {
                 <Input
                   readOnly
                   disabled
-                  className="text-muted-background bg-muted-foreground"
+                  className="border border-border bg-muted text-muted-foreground"
                 ></Input>
                 <UploadButton
                   disabled={!isEditing}
@@ -490,6 +567,10 @@ export function PartDataViewDialog(props: {
           </div>
         </div>
 
+        {errors.length > 0 && isEditing && (
+          <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
+        )}
+
         <DialogFooter className="sm:justify-start">
           {!isEditing && (
             <DialogClose asChild>
@@ -499,29 +580,26 @@ export function PartDataViewDialog(props: {
             </DialogClose>
           )}
           <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
             <>
               <DialogClose asChild>
-                <Button
-                  onClick={handleSaveClick}
-                  disabled={!isFormValid || !hasChanges}
-                >
+                <Button onClick={handleSaveClick} className="bg-primary text-primary-foreground">
                   Save
-                </Button>
-              </DialogClose>
-
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                >
-                  Save & Close
                 </Button>
               </DialogClose>
             </>
           )}
+          {/* <DialogClose asChild>
+            <Button
+              onClick={handleDeleteClick}
+              variant="destructive"
+              className="bg-red-600 text-white"
+            >
+              Delete
+            </Button>
+          </DialogClose> */}
         </DialogFooter>
       </DialogContent>
     </Dialog>

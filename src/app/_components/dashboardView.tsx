@@ -1,31 +1,26 @@
-"use client";
+'use client';
 
-import KanbanBoard from "./KanbanBoard";
-import { type TasksOnColumns } from "~/server/types/ITasks";
-import { type Column } from "~/server/types/IColumns";
-import KanbanBoardHeader from "./KanbanBoardHeader";
-import { type Employee } from "~/server/types/IEmployee";
-import { type WorkOrders } from "~/server/types/IOrders";
-import { type Part } from "~/server/types/IPart";
-import { type Tool } from "~/server/types/ITool";
-import { useState, useEffect } from "react";
+import { type TasksOnColumns } from '~/server/types/ITasks';
+import { type Column } from '~/server/types/IColumns';
+import KanbanBoardHeader from './KanbanBoardHeader';
+import { type Employee } from '~/server/types/IEmployee';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
+import { type Part } from '~/server/types/IPart';
+import { type Tool } from '~/server/types/ITool';
+import { useState, useEffect } from 'react';
+import KanbanBoard from './KanbanBoard';
+import ListBoard from './ListBoard';
 
 export default function DashboardView(props: {
-  workOrder: WorkOrders | undefined;
+  workOrder: RegularWorkOrder | undefined;
   tasksOnColumns: TasksOnColumns;
   columnsWorkOrder: Column[];
   employees: Employee[];
   tools: Tool[];
   parts: Part[];
 }) {
-  const {
-    workOrder,
-    tasksOnColumns,
-    columnsWorkOrder,
-    employees,
-    tools,
-    parts,
-  } = props;
+  const { workOrder, tasksOnColumns, columnsWorkOrder, employees, tools, parts } = props;
+  const [boardType, setBoardType] = useState('list');
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -37,6 +32,7 @@ export default function DashboardView(props: {
     tasksOnColumns,
     columnsWorkOrder,
   });
+
   useEffect(() => {
     setKanbanData({
       tasksOnColumns,
@@ -45,31 +41,44 @@ export default function DashboardView(props: {
   }, [tasksOnColumns, columnsWorkOrder]);
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 flex flex-col">
       {workOrder ? (
-        <div className="rounded-lg bg-background p-4 shadow-md">
+        <div className="rounded-lg  shadow-md flex flex-col flex-grow">
           <KanbanBoardHeader
-            key={`${workOrder?.order_id}-${refreshTrigger}`}
+            key={`${workOrder.order_id}-${refreshTrigger}`}
             workOrder={workOrder}
             triggerRefresh={triggerRefresh}
             tasksOnColumns={kanbanData.tasksOnColumns}
             columnsWorkOrder={columnsWorkOrder}
           />
-          <KanbanBoard
-            key={`${refreshTrigger}-${workOrder?.order_id}`}
-            workOrder={workOrder}
-            tasksOnColumns={kanbanData.tasksOnColumns}
-            allColumns={kanbanData.columnsWorkOrder}
-            employees={employees}
-            tools={tools}
-            parts={parts}
-            triggerRefresh={triggerRefresh}
-          />
+          {boardType === 'kanban' ? (
+            <KanbanBoard
+              key={`${workOrder.order_id}-${refreshTrigger}`}
+              workOrder={workOrder}
+              tasksOnColumns={kanbanData.tasksOnColumns}
+              allColumns={kanbanData.columnsWorkOrder}
+              employees={employees}
+              tools={tools}
+              parts={parts}
+              triggerRefresh={triggerRefresh}
+            />
+          ) : (
+            <ListBoard
+              key={`${workOrder.order_id}-${refreshTrigger}`}
+              workOrder={workOrder}
+              tasksOnColumns={kanbanData.tasksOnColumns}
+              allColumns={kanbanData.columnsWorkOrder}
+              employees={employees}
+              tools={tools}
+              parts={parts}
+              triggerRefresh={triggerRefresh}
+            />
+          )}
         </div>
       ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center">
+        <div className="flex h-full w-full flex-col items-center justify-center  rounded-lg p-6 shadow-md">
           <h1 className="mb-4 text-center text-3xl font-extrabold text-primary">
-            No work order found
+            No Work Order Found
           </h1>
           <p className="w-full max-w-lg text-center text-lg text-muted-foreground">
             Sit back and relax, we will create a work order for you soon.

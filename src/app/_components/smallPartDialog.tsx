@@ -1,15 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
+import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
+import Autoplay from 'embla-carousel-autoplay';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "~/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from '~/components/ui/carousel';
 import {
   Dialog,
   DialogClose,
@@ -19,10 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { type PartCondition, type Part } from "~/server/types/IPart";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { type PartCondition, type Part } from '~/server/types/IPart';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,29 +27,23 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { type ILocation } from "~/server/types/ILocation";
-import { UploadButton } from "../utils/uploadthing";
-import { type Image } from "~/server/types/IImages";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
+} from '~/components/ui/dropdown-menu';
+import { type ILocation } from '~/server/types/ILocation';
+import { UploadButton } from '../utils/uploadthing';
+import { type Image } from '~/server/types/IImages';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
 
-export function SmallPartDialog(props: {
-  data: Part;
-  index: number;
-  locations: ILocation[];
-}) {
+export function SmallPartDialog(props: { data: Part; index: number; locations: ILocation[] }) {
   const { index, data, locations } = props;
   const current_location: string = locations.find(
-    (location) => data.location_name === location.name,
+    (location) => data.location_name === location.name
   )!.name;
   const router = useRouter();
   const curret_condition = data.condition;
 
   const [locationValue, setLocationValue] = useState<string>(current_location);
-  const [conditionValue, setConditionValue] = useState<PartCondition>(
-    data.condition as PartCondition,
-  );
+  const [conditionValue, setConditionValue] = useState<PartCondition>(data.condition);
 
   const [length, setLength] = useState(data.length_unit);
   const [width, setWidth] = useState(data.width_unit);
@@ -68,7 +58,7 @@ export function SmallPartDialog(props: {
   useEffect(() => {
     if (!isEditing) {
       setLocationValue(current_location);
-      setConditionValue(data.condition as PartCondition);
+      setConditionValue(data.condition);
       setFormData({ ...data });
     }
   }, [isEditing, data]);
@@ -83,8 +73,7 @@ export function SmallPartDialog(props: {
   };
 
   const validateForm = () => {
-    const isDataValid =
-      formData.part_id !== null && formData.part_id !== undefined;
+    const isDataValid = formData.part_id !== null && formData.part_id !== undefined;
     setIsFormValid(isDataValid);
   };
 
@@ -117,13 +106,13 @@ export function SmallPartDialog(props: {
     if (isFormValid && hasChanges) {
       try {
         formData.location_id = locations.find(
-          (location) => location.name === locationValue,
+          (location) => location.name === locationValue
         )!.location_id;
         formData.condition = conditionValue;
-        const response = await fetch("/api/updatePart", {
-          method: "POST",
+        const response = await fetch('/api/updatePart', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(formData),
         });
@@ -133,7 +122,7 @@ export function SmallPartDialog(props: {
           // console.error("Failed to update tool:", result.error);
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error('Error updating tool:', error);
       }
     }
   };
@@ -157,17 +146,13 @@ export function SmallPartDialog(props: {
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">
-              Condition
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Condition</p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground">{data.condition}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">
-              Quantity
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Quantity</p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground">{data.quantity}</span>
             </div>
@@ -176,9 +161,7 @@ export function SmallPartDialog(props: {
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto rounded-lg border border-border bg-background lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large text-primary">
-            Edit Part
-          </DialogTitle>
+          <DialogTitle className="text-large text-primary">Edit Part</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Anyone who has this link will be able to view this.
           </DialogDescription>
@@ -208,7 +191,7 @@ export function SmallPartDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Part",
+                            type: 'Part',
                           }}
                         />
                       </div>
@@ -313,12 +296,8 @@ export function SmallPartDialog(props: {
                           setFormData((prev) => ({ ...prev, length_unit: e }));
                         }}
                       >
-                        <DropdownMenuRadioItem value="cm">
-                          cm
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="mm">
-                          mm
-                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -352,12 +331,8 @@ export function SmallPartDialog(props: {
                           setFormData((prev) => ({ ...prev, width_unit: e }));
                         }}
                       >
-                        <DropdownMenuRadioItem value="cm">
-                          cm
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="mm">
-                          mm
-                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -390,12 +365,8 @@ export function SmallPartDialog(props: {
                           setFormData((prev) => ({ ...prev, height_unit: e }));
                         }}
                       >
-                        <DropdownMenuRadioItem value="cm">
-                          cm
-                        </DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="mm">
-                          mm
-                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="cm">cm</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="mm">mm</DropdownMenuRadioItem>
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -419,15 +390,9 @@ export function SmallPartDialog(props: {
                 <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={locationValue}
-                    onValueChange={setLocationValue}
-                  >
+                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                     {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                      >
+                      <DropdownMenuRadioItem key={location.name} value={location.name}>
                         {location.name}
                       </DropdownMenuRadioItem>
                     ))}
@@ -451,22 +416,12 @@ export function SmallPartDialog(props: {
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup
                     value={conditionValue}
-                    onValueChange={(value) =>
-                      setConditionValue(value as PartCondition)
-                    }
+                    onValueChange={(value) => setConditionValue(value as PartCondition)}
                   >
-                    <DropdownMenuRadioItem value="Good">
-                      Good
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Bad">
-                      Bad
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Excellent">
-                      Excellent
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Poor">
-                      Poor
-                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Good">Good</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Bad">Bad</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Excellent">Excellent</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Poor">Poor</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -510,7 +465,7 @@ export function SmallPartDialog(props: {
             onClick={isEditing ? handleCancelClick : handleEditClick}
             className="bg-primary text-primary-foreground"
           >
-            {isEditing ? "Cancel" : "Edit"}
+            {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
             <>
@@ -518,19 +473,9 @@ export function SmallPartDialog(props: {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
-                  className="hover:bg-accent-dark bg-accent text-accent-foreground"
+                  className="hover:bg-primary-dark bg-primary text-primary-foreground"
                 >
                   Save
-                </Button>
-              </DialogClose>
-
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveAndCloseClick}
-                  disabled={!isFormValid || !hasChanges}
-                  className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
-                >
-                  Save & Close
                 </Button>
               </DialogClose>
             </>

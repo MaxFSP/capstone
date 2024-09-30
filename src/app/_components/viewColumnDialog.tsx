@@ -1,4 +1,4 @@
-import { Button } from "~/components/ui/button";
+import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -8,14 +8,17 @@ import {
   AlertDialogTrigger,
   AlertDialogDescription,
   AlertDialogCancel,
-} from "~/components/ui/alert-dialog";
+} from '~/components/ui/alert-dialog';
 
-import { type Column } from "~/server/types/IColumns";
+import { type Column } from '~/server/types/IColumns';
+import { useToast } from '~/components/hooks/use-toast';
 
-import { useRouter } from "next/navigation";
-import { Input } from "~/components/ui/input";
+import { useRouter } from 'next/navigation';
+import { Input } from '~/components/ui/input';
 
-import { useState } from "react";
+import { useState } from 'react';
+
+import { FiEdit2 } from 'react-icons/fi';
 
 export default function EditColumnDialog(props: {
   columnsWorkOrder: Column[];
@@ -27,10 +30,8 @@ export default function EditColumnDialog(props: {
   const [columnTitles, setColumnTitles] = useState<Record<number, string>>({});
 
   const initialValue = columnsWorkOrder;
-
-  const [columns, setColumns] = useState<Column[]>(
-    columnsWorkOrder || ([] as Column[]),
-  );
+  const { toast } = useToast();
+  const [columns, setColumns] = useState<Column[]>(columnsWorkOrder || ([] as Column[]));
 
   const handleInputChange = (columnId: number, value: string) => {
     setColumnTitles((prev) => ({
@@ -45,18 +46,26 @@ export default function EditColumnDialog(props: {
       title: columnName,
     };
 
-    const response = await fetch("/api/updateColumn", {
-      method: "POST",
+    const response = await fetch('/api/updateColumn', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(col),
     });
     if (response.ok) {
+      toast({
+        title: 'Success',
+        description: 'Column edited successfully.',
+      });
       triggerRefresh();
       router.refresh();
     } else {
-      console.error("Failed to update columns:", response.statusText);
+      toast({
+        title: 'Error',
+        description: 'Failed to edit column.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -65,9 +74,10 @@ export default function EditColumnDialog(props: {
       <AlertDialogTrigger asChild>
         <Button
           variant="outline"
-          className="w-full border border-border bg-background text-foreground sm:w-auto"
+          className="flex items-center justify-center space-x-0 md:space-x-2 bg-secondary text-secondary-foreground hover:bg-secondary-dark px-4 py-2"
         >
-          Edit Columns
+          <span className="hidden md:inline">Edit Columns</span>
+          <FiEdit2 className="md:hidden" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
@@ -82,24 +92,19 @@ export default function EditColumnDialog(props: {
         <div className="space-y-4">
           {columns.map((column) => (
             <div
-              key={column.column_id + column.title + "column"}
+              key={column.column_id + column.title + 'column'}
               className="flex flex-col items-center gap-4 sm:flex-row"
             >
               <Input
                 className="w-full border border-border bg-muted text-base font-semibold text-muted-foreground sm:w-[70%]"
                 value={columnTitles[column.column_id] ?? column.title}
-                onChange={(e) =>
-                  handleInputChange(column.column_id, e.target.value)
-                }
+                onChange={(e) => handleInputChange(column.column_id, e.target.value)}
               />
               <Button
                 variant="default"
                 className="w-full bg-primary text-primary-foreground sm:w-auto"
                 onClick={() =>
-                  editColumn(
-                    column.column_id,
-                    columnTitles[column.column_id] ?? column.title,
-                  )
+                  editColumn(column.column_id, columnTitles[column.column_id] ?? column.title)
                 }
               >
                 + Edit Column

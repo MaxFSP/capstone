@@ -1,9 +1,10 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { employees } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { db } from '../../db';
+import { employees } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+import { Employee } from '~/server/types/IEmployee';
 
 // Employees Table --------------------------------------------------------------------------------------------
 
@@ -15,7 +16,7 @@ export async function createEmployee(
   hireDate: Date,
   phoneNumber: string,
   job: string,
-  bloodType: string,
+  bloodType: string
 ) {
   const newEmployee = await db
     .insert(employees)
@@ -27,6 +28,7 @@ export async function createEmployee(
       phoneNumber: phoneNumber,
       job: job,
       bloodType: bloodType,
+      state: 1,
     })
     .returning();
   return newEmployee;
@@ -38,7 +40,7 @@ export async function getEmployees() {
   const allEmployees = await db.query.employees.findMany({
     orderBy: (employees, { asc }) => asc(employees.employee_id),
   });
-  return allEmployees;
+  return allEmployees as Employee[];
 }
 
 export async function getEmployeeById(employeeId: number) {
@@ -53,13 +55,11 @@ export async function updateEmployee(
   employee_id: number,
   firstName?: string,
   lastName?: string,
-  imageUrl?: string,
   age?: number,
   hireDate?: Date,
   phoneNumber?: string,
   job?: string,
-  bloodType?: string,
-  imageKey?: string,
+  bloodType?: string
 ) {
   const updatedEmployee = await db
     .update(employees)
@@ -68,11 +68,9 @@ export async function updateEmployee(
       lastName: lastName,
       age: age,
       hireDate: hireDate,
-      imageUrl: imageUrl,
       phoneNumber: phoneNumber,
       job: job,
       bloodType: bloodType,
-      imageKey: imageKey,
     })
     .where(eq(employees.employee_id, employee_id))
     .returning();
@@ -80,11 +78,7 @@ export async function updateEmployee(
   return updatedEmployee;
 }
 
-export async function addImageToEmployee(
-  employee_id: number,
-  imageUrl: string,
-  imageKey: string,
-) {
+export async function addImageToEmployee(employee_id: number, imageUrl: string, imageKey: string) {
   await db
     .update(employees)
     .set({

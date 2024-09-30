@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import type { ClerkUser } from "../../server/types/IClerkUser";
@@ -15,10 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "~/components/ui/dialog";
 
-import { Input, Button, Checkbox } from "@nextui-org/react";
-import { Button as ButtonTwo } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Switch } from "~/components/ui/switch";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,9 +33,8 @@ import type {
 } from "../../server/types/api";
 
 import type { UpdateClerkUser } from "../../server/types/IClerkUser";
-import { DialogClose } from "@radix-ui/react-dialog";
 
-import { Avatar } from "@nextui-org/react";
+import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { type Org } from "../../server/types/org";
 import { Label } from "~/components/ui/label";
 
@@ -106,9 +103,8 @@ export default function SmallEditUser({
     setFormValues((prevValues) => ({ ...prevValues, [name]: value }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormValues((prevValues) => ({ ...prevValues, [name]: checked }));
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormValues((prevValues) => ({ ...prevValues, online: checked }));
   };
 
   const handleEditClick = () => setIsEditing((prev) => !prev);
@@ -230,7 +226,13 @@ export default function SmallEditUser({
     <Dialog>
       <DialogTrigger asChild>
         <div className="flex cursor-pointer items-center gap-4 border-b border-border px-5 py-4 text-foreground">
-          <Avatar src={user.img} alt={user.firstName} size="lg" />
+          <Avatar>
+            <AvatarImage src={user.img} alt={user.firstName} />
+            <AvatarFallback>
+              {user.firstName[0]}
+              {user.lastName[0]}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex w-full flex-col justify-center">
             <div className="flex items-center justify-between">
               <p className="text-base font-semibold">{user.firstName}</p>
@@ -252,135 +254,148 @@ export default function SmallEditUser({
             Edit User
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            This will update the user`&apos;`s details in the system.
+            This will update the user's details in the system.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col md:flex-row md:items-start md:space-x-4">
           <div className="mb-4 flex-shrink-0 md:mb-0">
-            <img
-              src={user.img}
-              alt={`${user.firstName} ${user.lastName}'s profile picture`}
-              className="h-32 w-32 rounded-full object-cover"
-            />
+            <Avatar className="h-32 w-32">
+              <AvatarImage
+                src={user.img}
+                alt={`${user.firstName} ${user.lastName}'s profile picture`}
+              />
+              <AvatarFallback>
+                {user.firstName[0]}
+                {user.lastName[0]}
+              </AvatarFallback>
+            </Avatar>
           </div>
           <div className="w-full">
             <h3 className="mb-4 text-2xl font-semibold text-foreground">
               Edit User
             </h3>
             <form className="flex flex-col space-y-4">
-              <Input
-                type="text"
-                label="User Id"
-                defaultValue={`${user.id}`}
-                isDisabled
-                className="border border-border bg-muted text-muted-foreground"
-              />
-              <Input
-                type="text"
-                label="First Name"
-                name="firstName"
-                value={formValues.firstName}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isNameInvalid}
-                color={isNameInvalid ? "danger" : "default"}
-                errorMessage={
-                  isNameInvalid ? "Name can only contain letters" : undefined
-                }
-                className="border border-border bg-background text-foreground"
-              />
-              <Input
-                type="text"
-                label="Last Name"
-                name="lastName"
-                value={formValues.lastName}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isLastNameInvalid}
-                color={isLastNameInvalid ? "danger" : "default"}
-                errorMessage={
-                  isLastNameInvalid
-                    ? "Last Name can only contain letters"
-                    : undefined
-                }
-                className="border border-border bg-background text-foreground"
-              />
-              <Input
-                type="text"
-                label="Username"
-                name="username"
-                pattern="[a-zA-Z0-9]+"
-                value={formValues.username}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={!!isUsernameInvalid}
-                color={isUsernameInvalid ? "danger" : "default"}
-                errorMessage={
-                  isUsernameInvalid
-                    ? "Username can only contain letters and numbers"
-                    : undefined
-                }
-                className="border border-border bg-background text-foreground"
-              />
-              <Input
-                type="email"
-                label="Email"
-                name="email"
-                value={formValues.email}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={!!isEmailInvalid}
-                color={isEmailInvalid ? "danger" : "default"}
-                errorMessage={
-                  isEmailInvalid ? "Please enter a valid email" : undefined
-                }
-                className="border border-border bg-background text-foreground"
-              />
-
-              <Input
-                type="password"
-                label="Password"
-                name="password"
-                value={formValues.password}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isPasswordInvalid}
-                color={isPasswordInvalid ? "danger" : "default"}
-                errorMessage={
-                  isPasswordInvalid
-                    ? "Password must be at least 8 characters long and contain at least one uppercase letter and one number"
-                    : undefined
-                }
-                className="border border-border bg-background text-foreground"
-              />
-              <Input
-                type="password"
-                label="Confirm Password"
-                name="confirmPassword"
-                value={formValues.confirmPassword}
-                onChange={handleInputChange}
-                isDisabled={!isEditing}
-                isInvalid={isConfirmPasswordInvalid}
-                color={isConfirmPasswordInvalid ? "danger" : "default"}
-                errorMessage={
-                  isConfirmPasswordInvalid
-                    ? "Passwords do not match"
-                    : undefined
-                }
-                className="border border-border bg-background text-foreground"
-              />
+              <div>
+                <Label htmlFor="userId">User Id</Label>
+                <Input
+                  id="userId"
+                  type="text"
+                  defaultValue={`${user.id}`}
+                  disabled
+                  className="bg-muted text-muted-foreground"
+                />
+              </div>
+              <div>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  name="firstName"
+                  value={formValues.firstName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={isNameInvalid ? "border-red-500" : ""}
+                />
+                {isNameInvalid && (
+                  <p className="text-sm text-red-500">
+                    Name can only contain letters
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  name="lastName"
+                  value={formValues.lastName}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={isLastNameInvalid ? "border-red-500" : ""}
+                />
+                {isLastNameInvalid && (
+                  <p className="text-sm text-red-500">
+                    Last Name can only contain letters
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  name="username"
+                  pattern="[a-zA-Z0-9]+"
+                  value={formValues.username}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={isUsernameInvalid ? "border-red-500" : ""}
+                />
+                {isUsernameInvalid && (
+                  <p className="text-sm text-red-500">
+                    Username can only contain letters and numbers
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={formValues.email}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={isEmailInvalid ? "border-red-500" : ""}
+                />
+                {isEmailInvalid && (
+                  <p className="text-sm text-red-500">
+                    Please enter a valid email
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  name="password"
+                  value={formValues.password}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={isPasswordInvalid ? "border-red-500" : ""}
+                />
+                {isPasswordInvalid && (
+                  <p className="text-sm text-red-500">
+                    Password must be at least 8 characters long and contain at
+                    least one uppercase letter and one number
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  name="confirmPassword"
+                  value={formValues.confirmPassword}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className={isConfirmPasswordInvalid ? "border-red-500" : ""}
+                />
+                {isConfirmPasswordInvalid && (
+                  <p className="text-sm text-red-500">Passwords do not match</p>
+                )}
+              </div>
               <div className="flex-1">
                 <Label>Role</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild disabled={!isEditing}>
-                    <ButtonTwo
-                      className="w-full border border-border bg-background text-foreground"
-                      variant="outline"
-                    >
+                    <Button className="w-full" variant="outline">
                       {role}
-                    </ButtonTwo>
+                    </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-full bg-background text-foreground">
+                  <DropdownMenuContent className="w-full">
                     <DropdownMenuLabel>Role</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup
@@ -396,27 +411,25 @@ export default function SmallEditUser({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <Checkbox
-                name="online"
-                isSelected={formValues.online}
-                onChange={handleCheckboxChange}
-                isDisabled={!isEditing}
-                className="border border-border bg-background text-foreground"
-              >
-                Online
-              </Checkbox>
 
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="online"
+                  disabled={!isEditing}
+                  checked={formValues.online}
+                  onCheckedChange={handleCheckboxChange}
+                />
+                <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
+              </div>
               <div className="flex space-x-4">
                 {!isEditing && (
                   <DialogClose asChild>
-                    <Button className="bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground">
-                      Close
-                    </Button>
+                    <Button variant="secondary">Close</Button>
                   </DialogClose>
                 )}
                 <Button
                   onClick={isEditing ? handleCancelClick : handleEditClick}
-                  className="bg-primary text-primary-foreground"
+                  variant="outline"
                 >
                   {isEditing ? "Cancel" : "Edit"}
                 </Button>
@@ -425,20 +438,9 @@ export default function SmallEditUser({
                     <DialogClose asChild>
                       <Button
                         onClick={handleSaveClick}
-                        isDisabled={!isFormValid || !hasChanges}
-                        className="hover:bg-accent-dark bg-accent text-accent-foreground"
+                        disabled={!isFormValid || !hasChanges}
                       >
                         Save
-                      </Button>
-                    </DialogClose>
-
-                    <DialogClose asChild>
-                      <Button
-                        onClick={handleSaveAndCloseClick}
-                        isDisabled={!isFormValid || !hasChanges}
-                        className="bg-destructive text-destructive-foreground hover:bg-opacity-90"
-                      >
-                        Save & Close
                       </Button>
                     </DialogClose>
                   </>

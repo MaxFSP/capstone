@@ -1,47 +1,73 @@
-export interface DeleteImage {
-  image_id: number;
-  image_key: string;
-  type: string;
-}
+import { z } from 'zod';
 
-export interface FullImage {
-  image_id: string;
-  image_key: string;
-  image_url: string;
-  created_at: Date;
-}
+// DeleteImage schema
+export const deleteImageSchema = z.object({
+  image_id: z.number().nonnegative(),
+  image_key: z.string().min(1, 'Image key is required'),
+  type: z.string().min(1, 'Type is required'),
+});
 
-export interface Image {
-  image_id: number;
-  image_key: string;
-  image_url: string;
-}
+export type DeleteImage = z.infer<typeof deleteImageSchema>;
 
-export interface CreateImage {
-  image_key: string;
-  image_url: string;
-}
+// FullImage schema
+export const fullImageSchema = z.object({
+  image_id: z.string().min(1, 'Image ID is required'),
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+  created_at: z.date(),
+});
 
-export interface CreateMachineryImage {
-  machine_id: string;
-  image_key: string;
-  image_url: string;
-}
+export type FullImage = z.infer<typeof fullImageSchema>;
 
-export interface CreatePartImage {
-  part_id: string;
-  image_key: string;
-  image_url: string;
-}
+// Image schema
+export const imageSchema = z.object({
+  image_id: z.number().nonnegative(),
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+});
 
-export interface CreateToolImage {
-  tool_id: string;
-  image_key: string;
-  image_url: string;
-}
+export type Image = z.infer<typeof imageSchema>;
 
-export interface UpdateImage {
-  image_id: string;
-  image_key: string;
-  image_url: string;
-}
+// CreateImage schema
+export const createImageSchema = z.object({
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+});
+
+export type CreateImage = z.infer<typeof createImageSchema>;
+
+// CreateMachineryImage schema
+export const createMachineryImageSchema = z.object({
+  machine_id: z.string().min(1, 'Machine ID is required'),
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+});
+
+export type CreateMachineryImage = z.infer<typeof createMachineryImageSchema>;
+
+// CreatePartImage schema
+export const createPartImageSchema = z.object({
+  part_id: z.string().min(1, 'Part ID is required'),
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+});
+
+export type CreatePartImage = z.infer<typeof createPartImageSchema>;
+
+// CreateToolImage schema
+export const createToolImageSchema = z.object({
+  tool_id: z.string().min(1, 'Tool ID is required'),
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+});
+
+export type CreateToolImage = z.infer<typeof createToolImageSchema>;
+
+// UpdateImage schema
+export const updateImageSchema = z.object({
+  image_id: z.string().min(1, 'Image ID is required'),
+  image_key: z.string().min(1, 'Image key is required'),
+  image_url: z.string().url('Invalid URL'),
+});
+
+export type UpdateImage = z.infer<typeof updateImageSchema>;

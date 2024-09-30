@@ -1,29 +1,31 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 const isProtectedRoute = (pathname: string) => {
-  const excludedRoutes = ["/signIn", "/api/uploadthing"]; // Include other auth-related routes if necessary
+  const excludedRoutes = ['/signIn', '/api/uploadthing', '/api/generateWorkOrderReport'];
+  return !excludedRoutes.some((route) => pathname.startsWith(route));
+};
 
-  // Check if the pathname starts with any excluded route
-  for (const route of excludedRoutes) {
-    if (pathname.startsWith(route)) {
-      return false;
-    }
-  }
-
-  // All other routes are protected
-  return true;
+const isAdminRoute = (pathname: string) => {
+  return pathname.startsWith('/management');
 };
 
 export default clerkMiddleware(async (auth, request) => {
+  const { userId, orgSlug } = auth();
   const { pathname } = request.nextUrl;
 
   if (isProtectedRoute(pathname)) {
-    const { userId } = auth();
-
     if (!userId) {
       // User is not authenticated, redirect to /signIn
-      return NextResponse.redirect(new URL("/signIn", request.url));
+      return NextResponse.redirect(new URL('/signIn', request.url));
+    }
+
+    if (isAdminRoute(pathname)) {
+      // Check if the user has the administrator role
+      if (orgSlug !== 'admin') {
+        // User doesn't have administrator role, redirect to home
+        return NextResponse.redirect(new URL('/', request.url));
+      }
     }
   }
 
@@ -32,5 +34,5 @@ export default clerkMiddleware(async (auth, request) => {
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 };

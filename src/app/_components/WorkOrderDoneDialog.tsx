@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Button } from "~/components/ui/button";
+import { Button } from '~/components/ui/button';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -9,24 +9,26 @@ import {
   AlertDialogTrigger,
   AlertDialogDescription,
   AlertDialogCancel,
-} from "~/components/ui/alert-dialog";
-import { type Column } from "~/server/types/IColumns";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { type WorkOrders } from "~/server/types/IOrders";
-import { type TasksOnColumns } from "~/server/types/ITasks";
-import { Label } from "~/components/ui/label";
-import { ScrollArea } from "~/components/ui/scroll-area";
+} from '~/components/ui/alert-dialog';
+import { type Column } from '~/server/types/IColumns';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
+import { type TasksOnColumns } from '~/server/types/ITasks';
+import { Label } from '~/components/ui/label';
+import { ScrollArea } from '~/components/ui/scroll-area';
+import { useToast } from '~/components/hooks/use-toast';
+import { FiCheck } from 'react-icons/fi';
 
 export default function WorkOrderDoneDialog(props: {
   columnsWorkOrder: Column[];
   tasksOnColumns: TasksOnColumns;
-  workOrder: WorkOrders;
+  workOrder: RegularWorkOrder;
   triggerRefresh: () => void;
 }) {
   const router = useRouter();
   const { triggerRefresh, columnsWorkOrder, workOrder, tasksOnColumns } = props;
-
+  const { toast } = useToast();
   const [isDone, setIsDone] = useState(true);
 
   const handleSaveAndCloseClick = async () => {
@@ -37,20 +39,28 @@ export default function WorkOrderDoneDialog(props: {
         columns: columnsWorkOrder,
       };
 
-      const response = await fetch("/api/workOrderDone", {
-        method: "POST",
+      const response = await fetch('/api/workOrderDone', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
       if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Work order marked as done.',
+        });
         router.refresh();
       } else {
-        console.error("Failed to update work order:", response.statusText);
+        console.error('Failed to update work order:', response.statusText);
       }
     } catch (error) {
-      console.error("Error updating work order:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to mark work order as done.',
+      });
+      console.error('Error updating work order:', error);
     }
   };
 
@@ -77,10 +87,12 @@ export default function WorkOrderDoneDialog(props: {
       <AlertDialogTrigger asChild>
         <Button
           variant="secondary"
-          className="w-full bg-secondary text-secondary-foreground sm:w-auto"
+          className="flex items-center justify-center space-x-0 md:space-x-2 bg-success text-success-foreground hover:bg-success-dark px-4 py-2"
           disabled={isDone}
+          aria-label="Mark Work Order as Done"
         >
-          Mark as done
+          <span className="hidden md:inline">Mark as done</span>
+          <FiCheck className="md:hidden" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] w-full max-w-[90vw] overflow-auto bg-background text-foreground sm:max-w-2xl">
@@ -89,8 +101,7 @@ export default function WorkOrderDoneDialog(props: {
             Mark this work order as done
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            Make sure you completed all the tasks before marking this work order
-            as done.
+            Make sure you completed all the tasks before marking this work order as done.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
@@ -109,13 +120,8 @@ export default function WorkOrderDoneDialog(props: {
                         </div>
                         <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                           {tasksOnColumns[key]!.map((task) => (
-                            <div
-                              key={task.task_id + "task"}
-                              className="rounded-md bg-muted p-2"
-                            >
-                              <p className="text-sm font-medium text-foreground">
-                                {task.title}
-                              </p>
+                            <div key={task.task_id + 'task'} className="rounded-md bg-muted p-2">
+                              <p className="text-sm font-medium text-foreground">{task.title}</p>
                               <p className="mt-1 text-xs text-muted-foreground">
                                 {task.end_date.toDateString()}
                               </p>

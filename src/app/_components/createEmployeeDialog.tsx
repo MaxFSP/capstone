@@ -1,9 +1,12 @@
-"use client";
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,200 +15,203 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import {
-  AlertDialogCancel,
-  AlertDialogFooter,
-} from "~/components/ui/alert-dialog";
-import { Label } from "~/components/ui/label";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { useRouter } from "next/navigation";
+} from '~/components/ui/dropdown-menu';
+import { AlertDialogCancel, AlertDialogFooter } from '~/components/ui/alert-dialog';
+import { Label } from '~/components/ui/label';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { useToast } from '~/components/hooks/use-toast';
 
 export function CreateEmployeeDialog() {
   const router = useRouter();
+  const { toast } = useToast();
 
-  const [bloodType, setBloodType] = useState("A+");
-  const [job, setJob] = useState("Mechanic");
-
-  const [employeeFormValue, setEmployeeFormValue] = useState({
-    firstName: "",
-    lastName: "",
-    age: "",
-    hireDate: new Date(),
-    phoneNumber: "",
-    job: "",
-    bloodType: "A+",
-  });
-
-  // Calendar stuff
+  const [bloodType, setBloodType] = useState('A+');
+  const [job, setJob] = useState('Mechanic');
   const [date, setDate] = useState<Date>(new Date());
 
-  // Form validation state
-  const [isEmployeeFormValid, setIsEmployeeFormValid] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    age: '',
+    phoneNumber: '',
+    bloodType: 'A+',
+    job: 'Mechanic',
+    hireDate: new Date(),
+  });
+
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Validation functions
+  const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name);
+  const validateAge = (age: string) => {
+    const ageNum = parseInt(age);
+    return !isNaN(ageNum) && ageNum >= 18 && ageNum <= 90;
+  };
+  const validatePhoneNumber = (phoneNumber: string) => /^\d{7,8}$/.test(phoneNumber);
 
   useEffect(() => {
-    const isNameValid = validateStringWithSpaces(employeeFormValue.firstName);
-    const isLastNameValid = validateStringWithSpaces(
-      employeeFormValue.lastName,
-    );
-    const isAgeValid = validateOnlyNumbers(employeeFormValue.age);
-    if (isNameValid && isLastNameValid && isAgeValid) {
-      setIsEmployeeFormValid(true);
-    }
-  }, [employeeFormValue]);
+    const isFirstNameValid = validateName(formData.firstName);
+    const isLastNameValid = validateName(formData.lastName);
+    const isAgeValid = validateAge(formData.age);
+    const isPhoneNumberValid = validatePhoneNumber(formData.phoneNumber);
 
-  const validateStringWithSpaces = (name: string) => /^[A-Za-z\s]+$/.test(name);
-  const validateOnlyNumbers = (age: string) => /^[0-9]+$/.test(age);
+    setIsFormValid(isFirstNameValid && isLastNameValid && isAgeValid && isPhoneNumberValid);
+  }, [formData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEmployeeFormValue((prevValues) => ({ ...prevValues, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveClick = async (): Promise<boolean> => {
-    try {
-      employeeFormValue.bloodType = bloodType;
-      employeeFormValue.job = job;
+  const handleSaveClick = async () => {
+    if (isFormValid) {
+      try {
+        const response = await fetch('/api/createEmployee', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            hireDate: date.toISOString(),
+            state: 1,
+          }),
+        });
 
-      const response = await fetch("/api/createEmployee", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(employeeFormValue),
-      });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error ?? 'Failed to create employee');
+        }
 
-      if (!response.ok) {
-        throw new Error("Failed to create employee");
+        toast({
+          title: 'Success',
+          description: 'Employee created successfully.',
+        });
+
+        resetForm();
+        router.refresh();
+      } catch (error) {
+        console.error('Failed to create employee:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'An unknown error occurred.',
+          variant: 'destructive',
+        });
       }
-
-      return true;
-    } catch (error) {
-      console.error("Failed to create employee:", error);
-      return false;
     }
   };
 
-  const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setEmployeeFormValue({
-      firstName: "",
-      lastName: "",
-      age: "",
+  const resetForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      age: '',
+      phoneNumber: '',
+      bloodType: 'A+',
+      job: 'Mechanic',
       hireDate: new Date(),
-      phoneNumber: "",
-      job: "",
-      bloodType: "A+",
     });
-    router.refresh();
+    setDate(new Date());
+    setBloodType('A+');
+    setJob('Mechanic');
   };
 
-  const isFirstNameInvalid = useMemo(
-    () =>
-      employeeFormValue.firstName !== "" &&
-      !validateStringWithSpaces(employeeFormValue.firstName),
-    [employeeFormValue.firstName],
-  );
-
-  const isLastNameInvalid = useMemo(
-    () =>
-      employeeFormValue.lastName !== "" &&
-      !validateStringWithSpaces(employeeFormValue.lastName),
-    [employeeFormValue.lastName],
-  );
-
-  const isAgeInvalid = useMemo(
-    () =>
-      employeeFormValue.age !== "" &&
-      !validateOnlyNumbers(employeeFormValue.age),
-    [employeeFormValue.age],
-  );
-
-  const isPhoneNumberInvalid = useMemo(
-    () =>
-      employeeFormValue.phoneNumber !== "" &&
-      !validateOnlyNumbers(employeeFormValue.phoneNumber),
-    [employeeFormValue.phoneNumber],
-  );
-
   return (
-    <form className="space-y-4">
+    <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>First Name</Label>
+          <Label htmlFor="firstName">First Name</Label>
           <Input
-            required
-            type="text"
+            id="firstName"
             name="firstName"
-            value={employeeFormValue.firstName}
+            value={formData.firstName}
             onChange={handleInputChange}
             className={cn(
-              "border border-border bg-background text-foreground",
-              isFirstNameInvalid && "border-destructive",
+              'border border-border bg-background text-foreground',
+              formData.firstName && !validateName(formData.firstName) && 'border-destructive'
             )}
           />
+          {formData.firstName && !validateName(formData.firstName) && (
+            <p className="text-sm text-destructive mt-1">
+              First name must contain only letters and spaces.
+            </p>
+          )}
         </div>
         <div className="flex-1">
-          <Label>Last Name</Label>
+          <Label htmlFor="lastName">Last Name</Label>
           <Input
-            required
-            type="text"
+            id="lastName"
             name="lastName"
-            value={employeeFormValue.lastName}
+            value={formData.lastName}
             onChange={handleInputChange}
             className={cn(
-              "border border-border bg-background text-foreground",
-              isLastNameInvalid && "border-destructive",
+              'border border-border bg-background text-foreground',
+              formData.lastName && !validateName(formData.lastName) && 'border-destructive'
             )}
           />
+          {formData.lastName && !validateName(formData.lastName) && (
+            <p className="text-sm text-destructive mt-1">
+              Last name must contain only letters and spaces.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Age</Label>
+          <Label htmlFor="age">Age</Label>
           <Input
-            required
-            type="text"
+            id="age"
             name="age"
-            value={employeeFormValue.age}
+            type="number"
+            value={formData.age}
             onChange={handleInputChange}
+            min="18"
+            max="90"
             className={cn(
-              "border border-border bg-background text-foreground",
-              isAgeInvalid && "border-destructive",
+              'border border-border bg-background text-foreground',
+              formData.age && !validateAge(formData.age) && 'border-destructive'
             )}
           />
+          {formData.age && !validateAge(formData.age) && (
+            <p className="text-sm text-destructive mt-1">Age must be between 18 and 90.</p>
+          )}
         </div>
         <div className="flex-1">
-          <Label>Phone Number</Label>
+          <Label htmlFor="phoneNumber">Phone Number</Label>
           <Input
-            required
-            type="text"
+            id="phoneNumber"
             name="phoneNumber"
-            value={employeeFormValue.phoneNumber}
+            value={formData.phoneNumber}
             onChange={handleInputChange}
             className={cn(
-              "border border-border bg-background text-foreground",
-              isPhoneNumberInvalid && "border-destructive",
+              'border border-border bg-background text-foreground',
+              formData.phoneNumber &&
+                !validatePhoneNumber(formData.phoneNumber) &&
+                'border-destructive'
             )}
           />
+          {formData.phoneNumber && !validatePhoneNumber(formData.phoneNumber) && (
+            <p className="text-sm text-destructive mt-1">
+              Phone number must contain 7 to 8 digits.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="flex space-x-4">
         <div className="flex-1">
-          <Label>Blood Type</Label>
+          <Label htmlFor="bloodType">Blood Type</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full border border-border bg-background text-foreground">
+              <Button
+                variant="outline"
+                className="w-full border border-border bg-background text-foreground"
+              >
                 {bloodType}
               </Button>
             </DropdownMenuTrigger>
@@ -214,25 +220,28 @@ export function CreateEmployeeDialog() {
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={bloodType}
-                onValueChange={(value: string) => setBloodType(value)}
+                onValueChange={(value: string) => {
+                  setBloodType(value);
+                  setFormData((prev) => ({ ...prev, bloodType: value }));
+                }}
               >
-                <DropdownMenuRadioItem value="A+">A+</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="A-">A-</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="B+">B+</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="B-">B-</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="AB+">AB+</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="AB-">AB-</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="O+">O+</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="O-">O-</DropdownMenuRadioItem>
+                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => (
+                  <DropdownMenuRadioItem key={type} value={type}>
+                    {type}
+                  </DropdownMenuRadioItem>
+                ))}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         <div className="flex-1">
-          <Label>Job</Label>
+          <Label htmlFor="job">Job</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="w-full border border-border bg-background text-foreground">
+              <Button
+                variant="outline"
+                className="w-full border border-border bg-background text-foreground"
+              >
                 {job}
               </Button>
             </DropdownMenuTrigger>
@@ -241,23 +250,18 @@ export function CreateEmployeeDialog() {
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
                 value={job}
-                onValueChange={(value: string) => setJob(value)}
+                onValueChange={(value: string) => {
+                  setJob(value);
+                  setFormData((prev) => ({ ...prev, job: value }));
+                }}
               >
-                <DropdownMenuRadioItem value="Mechanic">
-                  Mechanic
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Painter">
-                  Painter
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Engineer">
-                  Engineer
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Parts Specialist">
-                  Parts Specialist
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Sales">
-                  Sales
-                </DropdownMenuRadioItem>
+                {['Mechanic', 'Painter', 'Engineer', 'Parts Specialist', 'Sales'].map(
+                  (jobTitle) => (
+                    <DropdownMenuRadioItem key={jobTitle} value={jobTitle}>
+                      {jobTitle}
+                    </DropdownMenuRadioItem>
+                  )
+                )}
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -265,31 +269,31 @@ export function CreateEmployeeDialog() {
       </div>
 
       <div className="flex flex-col">
-        <Label>Hire Date</Label>
+        <Label htmlFor="hireDate">Hire Date</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className={cn(
-                "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
-                !date && "text-muted-foreground",
+                'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
+                !date && 'text-muted-foreground'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
+              <CalendarIcon className="mr-2 h-4 w-4 text-foreground" />
+              {date ? format(date, 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto bg-background p-0 text-foreground">
+          <PopoverContent
+            className="w-auto border border-border bg-background p-0 text-foreground"
+            align="start"
+          >
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(date) => {
-                if (date) {
-                  setDate(date);
-                  setEmployeeFormValue((prev) => ({
-                    ...prev,
-                    hireDate: date,
-                  }));
+              onSelect={(selectedDate) => {
+                if (selectedDate) {
+                  setDate(selectedDate);
+                  setFormData((prev) => ({ ...prev, hireDate: selectedDate }));
                 }
               }}
               initialFocus
@@ -303,18 +307,8 @@ export function CreateEmployeeDialog() {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => {
-              setEmployeeFormValue({
-                firstName: "",
-                lastName: "",
-                age: "",
-                hireDate: new Date(),
-                phoneNumber: "",
-                job: "",
-                bloodType: "A+",
-              });
-            }}
-            className="bg-secondary text-secondary-foreground"
+            onClick={resetForm}
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
           >
             Close
           </Button>
@@ -322,11 +316,11 @@ export function CreateEmployeeDialog() {
 
         <AlertDialogCancel asChild>
           <Button
-            onClick={handleSaveAndCloseClick}
-            disabled={!isEmployeeFormValid}
-            className="bg-primary text-primary-foreground"
+            onClick={handleSaveClick}
+            disabled={!isFormValid}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            Save & Close
+            Save
           </Button>
         </AlertDialogCancel>
       </AlertDialogFooter>

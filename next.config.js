@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
@@ -28,9 +30,6 @@ const withPWA = nextPWA({
   skipWaiting: true,
 });
 
-// Export the combined configuration for Next.js with PWA support
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 export default withPWA(nextConfig);
 
 // /** @type {import("next").NextConfig} */
