@@ -71,6 +71,10 @@ export async function getParts() {
         location_name: location?.name ?? '',
         images: [],
         compatible_machines: part_stock.compatible_machines ?? '',
+        condition: part_stock.condition as 'Good' | 'Bad' | 'Excellent' | 'Poor' | 'New',
+        length_unit: part_stock.length_unit as 'cm' | 'mm',
+        width_unit: part_stock.width_unit as 'cm' | 'mm',
+        height_unit: part_stock.height_unit as 'cm' | 'mm',
       });
     }
 

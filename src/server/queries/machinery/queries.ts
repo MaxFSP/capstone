@@ -1,10 +1,10 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { machineryStock, locations, machineryImages } from "../../db/schema";
-import { eq, asc, count } from "drizzle-orm";
-import { type Machinery } from "../../types/IMachinery";
+import { db } from '../../db';
+import { machineryStock, locations, machineryImages } from '../../db/schema';
+import { eq, asc, count } from 'drizzle-orm';
+import { type Machinery } from '../../types/IMachinery';
 
 // Machinery Stock Table --------------------------------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ export async function createMachinery(
   serialNumberValue: string,
   locationIdValue: number,
   stateValue: string,
-  observationsValue?: string,
+  observationsValue?: string
 ) {
   const newMachinery = await db
     .insert(machineryStock)
@@ -41,10 +41,7 @@ export async function getMachineries() {
     .select()
     .from(machineryStock)
     .leftJoin(locations, eq(machineryStock.location_id, locations.location_id))
-    .leftJoin(
-      machineryImages,
-      eq(machineryStock.machine_id, machineryImages.machine_id),
-    )
+    .leftJoin(machineryImages, eq(machineryStock.machine_id, machineryImages.machine_id))
     .orderBy(asc(machineryStock.machine_id));
 
   // Create a map to aggregate images and store machinery details
@@ -58,9 +55,10 @@ export async function getMachineries() {
     if (!machineryMap.has(machineId)) {
       machineryMap.set(machineId, {
         ...machinery_stock,
-        location_name: location?.name ?? "",
+        location_name: location?.name ?? '',
         images: [],
-        observations: machinery_stock.observations ?? "",
+        observations: machinery_stock.observations ?? '',
+        state: machinery_stock.state as 'Available' | 'Sold' | 'Under Maintenance',
       });
     }
 
@@ -98,7 +96,7 @@ export async function updateMachinery(
   serialNumberValue?: string,
   locationIdValue?: number,
   stateValue?: string,
-  observationsValue?: string,
+  observationsValue?: string
 ) {
   const updatedMachinery = await db
     .update(machineryStock)
@@ -121,7 +119,7 @@ export async function sellMachinery(
   machineId: number,
   sold_dateValue: Date,
   sold_priceValue: number,
-  sold_toValue: string,
+  sold_toValue: string
 ) {
   const updatedMachinery = await db
     .update(machineryStock)
@@ -129,7 +127,7 @@ export async function sellMachinery(
       sold_date: sold_dateValue,
       sold_price: sold_priceValue,
       sold_to: sold_toValue,
-      state: "Sold",
+      state: 'Sold',
     })
     .where(eq(machineryStock.machine_id, machineId))
     .returning();
@@ -154,9 +152,7 @@ export async function deleteImageMachinery(imageId: number) {
 }
 
 export async function totalMachines() {
-  const totalMachines = await db
-    .select({ count: count() })
-    .from(machineryStock);
+  const totalMachines = await db.select({ count: count() }).from(machineryStock);
   if (totalMachines.length > 0) {
     const numberOfMachines: number = totalMachines[0]!.count;
     return numberOfMachines;

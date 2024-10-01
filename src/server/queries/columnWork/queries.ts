@@ -1,15 +1,11 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { workColumns, workTasks } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { db } from '../../db';
+import { workColumns, workTasks } from '../../db/schema';
+import { eq } from 'drizzle-orm';
 
-export async function createColumn(
-  title: string,
-  position: number,
-  order_id: number,
-) {
+export async function createColumn(title: string, position: number, order_id: number) {
   const newColumn = await db
     .insert(workColumns)
     .values({
@@ -23,7 +19,7 @@ export async function createColumn(
 }
 
 export async function deleteColumn(columnId: number) {
-  const deleteAllTasks = await db
+  await db
     .update(workTasks)
     .set({
       state: 0,
