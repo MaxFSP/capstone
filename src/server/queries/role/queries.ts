@@ -1,10 +1,10 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
+import { db } from '../../db';
 
-import { roles } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { roles } from '../../db/schema';
+import { eq } from 'drizzle-orm';
 
 // Roles Table --------------------------------------------------------------------------------------------
 
@@ -46,9 +46,6 @@ export async function updateRole(rolId: number, rolName?: string) {
 
 // Delete Role
 export async function deleteRole(rolId: number) {
-  const deletedRole = await db
-    .delete(roles)
-    .where(eq(roles.rol_id, rolId))
-    .returning();
+  const deletedRole = await db.delete(roles).where(eq(roles.rol_id, rolId)).returning();
   return deletedRole;
 }

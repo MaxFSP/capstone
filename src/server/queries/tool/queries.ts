@@ -1,10 +1,10 @@
-import "server-only";
+import 'server-only';
 
 //DB stuff
-import { db } from "../../db";
-import { asc, count, eq } from "drizzle-orm";
-import { toolStock, locations, toolImages } from "../../db/schema";
-import { type Tool } from "~/server/types/ITool";
+import { db } from '../../db';
+import { asc, count, eq } from 'drizzle-orm';
+import { toolStock, locations, toolImages } from '../../db/schema';
+import { type Tool } from '~/server/types/ITool';
 
 // Tool Stock Table --------------------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ export async function createTool(
   category: string,
   tool_type: string,
   acquisition_date: Date,
-  observations?: string,
+  observations?: string
 ) {
   const newTool = await db
     .insert(toolStock)
@@ -58,9 +58,10 @@ export async function getTools() {
     if (!toolMap.has(toolId)) {
       toolMap.set(toolId, {
         ...tool_stock,
-        location_name: location?.name ?? "",
+        location_name: location?.name ?? '',
         images: [],
-        observations: tool_stock.observations ?? "",
+        observations: tool_stock.observations ?? '',
+        condition: tool_stock.condition as 'Good' | 'Bad' | 'Excellent' | 'Poor',
       });
     }
 
@@ -99,7 +100,7 @@ export async function updateTool(
   conditionValue?: string,
   quantityValue?: number,
   location_idValue?: number,
-  observationsValue?: string,
+  observationsValue?: string
 ) {
   const updatedTool = await db
     .update(toolStock)
@@ -119,10 +120,7 @@ export async function updateTool(
 
 // Delete Tool
 export async function deleteTool(toolId: number) {
-  const deletedTool = await db
-    .delete(toolStock)
-    .where(eq(toolStock.tool_id, toolId))
-    .returning();
+  const deletedTool = await db.delete(toolStock).where(eq(toolStock.tool_id, toolId)).returning();
   return deletedTool;
 }
 

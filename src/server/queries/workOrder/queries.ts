@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import 'server-only';
 
 //DB stuff
@@ -48,7 +49,7 @@ export async function getWorkOrderById(orderId: number) {
   return workOrder;
 }
 
-export async function getWorkOrderBySessionId() {
+export async function getWorkOrderBySessionId(): Promise<RegularWorkOrder[]> {
   const user = auth();
   if (!user.userId) throw new Error('Unauthorized');
   const userId = user.userId;
@@ -59,11 +60,11 @@ export async function getWorkOrderBySessionId() {
 
   if (!getClerkUser) throw new Error('The user does not exist');
 
-  const workOrder = await db.query.workOrders.findMany({
+  const workOrder: RegularWorkOrder[] = await db.query.workOrders.findMany({
     where: (workOrders, { eq }) => eq(workOrders.assigned_user, getClerkUser.user_id),
   });
 
-  return workOrder as RegularWorkOrder[];
+  return workOrder;
 }
 
 // Update Emmployee
