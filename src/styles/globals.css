@@ -29,6 +29,12 @@
     --chart-3: 0 0% 50%; /* Light Gray */
     --chart-4: 0 0% 96%; /* Very Light Gray */
     --chart-5: 0 0% 0%; /* Black */
+    --tw-color-primary: hsl(var(--primary));
+    --tw-color-secondary: hsl(var(--secondary));
+    --tw-color-destructive: hsl(var(--destructive));
+    --tw-color-muted: hsl(var(--muted));
+    --tw-color-foreground: hsl(var(--foreground));
+    --tw-color-background: hsl(var(--background));
   }
 
   .dark {
