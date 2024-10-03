@@ -25,7 +25,7 @@ export const users = createTable(
   'user',
   {
     user_id: serial('user_id').primaryKey(),
-    username: text('username').notNull(),
+    username: text('username').unique().notNull(),
     first_name: text('first_name').notNull(),
     last_name: text('last_name').notNull(),
     imageUrl: text('image_url'),
@@ -49,7 +49,7 @@ export const machineryStock = createTable(
     brand: text('brand').notNull(),
     model: text('model').notNull(),
     year: integer('year').notNull(),
-    serial_number: text('serial_number').unique().notNull(), // SERIAL SHOULD BE UNIQUE DO THIS CHANGE
+    serial_number: text('serial_number').unique().notNull(),
     acquisition_date: timestamp('acquisition_date').notNull(),
     location_id: serial('location_id').references(() => locations.location_id),
     observations: text('observations'),
@@ -198,7 +198,7 @@ export const employees = createTable(
     age: integer('age').notNull(),
     imageUrl: text('image_url'),
     hireDate: timestamp('hire_date').notNull(),
-    phoneNumber: text('phone_number').notNull(),
+    phoneNumber: text('phone_number').unique().notNull(),
     job: text('job').notNull(),
     bloodType: text('blood_type').notNull(),
     imageKey: text('image_key'),
