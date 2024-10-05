@@ -4,10 +4,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
-import { Button } from "~/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
+import { Button } from '~/components/ui/button';
+import Autoplay from 'embla-carousel-autoplay';
 
 import {
   DropdownMenu,
@@ -17,13 +17,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+} from '~/components/ui/dropdown-menu';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "~/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from '~/components/ui/carousel';
 import {
   Dialog,
   DialogClose,
@@ -33,27 +29,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { type Machinery } from "~/server/types/IMachinery";
-import { type ILocation } from "~/server/types/ILocation";
-import { UploadButton } from "../utils/uploadthing";
-import { SellDataViewDialog } from "./sellMachineDialog";
-import { type States } from "~/server/types/IMachinery";
+} from '~/components/ui/dialog';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import { type Machinery } from '~/server/types/IMachinery';
+import { type ILocation } from '~/server/types/ILocation';
+import { UploadButton } from '../utils/uploadthing';
+import { SellDataViewDialog } from './sellMachineDialog';
+import { type States } from '~/server/types/IMachinery';
 
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "~/lib/utils";
-import { Calendar } from "~/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { type Image } from "~/server/types/IImages";
-import DeleteImageDialog from "./deleteImageDialog";
-import { useRouter } from "next/navigation";
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { format } from 'date-fns';
+import { cn } from '~/lib/utils';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { type Image } from '~/server/types/IImages';
+import DeleteImageDialog from './deleteImageDialog';
+import { useRouter } from 'next/navigation';
 
 export function SmallMachineryDialog(props: {
   data: Machinery;
@@ -64,17 +56,15 @@ export function SmallMachineryDialog(props: {
   const router = useRouter();
 
   const current_location: string = locations.find(
-    (location) => data.location_name === location.name,
+    (location) => data.location_name === location.name
   )!.name;
 
   const current_date = data.acquisition_date;
   const current_state = data.state;
 
   const [locationValue, setLocationValue] = useState<string>(current_location);
-  const [stateValue, setStateValue] = useState<States>(data.state as States);
-  const [dateValue, setDateValue] = useState<Date>(
-    new Date(data.acquisition_date),
-  );
+  const [stateValue, setStateValue] = useState<States>(data.state);
+  const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...data });
@@ -99,16 +89,13 @@ export function SmallMachineryDialog(props: {
   };
 
   const validateForm = () => {
-    const isDataValid =
-      formData.machine_id !== null && formData.machine_id !== undefined;
+    const isDataValid = formData.machine_id !== null && formData.machine_id !== undefined;
     setIsFormValid(isDataValid);
   };
 
   const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split("T")[0];
-    const dateWithoutTimeCurrent = new Date(current_date)
-      .toISOString()
-      .split("T")[0];
+    const dateWithoutTime = dateValue.toISOString().split('T')[0];
+    const dateWithoutTimeCurrent = new Date(current_date).toISOString().split('T')[0];
 
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
@@ -140,13 +127,13 @@ export function SmallMachineryDialog(props: {
     if (isFormValid && hasChanges) {
       try {
         formData.location_id = locations.find(
-          (location) => location.name === locationValue,
+          (location) => location.name === locationValue
         )!.location_id;
         formData.state = stateValue;
-        const response = await fetch("/api/updateMachinery", {
-          method: "POST",
+        const response = await fetch('/api/updateMachinery', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(formData),
         });
@@ -156,7 +143,7 @@ export function SmallMachineryDialog(props: {
           // console.error("Failed to update tool:", result.error);
         }
       } catch (error) {
-        console.error("Error updating tool:", error);
+        console.error('Error updating tool:', error);
       }
     }
   };
@@ -186,13 +173,9 @@ export function SmallMachineryDialog(props: {
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">
-              Serial Number
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Serial Number</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-foreground">
-                {data.serial_number}
-              </span>
+              <span className="text-sm text-foreground">{data.serial_number}</span>
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
@@ -205,9 +188,7 @@ export function SmallMachineryDialog(props: {
       </DialogTrigger>
       <DialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto rounded-lg border border-border bg-background lg:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large text-primary">
-            Edit Machine
-          </DialogTitle>
+          <DialogTitle className="text-large text-primary">Edit Machine</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Anyone who has this link will be able to view this.
           </DialogDescription>
@@ -237,7 +218,7 @@ export function SmallMachineryDialog(props: {
                           imageInfo={{
                             image_id: image.image_id,
                             image_key: image.image_key,
-                            type: "Machinery",
+                            type: 'Machinery',
                           }}
                         />
                       </div>
@@ -314,18 +295,14 @@ export function SmallMachineryDialog(props: {
               <Popover>
                 <PopoverTrigger asChild disabled={!isEditing}>
                   <Button
-                    variant={"outline"}
+                    variant={'outline'}
                     className={cn(
-                      "w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground",
-                      !dateValue && "text-muted-foreground",
+                      'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
+                      !dateValue && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 text-foreground" />
-                    {dateValue ? (
-                      format(dateValue, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {dateValue ? format(dateValue, 'PPP') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -356,7 +333,7 @@ export function SmallMachineryDialog(props: {
               <Label>Observations</Label>
               <Input
                 name="observations"
-                value={formData.observations ?? "N/A"}
+                value={formData.observations ?? 'N/A'}
                 readOnly={!isEditing}
                 disabled={!isEditing}
                 onChange={handleChange}
@@ -395,12 +372,8 @@ export function SmallMachineryDialog(props: {
                     value={stateValue}
                     onValueChange={(value) => setStateValue(value as States)}
                   >
-                    <DropdownMenuRadioItem value="Available">
-                      Available
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Sold">
-                      Sold
-                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Available">Available</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Sold">Sold</DropdownMenuRadioItem>
                     <DropdownMenuRadioItem value="Under Maintenance">
                       Under Maintenance
                     </DropdownMenuRadioItem>
@@ -422,15 +395,9 @@ export function SmallMachineryDialog(props: {
                 <DropdownMenuContent className="border border-border bg-background text-foreground">
                   <DropdownMenuLabel>Locations</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={locationValue}
-                    onValueChange={setLocationValue}
-                  >
+                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
                     {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                      >
+                      <DropdownMenuRadioItem key={location.name} value={location.name}>
                         {location.name}
                       </DropdownMenuRadioItem>
                     ))}
@@ -455,11 +422,7 @@ export function SmallMachineryDialog(props: {
                 <div className="flex-1">
                   <Label>Sold Date</Label>
                   <Input
-                    value={
-                      data.sold_date
-                        ? data.sold_date.toLocaleDateString()
-                        : "N/A"
-                    }
+                    value={data.sold_date ? data.sold_date.toLocaleDateString() : 'N/A'}
                     readOnly
                     disabled={!isEditing}
                     className="border border-border bg-muted text-muted-foreground"
@@ -471,7 +434,7 @@ export function SmallMachineryDialog(props: {
                 <div className="flex-1">
                   <Label>Sold To</Label>
                   <Input
-                    value={data.sold_to ?? "N/A"}
+                    value={data.sold_to ?? 'N/A'}
                     readOnly
                     disabled={!isEditing}
                     className="border border-border bg-muted text-muted-foreground"
@@ -480,7 +443,7 @@ export function SmallMachineryDialog(props: {
               </div>
             </>
           )}
-          {data.state !== "Sold" && (
+          {data.state !== 'Sold' && (
             <div className="flex-1">
               <Label>Upload Images</Label>
               <div className="flex items-center gap-2">
@@ -514,12 +477,12 @@ export function SmallMachineryDialog(props: {
               </Button>
             </DialogClose>
           )}
-          {data.state !== "Sold" && (
+          {data.state !== 'Sold' && (
             <Button
               onClick={isEditing ? handleCancelClick : handleEditClick}
               className="bg-primary text-primary-foreground"
             >
-              {isEditing ? "Cancel" : "Edit"}
+              {isEditing ? 'Cancel' : 'Edit'}
             </Button>
           )}
           {isEditing && (
@@ -535,7 +498,7 @@ export function SmallMachineryDialog(props: {
               </DialogClose>
             </>
           )}
-          {data.state !== "Sold" && (
+          {data.state !== 'Sold' && (
             <SellDataViewDialog
               data={{
                 machine_id: data.machine_id,
@@ -544,7 +507,7 @@ export function SmallMachineryDialog(props: {
                 year: data.year,
                 serial_number: data.serial_number,
                 sold_price: data.sold_price ?? 0,
-                sold_to: data.sold_to ?? "N/A",
+                sold_to: data.sold_to ?? 'N/A',
                 sold_date: data.sold_date ?? new Date(),
               }}
             />

@@ -58,9 +58,10 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
   const router = useRouter();
   const { toast } = useToast();
 
-  const current_location: string = locations.find(
-    (location) => data.location_name === location.name
-  )!.name;
+  const current_location: string =
+    locations.find((location) => location.name === data.location_name)?.name ??
+    locations[0]?.name ??
+    '';
   const current_condition = data.condition;
 
   const [conditionValue, setConditionValue] = useState<ToolCondition>(data.condition);
@@ -69,6 +70,47 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
   const [isEditing, setIsEditing] = useState(false);
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Options arrays
+  const toolTypes = [
+    'Wrench',
+    'Hammer',
+    'Screwdriver',
+    'Drill',
+    'Grinder',
+    'Impact Wrench',
+    'Hydraulic Jack',
+    'Torque Wrench',
+    'Pliers',
+    'Allen Key',
+    'Sockets',
+  ];
+
+  const toolBrands = [
+    'Milwaukee',
+    'DeWalt',
+    'Bosch',
+    'Makita',
+    'Hilti',
+    'Snap-On',
+    'Stanley',
+    'Ridgid',
+    'Kobalt',
+    'Husky',
+  ];
+
+  const toolCategories = [
+    'Hand Tools',
+    'Power Tools',
+    'Measuring Tools',
+    'Cutting Tools',
+    'Pneumatic Tools',
+    'Hydraulic Tools',
+    'Electrical Tools',
+    'Safety Tools',
+    'Welding Tools',
+    'Fastening Tools',
+  ];
 
   const { formData, setFormData, isFormValid, errors, validateForm } =
     useFormValidation<ToolFormData>({
@@ -105,7 +147,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
       dateValue.toISOString().split('T')[0] !==
       new Date(data.acquisition_date).toISOString().split('T')[0];
 
-    setHasChanges(hasFormChanged ?? hasLocationChanged ?? hasConditionChanged ?? hasDateChanged);
+    setHasChanges(hasFormChanged || hasLocationChanged || hasConditionChanged || hasDateChanged);
   };
 
   const handleEditClick = () => {
@@ -222,7 +264,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
             </div>
           )}
 
-          {/* Tool ID and Brand */}
+          {/* Tool ID */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Tool ID</Label>
@@ -234,25 +276,9 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
                 className="border border-border bg-muted text-muted-foreground"
               />
             </div>
-            <div className="flex-1">
-              <Label>Brand</Label>
-              <Input
-                name="brand"
-                value={formData.brand}
-                readOnly={!isEditing}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="border border-border bg-background text-foreground"
-              />
-              {errors.find((e) => e.path[0] === 'brand') && (
-                <p className="text-sm text-red-500">
-                  {errors.find((e) => e.path[0] === 'brand')?.message}
-                </p>
-              )}
-            </div>
           </div>
 
-          {/* Name and Category */}
+          {/* Name */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Name</Label>
@@ -270,16 +296,107 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Brand and Tool Type */}
+          <div className="flex space-x-4">
+            {/* Brand */}
+            <div className="flex-1">
+              <Label>Brand</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full border border-border bg-background text-foreground">
+                    {formData.brand}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-background text-foreground">
+                  <DropdownMenuLabel>Brands</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.brand}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({ ...prev, brand: value }));
+                      validateForm();
+                    }}
+                  >
+                    {toolBrands.map((brand) => (
+                      <DropdownMenuRadioItem key={brand} value={brand}>
+                        {brand}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {errors.find((e) => e.path[0] === 'brand') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'brand')?.message}
+                </p>
+              )}
+            </div>
+
+            {/* Tool Type */}
+            <div className="flex-1">
+              <Label>Tool Type</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full border border-border bg-background text-foreground">
+                    {formData.tool_type}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-background text-foreground">
+                  <DropdownMenuLabel>Tool Types</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.tool_type}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({ ...prev, tool_type: value }));
+                      validateForm();
+                    }}
+                  >
+                    {toolTypes.map((type) => (
+                      <DropdownMenuRadioItem key={type} value={type}>
+                        {type}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {errors.find((e) => e.path[0] === 'tool_type') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'tool_type')?.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Category */}
+          <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Category</Label>
-              <Input
-                name="category"
-                value={formData.category}
-                readOnly={!isEditing}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="border border-border bg-background text-foreground"
-              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild disabled={!isEditing}>
+                  <Button className="w-full border border-border bg-background text-foreground">
+                    {formData.category}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-background text-foreground">
+                  <DropdownMenuLabel>Categories</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={formData.category}
+                    onValueChange={(value) => {
+                      setFormData((prev) => ({ ...prev, category: value }));
+                      validateForm();
+                    }}
+                  >
+                    {toolCategories.map((category) => (
+                      <DropdownMenuRadioItem key={category} value={category}>
+                        {category}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {errors.find((e) => e.path[0] === 'category') && (
                 <p className="text-sm text-red-500">
                   {errors.find((e) => e.path[0] === 'category')?.message}
@@ -288,24 +405,8 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
             </div>
           </div>
 
-          {/* Tool Type and Quantity */}
+          {/* Quantity */}
           <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Tool Type</Label>
-              <Input
-                name="tool_type"
-                value={formData.tool_type}
-                readOnly={!isEditing}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="border border-border bg-background text-foreground"
-              />
-              {errors.find((e) => e.path[0] === 'tool_type') && (
-                <p className="text-sm text-red-500">
-                  {errors.find((e) => e.path[0] === 'tool_type')?.message}
-                </p>
-              )}
-            </div>
             <div className="flex-1">
               <Label>Quantity</Label>
               <Input
@@ -507,7 +608,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
               <Button
                 onClick={handleSaveClick}
                 className="bg-primary text-primary-foreground"
-                disabled={!isFormValid ?? !hasChanges}
+                disabled={!isFormValid || !hasChanges}
               >
                 Save
               </Button>
