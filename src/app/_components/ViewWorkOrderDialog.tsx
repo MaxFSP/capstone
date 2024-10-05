@@ -225,16 +225,18 @@ export function WorkOrderDataViewDialog(props: {
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex space-x-4">
-            <LabeledInput
-              label="Name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              disabled={!isEditing}
-              required
-              error={errors.find((e) => e.path[0] === 'name')?.message}
-            />
+            <div className="flex-1">
+              <LabeledInput
+                label="Name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                disabled={!isEditing}
+                required
+                error={errors.find((e) => e.path[0] === 'name')?.message}
+              />
+            </div>
             <div className="flex-1">
               <Label>Assigned Machine</Label>
               <DropdownMenu>
@@ -264,17 +266,15 @@ export function WorkOrderDataViewDialog(props: {
             </div>
           </div>
 
-          <div className="flex space-x-4">
-            <LabeledInput
-              label="Observations"
-              name="observations"
-              type="text"
-              value={formData.observations ?? ''}
-              onChange={handleChange}
-              disabled={!isEditing}
-              error={errors.find((e) => e.path[0] === 'observations')?.message}
-            />
-          </div>
+          <LabeledInput
+            label="Observations"
+            name="observations"
+            type="text"
+            value={formData.observations ?? ''}
+            onChange={handleChange}
+            disabled={!isEditing}
+            error={errors.find((e) => e.path[0] === 'observations')?.message}
+          />
 
           <div className="flex space-x-4">
             <div className="flex-1">
