@@ -77,7 +77,12 @@ export default function AdminHomeView() {
   return (
     <div className="p-6 space-y-6 bg-background text-foreground">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      <KeyMetrics metrics={keyMetrics} />
+      {(keyMetrics &&
+        keyMetrics.totalMachines > 0 &&
+        keyMetrics.totalParts > 0 &&
+        keyMetrics.totalTools > 0 && <KeyMetrics metrics={keyMetrics} />) ?? (
+        <KeyMetrics metrics={{ totalMachines: 0, totalParts: 0, totalTools: 0 }} />
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {chartData.workOrderStatus && chartData.workOrderStatus.length > 0 && (
           <WorkOrderStatusChart data={chartData.workOrderStatus} />
