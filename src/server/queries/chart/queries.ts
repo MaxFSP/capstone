@@ -58,7 +58,6 @@ export async function fetchWorkOrderStatusData() {
     name: mapWorkOrderState(item.state),
     value: Number(item.count),
   }));
-  console.log(val);
   return data.map((item) => ({
     name: mapWorkOrderState(item.state),
     value: Number(item.count),

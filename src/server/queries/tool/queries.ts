@@ -134,7 +134,6 @@ export async function deleteImageTool(imageId: number) {
 
 export async function totalTools() {
   const totalTools = await db.select({ count: count() }).from(toolStock);
-
   if (totalTools.length > 0) {
     const numberOfTools: number = totalTools[0]!.count;
     return numberOfTools;
