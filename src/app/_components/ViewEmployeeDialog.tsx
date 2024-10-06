@@ -175,6 +175,7 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
             description: 'Employee updated successfully.',
           });
           router.refresh();
+          handleEditClick();
           setIsEditing(false);
         } else {
           const data = await response.json();
@@ -192,6 +193,8 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
           description: errorMessage,
           variant: 'destructive',
         });
+        handleEditClick();
+        setIsEditing(false);
       }
     }
   };

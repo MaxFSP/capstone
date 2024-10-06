@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: result }, { status: 200 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to update Part' }, { status: 500 });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    if (error.detail.includes('already exists')) {
+      return NextResponse.json({ error: 'Phone number already exists' }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Failed to update employee' }, { status: 500 });
   }
 }
