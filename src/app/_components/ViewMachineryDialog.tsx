@@ -56,6 +56,8 @@ import { useToast } from '~/components/hooks/use-toast';
 import { useFormValidation } from '~/hooks/useFormValidation';
 import type { z } from 'zod';
 
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 type MachineryFormData = z.infer<typeof machinerySchema>;
 
 export function MachineryDataViewDialog(props: {
@@ -69,13 +71,14 @@ export function MachineryDataViewDialog(props: {
   const router = useRouter();
   const { toast } = useToast();
 
-  const current_location: string = locations.find(
-    (location) => data.location_name === location.name
-  )!.name;
+  // Get the current location ID as a string
+  const current_location_id = locations
+    .find((location) => data.location_name === location.name)!
+    .location_id.toString();
 
   const [stateValue, setStateValue] = useState<States>(data.state);
   const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
-  const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [locationValue, setLocationValue] = useState<string>(current_location_id);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [hasChanges, setHasChanges] = useState(false);
@@ -88,7 +91,7 @@ export function MachineryDataViewDialog(props: {
 
   useEffect(() => {
     if (!isEditing) {
-      setLocationValue(current_location);
+      setLocationValue(current_location_id);
       setStateValue(data.state);
       setFormData({ ...data });
     }
@@ -113,7 +116,7 @@ export function MachineryDataViewDialog(props: {
 
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
-      locationValue !== current_location ||
+      locationValue !== current_location_id ||
       dateWithoutTime !== dateWithoutTimeCurrent ||
       stateValue !== current_state;
 
@@ -149,7 +152,7 @@ export function MachineryDataViewDialog(props: {
       try {
         const updatedFormData: MachineryFormData = {
           ...formData,
-          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          location_id: parseInt(locationValue), // Use the selected location ID
           state: stateValue,
           acquisition_date: dateValue,
         };
@@ -168,6 +171,7 @@ export function MachineryDataViewDialog(props: {
           });
           router.refresh();
           setIsEditing(false);
+          handleCancelClick();
         } else {
           const data = await response.json();
           throw new Error(data.error || 'Failed to update machinery.');
@@ -184,6 +188,7 @@ export function MachineryDataViewDialog(props: {
           description: errorMessage,
           variant: 'destructive',
         });
+        handleCancelClick();
       }
     }
   };
@@ -436,31 +441,16 @@ export function MachineryDataViewDialog(props: {
             </div>
             <div className="flex-1">
               <Label>Location</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button
-                    className="w-full border border-border bg-background text-foreground"
-                    variant="outline"
-                  >
-                    {locationValue}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="border border-border bg-background text-foreground">
-                  <DropdownMenuLabel>Locations</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
-                    {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                        className="hover:bg-muted-background hover:text-foreground"
-                      >
-                        {location.name}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={locations.map((location) => ({
+                  label: location.name,
+                  value: location.location_id.toString(),
+                }))}
+                placeholder="Select a location..."
+                selectedValue={locationValue}
+                onChange={(value) => setLocationValue(value)}
+                disabled={!isEditing}
+              />
             </div>
           </div>
 

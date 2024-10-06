@@ -18,7 +18,7 @@ import { sql, eq } from 'drizzle-orm';
 function mapWorkOrderState(state: number): string {
   switch (state) {
     case 0:
-      return 'Not Started';
+      return 'On hold';
     case 1:
       return 'In Progress';
     case 2:
@@ -54,10 +54,7 @@ export async function fetchWorkOrderStatusData() {
     })
     .from(workOrders)
     .groupBy(workOrders.state);
-  const val = data.map((item) => ({
-    name: mapWorkOrderState(item.state),
-    value: Number(item.count),
-  }));
+
   return data.map((item) => ({
     name: mapWorkOrderState(item.state),
     value: Number(item.count),

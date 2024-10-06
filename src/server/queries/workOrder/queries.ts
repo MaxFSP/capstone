@@ -8,7 +8,14 @@ import { eq, inArray } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { type RegularWorkOrder } from '~/server/types/IOrders';
 
-// Employees Table --------------------------------------------------------------------------------------------
+// Get work orders by user id
+
+export async function getWorkOrdersByUserId(userId: number) {
+  const workOrders = await db.query.workOrders.findMany({
+    where: (workOrders, { eq }) => eq(workOrders.assigned_user, userId),
+  });
+  return workOrders;
+}
 
 // Create Employee
 export async function createWorkOrder(

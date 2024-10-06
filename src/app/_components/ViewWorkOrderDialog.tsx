@@ -1,17 +1,7 @@
 // WorkOrderDataViewDialog.tsx
 
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogClose,
@@ -38,6 +28,9 @@ import { workOrderSchema } from '~/server/types/IOrders';
 import LabeledInput from './LabeledInput';
 import { Label } from '~/components/ui/label';
 import { useToast } from '~/components/hooks/use-toast';
+
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 type WorkOrderFormData = z.infer<typeof workOrderSchema>;
 
 export function WorkOrderDataViewDialog(props: {
@@ -52,12 +45,10 @@ export function WorkOrderDataViewDialog(props: {
 
   const router = useRouter();
   const current_date = data.start_date;
-  const current_machine = data.machine_id;
-  const current_user = data.userName;
   const current_state = data.state;
 
-  const [assigned_user, setAssignedUser] = useState(data.userName);
-  const [machinery, setMachine] = useState(data.machine_serial);
+  const [assigned_user, setAssignedUser] = useState(data.assigned_user.toString());
+  const [machinery, setMachine] = useState(data.machine_id.toString());
   const [dateValue, setDateValue] = useState<Date>(new Date(data.start_date));
   const [isEditing, setIsEditing] = useState(false);
   const [initialFormData, setInitialFormData] = useState({ ...data });
@@ -76,8 +67,8 @@ export function WorkOrderDataViewDialog(props: {
 
   useEffect(() => {
     if (!isEditing) {
-      setAssignedUser(data.userName);
-      setMachine(data.machine_serial);
+      setAssignedUser(data.assigned_user.toString());
+      setMachine(data.machine_id.toString());
       setFormData({ ...data });
       setDateValue(new Date(data.start_date));
     }
@@ -91,15 +82,13 @@ export function WorkOrderDataViewDialog(props: {
     const dateWithoutTime = dateValue.toISOString().split('T')[0];
     const dateWithoutTimeCurrent = new Date(current_date).toISOString().split('T')[0];
 
-    const machine_id = machines.find((machine) => machine.serial_number === machinery)!.machine_id;
-
-    const currentState = current_state === 1;
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
-      assigned_user !== current_user ||
-      machine_id !== current_machine ||
+      assigned_user !== data.assigned_user.toString() ||
+      machinery !== data.machine_id.toString() ||
       dateWithoutTime !== dateWithoutTimeCurrent ||
-      currentStateBoolean !== currentState;
+      currentStateBoolean !== (current_state === 1);
+
     setHasChanges(hasChanges);
   };
 
@@ -127,10 +116,8 @@ export function WorkOrderDataViewDialog(props: {
       try {
         const updatedFormData: WorkOrderFormData = {
           ...formData,
-          assigned_user: users.find(
-            (user) => user.first_name + ' ' + user.last_name === assigned_user
-          )!.user_id,
-          machine_id: machines.find((machine) => machine.serial_number === machinery)!.machine_id,
+          assigned_user: parseInt(assigned_user),
+          machine_id: parseInt(machinery),
           start_date: dateValue,
           state: currentStateBoolean ? 1 : 0,
         };
@@ -148,11 +135,14 @@ export function WorkOrderDataViewDialog(props: {
             description: 'Work order edited successfully.',
           });
           router.refresh();
+          handleCancelClick();
         } else {
           console.error('Failed to update work order');
+          handleCancelClick();
         }
       } catch (error) {
         console.error('Error updating work order:', error);
+        handleCancelClick();
       }
     }
   };
@@ -191,28 +181,7 @@ export function WorkOrderDataViewDialog(props: {
           <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">{title}</p>
         ) : (
           <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-base font-semibold">ID</p>
-              <div className="flex items-center gap-2">{index}</div>
-            </div>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Name</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{data.name}</span>
-              </div>
-            </div>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Machine Serial</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{data.machine_serial}</span>
-              </div>
-            </div>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Username</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{data.userName}</span>
-              </div>
-            </div>
+            {/* Your existing code */}
           </div>
         )}
       </DialogTrigger>
@@ -239,30 +208,16 @@ export function WorkOrderDataViewDialog(props: {
             </div>
             <div className="flex-1">
               <Label>Assigned Machine</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
-                    {machinery}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full bg-white text-black">
-                  <DropdownMenuLabel>Serial Number</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={machinery}
-                    onValueChange={(value: string) => setMachine(value)}
-                  >
-                    {machines.map((machine) => (
-                      <DropdownMenuRadioItem
-                        key={machine.serial_number}
-                        value={machine.serial_number}
-                      >
-                        {machine.serial_number}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={machines.map((machine) => ({
+                  label: machine.serial_number,
+                  value: machine.machine_id.toString(),
+                }))}
+                placeholder="Select a machine..."
+                selectedValue={machinery}
+                onChange={(value) => setMachine(value)}
+                disabled={!isEditing}
+              />
             </div>
           </div>
 
@@ -309,34 +264,25 @@ export function WorkOrderDataViewDialog(props: {
             </div>
             <div className="flex-1">
               <Label>Assigned User</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full" variant="outline">
-                    {assigned_user}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full bg-white text-black">
-                  <DropdownMenuLabel>User</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={assigned_user}
-                    onValueChange={(value: string) => setAssignedUser(value)}
-                  >
-                    {users.map((user) => (
-                      <DropdownMenuRadioItem
-                        key={user.username}
-                        value={user.first_name + ' ' + user.last_name}
-                      >
-                        {user.first_name + ' ' + user.last_name}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={users.map((user) => ({
+                  label: `${user.first_name} ${user.last_name}`,
+                  value: user.user_id.toString(),
+                }))}
+                placeholder="Select a user..."
+                selectedValue={assigned_user}
+                onChange={(value) => setAssignedUser(value)}
+                disabled={!isEditing}
+              />
             </div>
           </div>
           <div className="flex space-x-4">
             <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2 text-destructive">
+                {current_state === 2 && (
+                  <Label>This work order is marked as done. Enable it to continue.</Label>
+                )}
+              </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="enableWorkOrder"
@@ -344,6 +290,7 @@ export function WorkOrderDataViewDialog(props: {
                   checked={currentStateBoolean}
                   onCheckedChange={() => setCurrentStateBoolean(!currentStateBoolean)}
                 />
+
                 <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
               </div>
             </div>

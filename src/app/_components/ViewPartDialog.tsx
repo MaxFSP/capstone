@@ -46,6 +46,8 @@ import type { z } from 'zod';
 import { useToast } from '~/components/hooks/use-toast';
 import { deleteEntity } from '~/lib/api-utils';
 
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 type PartFormData = z.infer<typeof partSchema>;
 
 export function PartDataViewDialog(props: { title: string; data: Part; locations: ILocation[] }) {
@@ -53,14 +55,15 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
   const router = useRouter();
   const { toast } = useToast();
 
-  const current_location: string = locations.find(
-    (location) => data.location_name === location.name
-  )!.name;
+  // Get the current location ID as a string
+  const current_location_id = locations
+    .find((location) => data.location_name === location.name)!
+    .location_id.toString();
 
   const current_condition = data.condition;
 
   const [conditionValue, setConditionValue] = useState<PartCondition>(data.condition);
-  const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [locationValue, setLocationValue] = useState<string>(current_location_id);
   const [length, setLength] = useState(data.length_unit);
   const [width, setWidth] = useState(data.width_unit);
   const [height, setHeight] = useState(data.height_unit);
@@ -77,7 +80,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
 
   useEffect(() => {
     if (!isEditing) {
-      setLocationValue(current_location);
+      setLocationValue(current_location_id);
       setConditionValue(data.condition);
       setFormData({ ...data });
     }
@@ -98,7 +101,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
   const checkForChanges = () => {
     const hasChanges =
       JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
-      locationValue !== current_location ||
+      locationValue !== current_location_id ||
       conditionValue !== current_condition ||
       length !== data.length_unit ||
       width !== data.width_unit ||
@@ -139,7 +142,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
       try {
         const updatedFormData: PartFormData = {
           ...formData,
-          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          location_id: parseInt(locationValue), // Use the selected location ID
           condition: conditionValue,
           length_unit: length,
           width_unit: width,
@@ -161,6 +164,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
           });
           router.refresh();
           setIsEditing(false);
+          handleCancelClick();
         } else {
           const data = await response.json();
           throw new Error(data.error || 'Failed to update part.');
@@ -177,6 +181,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
           description: errorMessage,
           variant: 'destructive',
         });
+        handleCancelClick();
       }
     }
   };
@@ -185,7 +190,7 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
       await deleteEntity({
         endpoint: '/api/deletePart',
         entityId: data.part_id,
-        entityName: 'employee',
+        entityName: 'part',
         onSuccess: () => router.refresh(),
       });
     } catch (error) {}
@@ -253,9 +258,9 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
                 onChange={handleChange}
                 className="border border-border bg-background text-foreground"
               />
-              {errors.find((e) => e.path[0] === name) && (
+              {errors.find((e) => e.path[0] === 'part_number') && (
                 <p className="text-sm text-red-500">
-                  {errors.find((e) => e.path[0] === name)?.message}
+                  {errors.find((e) => e.path[0] === 'part_number')?.message}
                 </p>
               )}
             </div>
@@ -474,31 +479,16 @@ export function PartDataViewDialog(props: { title: string; data: Part; locations
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Location</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button
-                    className="w-full border border-border bg-background text-foreground"
-                    variant="outline"
-                  >
-                    {locationValue}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="border border-border bg-background text-foreground">
-                  <DropdownMenuLabel>Locations</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
-                    {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                        className="hover:bg-muted-background hover:text-foreground"
-                      >
-                        {location.name}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={locations.map((location) => ({
+                  label: location.name,
+                  value: location.location_id.toString(),
+                }))}
+                placeholder="Select a location..."
+                selectedValue={locationValue}
+                onChange={(value) => setLocationValue(value)}
+                disabled={!isEditing}
+              />
             </div>
             <div className="flex-1">
               <Label>Condition</Label>

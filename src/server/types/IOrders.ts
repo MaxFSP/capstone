@@ -8,7 +8,7 @@ export const workOrderSchema = z.object({
   observations: z.string().nullable(),
   start_date: z.date(),
   end_date: z.date().nullable(),
-  state: z.number().int().min(0).max(1),
+  state: z.number().int().min(0).max(2),
   machine_id: z.number(),
   assigned_user: z.number(),
 });

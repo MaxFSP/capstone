@@ -50,6 +50,8 @@ import { useFormValidation } from '~/hooks/useFormValidation';
 import { toolSchema } from '~/server/types/ITool';
 import type { z } from 'zod';
 
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 type ToolFormData = z.infer<typeof toolSchema>;
 
 export function ToolDataViewDialog(props: { title: string; data: Tool; locations: ILocation[] }) {
@@ -58,15 +60,17 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
   const router = useRouter();
   const { toast } = useToast();
 
-  const current_location: string =
-    locations.find((location) => location.name === data.location_name)?.name ??
-    locations[0]?.name ??
+  // Get the current location ID as a string
+  const current_location_id: string =
+    locations.find((location) => location.name === data.location_name)?.location_id.toString() ??
+    locations[0]?.location_id.toString() ??
     '';
+
   const current_condition = data.condition;
 
   const [conditionValue, setConditionValue] = useState<ToolCondition>(data.condition);
   const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
-  const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [locationValue, setLocationValue] = useState<string>(current_location_id);
   const [isEditing, setIsEditing] = useState(false);
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [hasChanges, setHasChanges] = useState(false);
@@ -120,7 +124,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
 
   useEffect(() => {
     if (!isEditing) {
-      setLocationValue(current_location);
+      setLocationValue(current_location_id);
       setConditionValue(data.condition);
       setFormData({ ...data });
       setDateValue(new Date(data.acquisition_date));
@@ -141,7 +145,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
 
   const checkForChanges = () => {
     const hasFormChanged = JSON.stringify(formData) !== JSON.stringify(initialFormData);
-    const hasLocationChanged = locationValue !== current_location;
+    const hasLocationChanged = locationValue !== current_location_id;
     const hasConditionChanged = conditionValue !== current_condition;
     const hasDateChanged =
       dateValue.toISOString().split('T')[0] !==
@@ -183,7 +187,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
       try {
         const updatedFormData: ToolFormData = {
           ...formData,
-          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          location_id: parseInt(locationValue), // Use the selected location ID
           condition: conditionValue,
           acquisition_date: dateValue,
         };
@@ -203,6 +207,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           });
           router.refresh();
           setIsEditing(false);
+          handleCancelClick();
         } else {
           const responseData = await response.json();
           throw new Error(responseData.error ?? 'Failed to update tool.');
@@ -219,6 +224,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           description: errorMessage,
           variant: 'destructive',
         });
+        handleCancelClick();
       }
     }
   };
@@ -303,30 +309,19 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
             {/* Brand */}
             <div className="flex-1">
               <Label>Brand</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full border border-border bg-background text-foreground">
-                    {formData.brand}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background text-foreground">
-                  <DropdownMenuLabel>Brands</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={formData.brand}
-                    onValueChange={(value) => {
-                      setFormData((prev) => ({ ...prev, brand: value }));
-                      validateForm();
-                    }}
-                  >
-                    {toolBrands.map((brand) => (
-                      <DropdownMenuRadioItem key={brand} value={brand}>
-                        {brand}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={toolBrands.map((brand) => ({
+                  label: brand,
+                  value: brand,
+                }))}
+                placeholder="Select a brand..."
+                selectedValue={formData.brand}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, brand: value }));
+                  validateForm();
+                }}
+                disabled={!isEditing}
+              />
               {errors.find((e) => e.path[0] === 'brand') && (
                 <p className="text-sm text-red-500">
                   {errors.find((e) => e.path[0] === 'brand')?.message}
@@ -337,30 +332,19 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
             {/* Tool Type */}
             <div className="flex-1">
               <Label>Tool Type</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full border border-border bg-background text-foreground">
-                    {formData.tool_type}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background text-foreground">
-                  <DropdownMenuLabel>Tool Types</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={formData.tool_type}
-                    onValueChange={(value) => {
-                      setFormData((prev) => ({ ...prev, tool_type: value }));
-                      validateForm();
-                    }}
-                  >
-                    {toolTypes.map((type) => (
-                      <DropdownMenuRadioItem key={type} value={type}>
-                        {type}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={toolTypes.map((type) => ({
+                  label: type,
+                  value: type,
+                }))}
+                placeholder="Select a tool type..."
+                selectedValue={formData.tool_type}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, tool_type: value }));
+                  validateForm();
+                }}
+                disabled={!isEditing}
+              />
               {errors.find((e) => e.path[0] === 'tool_type') && (
                 <p className="text-sm text-red-500">
                   {errors.find((e) => e.path[0] === 'tool_type')?.message}
@@ -373,30 +357,19 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Category</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full border border-border bg-background text-foreground">
-                    {formData.category}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background text-foreground">
-                  <DropdownMenuLabel>Categories</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={formData.category}
-                    onValueChange={(value) => {
-                      setFormData((prev) => ({ ...prev, category: value }));
-                      validateForm();
-                    }}
-                  >
-                    {toolCategories.map((category) => (
-                      <DropdownMenuRadioItem key={category} value={category}>
-                        {category}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={toolCategories.map((category) => ({
+                  label: category,
+                  value: category,
+                }))}
+                placeholder="Select a category..."
+                selectedValue={formData.category}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, category: value }));
+                  validateForm();
+                }}
+                disabled={!isEditing}
+              />
               {errors.find((e) => e.path[0] === 'category') && (
                 <p className="text-sm text-red-500">
                   {errors.find((e) => e.path[0] === 'category')?.message}
@@ -492,31 +465,16 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Location</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button
-                    className="w-full border border-border bg-background text-foreground"
-                    variant="outline"
-                  >
-                    {locationValue}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
-                  <DropdownMenuLabel>Locations</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
-                    {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                        className="hover:bg-muted-background hover:text-foreground"
-                      >
-                        {location.name}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={locations.map((location) => ({
+                  label: location.name,
+                  value: location.location_id.toString(),
+                }))}
+                placeholder="Select a location..."
+                selectedValue={locationValue}
+                onChange={(value) => setLocationValue(value)}
+                disabled={!isEditing}
+              />
             </div>
             <div className="flex-1">
               <Label>Condition</Label>
