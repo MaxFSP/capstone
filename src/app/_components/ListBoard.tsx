@@ -28,7 +28,6 @@ function ListBoard(props: {
   employees: Employee[];
   tools: Tool[];
   parts: Part[];
-  triggerRefresh: () => void;
 }) {
   const { tasksOnColumns, allColumns, employees, tools, parts, triggerRefresh } = props;
 
@@ -229,7 +228,6 @@ function ListBoard(props: {
                         const newTasks = tasks.filter((t) => t.task_id !== task.task_id);
                         setTasks(newTasks);
                       }}
-                      triggerRefresh={triggerRefresh}
                       type="list"
                     />
                   </td>

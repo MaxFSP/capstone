@@ -224,7 +224,6 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           description: errorMessage,
           variant: 'destructive',
         });
-        handleCancelClick();
       }
     }
   };

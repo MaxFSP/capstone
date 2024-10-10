@@ -10,16 +10,21 @@ import WorkOrderDoneDialog from './WorkOrderDoneDialog';
 import { type TasksOnColumns } from '~/server/types/ITasks';
 
 // Import icons from React Icons
-import { FiRefreshCcw, FiTrash2, FiEdit2, FiCheck } from 'react-icons/fi';
+import { FiRefreshCcw } from 'react-icons/fi';
 
 export default function KanbanBoardHeader(props: {
   workOrder: RegularWorkOrder;
-  triggerRefresh: () => void;
   tasksOnColumns: TasksOnColumns;
   columnsWorkOrder: Column[];
+  fetchData: () => Promise<void>;
 }) {
-  const { workOrder, triggerRefresh, columnsWorkOrder, tasksOnColumns } = props;
+  const { workOrder, columnsWorkOrder, tasksOnColumns, fetchData } = props;
   const router = useRouter();
+
+  async function handleRefresh() {
+    router.refresh();
+    await fetchData();
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between md:items-center">
@@ -37,8 +42,7 @@ export default function KanbanBoardHeader(props: {
         <Button
           className="flex items-center justify-center space-x-0 md:space-x-2 bg-primary text-primary-foreground hover:bg-primary-dark px-4 py-2"
           onClick={() => {
-            triggerRefresh(); // Trigger the refresh in DashboardPage
-            router.refresh(); // Optional: Re-fetch data
+            void handleRefresh();
           }}
           aria-label="Update Page"
         >
@@ -48,17 +52,17 @@ export default function KanbanBoardHeader(props: {
         </Button>
 
         {/* Delete Column Dialog Button */}
-        <DeleteColumnDialog triggerRefresh={triggerRefresh} columnsWorkOrder={columnsWorkOrder} />
+        <DeleteColumnDialog columnsWorkOrder={columnsWorkOrder} fetchData={handleRefresh} />
 
         {/* Edit Column Dialog Button */}
-        <EditColumnDialog triggerRefresh={triggerRefresh} columnsWorkOrder={columnsWorkOrder} />
+        <EditColumnDialog columnsWorkOrder={columnsWorkOrder} fetchData={handleRefresh} />
 
         {/* Work Order Done Dialog Button */}
         <WorkOrderDoneDialog
-          triggerRefresh={triggerRefresh}
           workOrder={workOrder}
           tasksOnColumns={tasksOnColumns}
           columnsWorkOrder={columnsWorkOrder}
+          fetchData={handleRefresh}
         />
       </div>
     </div>

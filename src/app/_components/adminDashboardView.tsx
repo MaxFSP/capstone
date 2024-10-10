@@ -29,7 +29,7 @@ interface DashboardData {
   parts: Part[];
 }
 
-export default function DashboardView() {
+export default function AdminDashboardView() {
   const [workOrder, setWorkOrder] = useState<RegularWorkOrder | undefined>(undefined);
   const [tasksOnColumns, setTasksOnColumns] = useState<TasksOnColumns>({});
   const [columnsWorkOrder, setColumnsWorkOrder] = useState<ColumnType[]>([]);

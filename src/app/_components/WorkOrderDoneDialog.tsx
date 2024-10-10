@@ -24,10 +24,10 @@ export default function WorkOrderDoneDialog(props: {
   columnsWorkOrder: Column[];
   tasksOnColumns: TasksOnColumns;
   workOrder: RegularWorkOrder;
-  triggerRefresh: () => void;
+  fetchData: () => Promise<void>;
 }) {
   const router = useRouter();
-  const { triggerRefresh, columnsWorkOrder, workOrder, tasksOnColumns } = props;
+  const { columnsWorkOrder, workOrder, tasksOnColumns, fetchData } = props;
   const { toast } = useToast();
   const [isDone, setIsDone] = useState(true);
 
@@ -52,6 +52,7 @@ export default function WorkOrderDoneDialog(props: {
           description: 'Work order marked as done.',
         });
         router.refresh();
+        void fetchData();
       } else {
         console.error('Failed to update work order:', response.statusText);
       }
