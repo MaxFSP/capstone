@@ -149,3 +149,17 @@ export async function workOrderDone(order_id: number, taskIds: number[], columnI
     console.error('Error updating work order:', error);
   }
 }
+
+export async function UpdateWorkOrderState(order_id: number, state: number) {
+  try {
+    await db
+      .update(workOrders)
+      .set({
+        state: state,
+      })
+      .where(eq(workOrders.order_id, order_id))
+      .returning();
+  } catch (error) {
+    console.error('Error updating work order:', error);
+  }
+}

@@ -28,8 +28,9 @@ function ListBoard(props: {
   employees: Employee[];
   tools: Tool[];
   parts: Part[];
+  fetchData: () => Promise<void>;
 }) {
-  const { tasksOnColumns, allColumns, employees, tools, parts, triggerRefresh } = props;
+  const { tasksOnColumns, allColumns, employees, tools, parts, fetchData } = props;
 
   // Define a type for tasks with columnName
   type TaskWithColumnName = Task & { columnName: string };
@@ -229,6 +230,7 @@ function ListBoard(props: {
                         setTasks(newTasks);
                       }}
                       type="list"
+                      fetchData={fetchData}
                     />
                   </td>
                 </tr>

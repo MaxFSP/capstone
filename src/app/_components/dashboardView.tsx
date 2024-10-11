@@ -99,6 +99,7 @@ export default function DashboardView() {
               employees={employees}
               tools={tools}
               parts={parts}
+              fetchData={fetchData}
             />
           )}
         </div>
