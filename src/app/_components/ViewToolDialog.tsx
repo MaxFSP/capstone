@@ -50,6 +50,8 @@ import { useFormValidation } from '~/hooks/useFormValidation';
 import { toolSchema } from '~/server/types/ITool';
 import type { z } from 'zod';
 
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 type ToolFormData = z.infer<typeof toolSchema>;
 
 export function ToolDataViewDialog(props: { title: string; data: Tool; locations: ILocation[] }) {
@@ -58,17 +60,61 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
   const router = useRouter();
   const { toast } = useToast();
 
-  const current_location: string = locations.find(
-    (location) => data.location_name === location.name
-  )!.name;
+  // Get the current location ID as a string
+  const current_location_id: string =
+    locations.find((location) => location.name === data.location_name)?.location_id.toString() ??
+    locations[0]?.location_id.toString() ??
+    '';
+
   const current_condition = data.condition;
 
   const [conditionValue, setConditionValue] = useState<ToolCondition>(data.condition);
   const [dateValue, setDateValue] = useState<Date>(new Date(data.acquisition_date));
-  const [locationValue, setLocationValue] = useState<string>(current_location);
+  const [locationValue, setLocationValue] = useState<string>(current_location_id);
   const [isEditing, setIsEditing] = useState(false);
   const [initialFormData, setInitialFormData] = useState({ ...data });
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Options arrays
+  const toolTypes = [
+    'Wrench',
+    'Hammer',
+    'Screwdriver',
+    'Drill',
+    'Grinder',
+    'Impact Wrench',
+    'Hydraulic Jack',
+    'Torque Wrench',
+    'Pliers',
+    'Allen Key',
+    'Sockets',
+  ];
+
+  const toolBrands = [
+    'Milwaukee',
+    'DeWalt',
+    'Bosch',
+    'Makita',
+    'Hilti',
+    'Snap-On',
+    'Stanley',
+    'Ridgid',
+    'Kobalt',
+    'Husky',
+  ];
+
+  const toolCategories = [
+    'Hand Tools',
+    'Power Tools',
+    'Measuring Tools',
+    'Cutting Tools',
+    'Pneumatic Tools',
+    'Hydraulic Tools',
+    'Electrical Tools',
+    'Safety Tools',
+    'Welding Tools',
+    'Fastening Tools',
+  ];
 
   const { formData, setFormData, isFormValid, errors, validateForm } =
     useFormValidation<ToolFormData>({
@@ -78,7 +124,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
 
   useEffect(() => {
     if (!isEditing) {
-      setLocationValue(current_location);
+      setLocationValue(current_location_id);
       setConditionValue(data.condition);
       setFormData({ ...data });
       setDateValue(new Date(data.acquisition_date));
@@ -99,13 +145,13 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
 
   const checkForChanges = () => {
     const hasFormChanged = JSON.stringify(formData) !== JSON.stringify(initialFormData);
-    const hasLocationChanged = locationValue !== current_location;
+    const hasLocationChanged = locationValue !== current_location_id;
     const hasConditionChanged = conditionValue !== current_condition;
     const hasDateChanged =
       dateValue.toISOString().split('T')[0] !==
       new Date(data.acquisition_date).toISOString().split('T')[0];
 
-    setHasChanges(hasFormChanged ?? hasLocationChanged ?? hasConditionChanged ?? hasDateChanged);
+    setHasChanges(hasFormChanged || hasLocationChanged || hasConditionChanged || hasDateChanged);
   };
 
   const handleEditClick = () => {
@@ -141,7 +187,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
       try {
         const updatedFormData: ToolFormData = {
           ...formData,
-          location_id: locations.find((location) => location.name === locationValue)!.location_id,
+          location_id: parseInt(locationValue), // Use the selected location ID
           condition: conditionValue,
           acquisition_date: dateValue,
         };
@@ -161,6 +207,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           });
           router.refresh();
           setIsEditing(false);
+          handleCancelClick();
         } else {
           const responseData = await response.json();
           throw new Error(responseData.error ?? 'Failed to update tool.');
@@ -222,7 +269,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
             </div>
           )}
 
-          {/* Tool ID and Brand */}
+          {/* Tool ID */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Tool ID</Label>
@@ -234,25 +281,9 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
                 className="border border-border bg-muted text-muted-foreground"
               />
             </div>
-            <div className="flex-1">
-              <Label>Brand</Label>
-              <Input
-                name="brand"
-                value={formData.brand}
-                readOnly={!isEditing}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="border border-border bg-background text-foreground"
-              />
-              {errors.find((e) => e.path[0] === 'brand') && (
-                <p className="text-sm text-red-500">
-                  {errors.find((e) => e.path[0] === 'brand')?.message}
-                </p>
-              )}
-            </div>
           </div>
 
-          {/* Name and Category */}
+          {/* Name */}
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Name</Label>
@@ -270,15 +301,73 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Brand and Tool Type */}
+          <div className="flex space-x-4">
+            {/* Brand */}
+            <div className="flex-1">
+              <Label>Brand</Label>
+              <SingleSelectCombobox
+                options={toolBrands.map((brand) => ({
+                  label: brand,
+                  value: brand,
+                }))}
+                placeholder="Select a brand..."
+                selectedValue={formData.brand}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, brand: value }));
+                  validateForm();
+                }}
+                disabled={!isEditing}
+              />
+              {errors.find((e) => e.path[0] === 'brand') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'brand')?.message}
+                </p>
+              )}
+            </div>
+
+            {/* Tool Type */}
+            <div className="flex-1">
+              <Label>Tool Type</Label>
+              <SingleSelectCombobox
+                options={toolTypes.map((type) => ({
+                  label: type,
+                  value: type,
+                }))}
+                placeholder="Select a tool type..."
+                selectedValue={formData.tool_type}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, tool_type: value }));
+                  validateForm();
+                }}
+                disabled={!isEditing}
+              />
+              {errors.find((e) => e.path[0] === 'tool_type') && (
+                <p className="text-sm text-red-500">
+                  {errors.find((e) => e.path[0] === 'tool_type')?.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Category */}
+          <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Category</Label>
-              <Input
-                name="category"
-                value={formData.category}
-                readOnly={!isEditing}
-                onChange={handleChange}
+              <SingleSelectCombobox
+                options={toolCategories.map((category) => ({
+                  label: category,
+                  value: category,
+                }))}
+                placeholder="Select a category..."
+                selectedValue={formData.category}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, category: value }));
+                  validateForm();
+                }}
                 disabled={!isEditing}
-                className="border border-border bg-background text-foreground"
               />
               {errors.find((e) => e.path[0] === 'category') && (
                 <p className="text-sm text-red-500">
@@ -288,24 +377,8 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
             </div>
           </div>
 
-          {/* Tool Type and Quantity */}
+          {/* Quantity */}
           <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Tool Type</Label>
-              <Input
-                name="tool_type"
-                value={formData.tool_type}
-                readOnly={!isEditing}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className="border border-border bg-background text-foreground"
-              />
-              {errors.find((e) => e.path[0] === 'tool_type') && (
-                <p className="text-sm text-red-500">
-                  {errors.find((e) => e.path[0] === 'tool_type')?.message}
-                </p>
-              )}
-            </div>
             <div className="flex-1">
               <Label>Quantity</Label>
               <Input
@@ -391,31 +464,16 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Location</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button
-                    className="w-full border border-border bg-background text-foreground"
-                    variant="outline"
-                  >
-                    {locationValue}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full border border-border bg-background text-foreground">
-                  <DropdownMenuLabel>Locations</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={locationValue} onValueChange={setLocationValue}>
-                    {locations.map((location) => (
-                      <DropdownMenuRadioItem
-                        key={location.name}
-                        value={location.name}
-                        className="hover:bg-muted-background hover:text-foreground"
-                      >
-                        {location.name}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={locations.map((location) => ({
+                  label: location.name,
+                  value: location.location_id.toString(),
+                }))}
+                placeholder="Select a location..."
+                selectedValue={locationValue}
+                onChange={(value) => setLocationValue(value)}
+                disabled={!isEditing}
+              />
             </div>
             <div className="flex-1">
               <Label>Condition</Label>
@@ -507,7 +565,7 @@ export function ToolDataViewDialog(props: { title: string; data: Tool; locations
               <Button
                 onClick={handleSaveClick}
                 className="bg-primary text-primary-foreground"
-                disabled={!isFormValid ?? !hasChanges}
+                disabled={!isFormValid || !hasChanges}
               >
                 Save
               </Button>

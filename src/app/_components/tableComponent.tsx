@@ -17,9 +17,12 @@ import { SmallToolDialog } from './smallToolDialog';
 import { type ILocation } from '~/server/types/ILocation';
 import { CreateNewStockDialog } from './createNewStock';
 import { type Machinery } from '~/server/types/IMachinery';
-import { type User } from '~/server/types/IUser';
+import { type UserWithOrg } from '~/server/types/IUser';
 import { WorkOrderDataViewDialog } from './ViewWorkOrderDialog';
 import EmployeeDataViewDialog from './ViewEmployeeDialog';
+
+// Import the download icon
+import { FaDownload, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 
 interface TableColumn {
   key: string;
@@ -32,7 +35,7 @@ const TableComponent = (props: {
   columns: TableColumn[];
   valueType: string;
   locations?: ILocation[];
-  users?: User[];
+  users?: UserWithOrg[];
   machines?: Machinery[];
 }) => {
   const { data, columns, valueType, locations, users, machines } = props;
@@ -63,6 +66,36 @@ const TableComponent = (props: {
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
+
+  const handleDownloadButton = async (orderId: number) => {
+    try {
+      const response = await fetch('/api/generateWorkOrderExcelReport', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download Excel file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a link and trigger a download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Work_Order_Report_${orderId}.xlsx`;
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading Excel file:', error);
+    }
+  };
 
   return (
     <div className="px-4 pb-2 pt-0">
@@ -96,6 +129,11 @@ const TableComponent = (props: {
                 </th>
               ))}
               <th className="border-b border-border px-5 py-3 text-left"></th>
+              {valueType === 'WorkOrder' && (
+                <th className="border-b border-border px-5 py-3 text-left">
+                  <p className="text-s text-[11px] font-bold uppercase"></p>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-card">
@@ -157,6 +195,16 @@ const TableComponent = (props: {
                       ''
                     )}
                   </td>
+                  {valueType === 'WorkOrder' && (
+                    <td className={className}>
+                      <FaDownload
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        onClick={() => handleDownloadButton(item.order_id)}
+                        className="cursor-pointer text-primary"
+                        size={20}
+                      />
+                    </td>
+                  )}
                 </tr>
               );
             })}
@@ -221,7 +269,7 @@ const TableComponent = (props: {
                 : 'bg-primary text-primary-foreground'
             }`}
           >
-            ⮜
+            <FaArrowLeft />
           </button>
           <span className="ml-2 mr-2 text-sm font-medium text-foreground">
             Page {currentPage + 1} of {totalPages}
@@ -235,7 +283,7 @@ const TableComponent = (props: {
                 : 'bg-primary text-primary-foreground'
             }`}
           >
-            ➤
+            <FaArrowRight />
           </button>
         </div>
         <div></div>

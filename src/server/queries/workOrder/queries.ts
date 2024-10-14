@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import 'server-only';
 
 //DB stuff
@@ -5,11 +6,16 @@ import { db } from '../../db';
 import { workColumns, workOrders, workTasks } from '../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
-import { type TasksOnColumns } from '~/server/types/ITasks';
-import { type Column } from '~/server/types/IColumns';
-import { RegularWorkOrder } from '~/server/types/IOrders';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
 
-// Employees Table --------------------------------------------------------------------------------------------
+// Get work orders by user id
+
+export async function getWorkOrdersByUserId(userId: number) {
+  const workOrders = await db.query.workOrders.findMany({
+    where: (workOrders, { eq }) => eq(workOrders.assigned_user, userId),
+  });
+  return workOrders;
+}
 
 // Create Employee
 export async function createWorkOrder(
@@ -50,7 +56,7 @@ export async function getWorkOrderById(orderId: number) {
   return workOrder;
 }
 
-export async function getWorkOrderBySessionId() {
+export async function getWorkOrderBySessionId(): Promise<RegularWorkOrder[]> {
   const user = auth();
   if (!user.userId) throw new Error('Unauthorized');
   const userId = user.userId;
@@ -61,11 +67,11 @@ export async function getWorkOrderBySessionId() {
 
   if (!getClerkUser) throw new Error('The user does not exist');
 
-  const workOrder = await db.query.workOrders.findMany({
+  const workOrder: RegularWorkOrder[] = await db.query.workOrders.findMany({
     where: (workOrders, { eq }) => eq(workOrders.assigned_user, getClerkUser.user_id),
   });
 
-  return workOrder as RegularWorkOrder[];
+  return workOrder;
 }
 
 // Update Emmployee
@@ -116,7 +122,7 @@ export async function deteWorkOrder(order_id: number) {
 
 export async function workOrderDone(order_id: number, taskIds: number[], columnIds: number[]) {
   try {
-    const updatedWorkOrder = await db
+    await db
       .update(workOrders)
       .set({
         state: 2,
@@ -138,6 +144,20 @@ export async function workOrderDone(order_id: number, taskIds: number[], columnI
         state: 2,
       })
       .where(inArray(workColumns.column_id, columnIds))
+      .returning();
+  } catch (error) {
+    console.error('Error updating work order:', error);
+  }
+}
+
+export async function UpdateWorkOrderState(order_id: number, state: number) {
+  try {
+    await db
+      .update(workOrders)
+      .set({
+        state: state,
+      })
+      .where(eq(workOrders.order_id, order_id))
       .returning();
   } catch (error) {
     console.error('Error updating work order:', error);

@@ -1,82 +1,128 @@
 'use client';
 
-import { type TasksOnColumns } from '~/server/types/ITasks';
-import { type Column } from '~/server/types/IColumns';
-import KanbanBoardHeader from './KanbanBoardHeader';
-import { type Employee } from '~/server/types/IEmployee';
-import { type RegularWorkOrder } from '~/server/types/IOrders';
-import { type Part } from '~/server/types/IPart';
-import { type Tool } from '~/server/types/ITool';
 import { useState, useEffect } from 'react';
+import KanbanBoardHeader from './KanbanBoardHeader';
 import KanbanBoard from './KanbanBoard';
 import ListBoard from './ListBoard';
+import { type RegularWorkOrder } from '~/server/types/IOrders';
+import { type TasksOnColumns } from '~/server/types/ITasks';
+import { type Employee } from '~/server/types/IEmployee';
+import { type Tool } from '~/server/types/ITool';
+import { type Part } from '~/server/types/IPart';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs';
 
-export default function DashboardView(props: {
+// Define the ColumnType interface
+interface ColumnType {
+  state: number;
+  order_id: number;
+  title: string;
+  position: number;
+  column_id: number;
+}
+
+// Define the DashboardData interface
+interface DashboardData {
   workOrder: RegularWorkOrder | undefined;
   tasksOnColumns: TasksOnColumns;
-  columnsWorkOrder: Column[];
+  columnsWorkOrder: ColumnType[];
   employees: Employee[];
   tools: Tool[];
   parts: Part[];
-}) {
-  const { workOrder, tasksOnColumns, columnsWorkOrder, employees, tools, parts } = props;
-  const [boardType, setBoardType] = useState('list');
+}
 
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+export default function DashboardView() {
+  const [workOrder, setWorkOrder] = useState<RegularWorkOrder | undefined>(undefined);
+  const [tasksOnColumns, setTasksOnColumns] = useState<TasksOnColumns>({});
+  const [columnsWorkOrder, setColumnsWorkOrder] = useState<ColumnType[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
+  const [boardType, setBoardType] = useState('kanban');
 
-  const triggerRefresh = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
+  // Inside DashboardView
+  async function fetchData() {
+    try {
+      const response = await fetch('/api/dashboard-data');
+      const data = (await response.json()) as DashboardData;
 
-  const [kanbanData, setKanbanData] = useState({
-    tasksOnColumns,
-    columnsWorkOrder,
-  });
+      // Convert date strings to Date objects
+      Object.keys(data.tasksOnColumns).forEach((columnTitle) => {
+        data.tasksOnColumns[columnTitle] = data.tasksOnColumns[columnTitle]!.map((task) => ({
+          ...task,
+          start_date: task.start_date ? new Date(task.start_date) : new Date(),
+          end_date: task.end_date ? new Date(task.end_date) : new Date(),
+        }));
+      });
+
+      setWorkOrder(data.workOrder);
+      setTasksOnColumns(data.tasksOnColumns);
+      setColumnsWorkOrder(data.columnsWorkOrder);
+      setEmployees(data.employees);
+      setTools(data.tools);
+      setParts(data.parts);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  }
 
   useEffect(() => {
-    setKanbanData({
-      tasksOnColumns,
-      columnsWorkOrder,
-    });
-  }, [tasksOnColumns, columnsWorkOrder]);
+    void fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen p-4 flex flex-col">
       {workOrder ? (
-        <div className="rounded-lg  shadow-md flex flex-col flex-grow">
+        <div className="rounded-lg shadow-md flex flex-col flex-grow">
           <KanbanBoardHeader
-            key={`${workOrder.order_id}-${refreshTrigger}`}
+            key={`${workOrder.order_id}`}
             workOrder={workOrder}
-            triggerRefresh={triggerRefresh}
-            tasksOnColumns={kanbanData.tasksOnColumns}
+            tasksOnColumns={tasksOnColumns}
             columnsWorkOrder={columnsWorkOrder}
+            fetchData={fetchData}
           />
-          {boardType === 'kanban' ? (
-            <KanbanBoard
-              key={`${workOrder.order_id}-${refreshTrigger}`}
-              workOrder={workOrder}
-              tasksOnColumns={kanbanData.tasksOnColumns}
-              allColumns={kanbanData.columnsWorkOrder}
-              employees={employees}
-              tools={tools}
-              parts={parts}
-              triggerRefresh={triggerRefresh}
-            />
-          ) : (
-            <ListBoard
-              key={`${workOrder.order_id}-${refreshTrigger}`}
-              workOrder={workOrder}
-              tasksOnColumns={kanbanData.tasksOnColumns}
-              allColumns={kanbanData.columnsWorkOrder}
-              employees={employees}
-              tools={tools}
-              parts={parts}
-              triggerRefresh={triggerRefresh}
-            />
-          )}
+          <Tabs defaultValue="kanban">
+            <TabsList className="m-4 grid grid-cols-2 rounded-lg border border-border bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] dark:bg-[hsl(var(--accent))] dark:text-[hsl(var(--accent-foreground))] sm:w-full md:w-1/2">
+              <TabsTrigger
+                value="kanban"
+                className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] "
+              >
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger
+                value="list"
+                className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] "
+              >
+                List
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="kanban">
+              <KanbanBoard
+                key={`${workOrder.order_id}`}
+                workOrder={workOrder}
+                tasksOnColumns={tasksOnColumns}
+                allColumns={columnsWorkOrder}
+                employees={employees}
+                tools={tools}
+                parts={parts}
+                fetchData={fetchData}
+              />
+            </TabsContent>
+            <TabsContent value="list">
+              <ListBoard
+                key={`${workOrder.order_id}`}
+                workOrder={workOrder}
+                tasksOnColumns={tasksOnColumns}
+                allColumns={columnsWorkOrder}
+                employees={employees}
+                tools={tools}
+                parts={parts}
+                fetchData={fetchData}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center  rounded-lg p-6 shadow-md">
+        <div className="flex h-full w-full flex-col items-center justify-center rounded-lg p-6 shadow-md">
           <h1 className="mb-4 text-center text-3xl font-extrabold text-primary">
             No Work Order Found
           </h1>

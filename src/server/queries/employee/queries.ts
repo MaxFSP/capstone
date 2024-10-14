@@ -4,7 +4,7 @@ import 'server-only';
 import { db } from '../../db';
 import { employees } from '../../db/schema';
 import { eq } from 'drizzle-orm';
-import { Employee } from '~/server/types/IEmployee';
+import { type Employee } from '~/server/types/IEmployee';
 
 // Employees Table --------------------------------------------------------------------------------------------
 

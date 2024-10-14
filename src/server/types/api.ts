@@ -1,5 +1,5 @@
-import type { User } from "@clerk/nextjs/server";
-import type { UpdateClerkUser } from "./IClerkUser";
+import type { User } from '@clerk/nextjs/server';
+import type { UpdateClerkUser } from './IClerkUser';
 
 export interface UpdateUserRequest {
   userId: string;

@@ -63,9 +63,9 @@ export function CreateTaskDialog(props: {
   tools: Tool[];
   parts: Part[];
   type: string;
-  triggerRefresh: () => void;
+  fetchData: () => Promise<void>;
 }) {
-  const { employees, pos, column_id, tools, parts, triggerRefresh, type } = props;
+  const { employees, pos, column_id, tools, parts, type, fetchData } = props;
   const router = useRouter();
   const [assigned_employee, setAssignedEmployee] = useState(
     employees[0]!.firstName + ' ' + employees[0]!.lastName
@@ -166,8 +166,8 @@ export function CreateTaskDialog(props: {
                 title: 'Success',
                 description: 'Tools and parts added successfully.',
               });
-              triggerRefresh();
               router.refresh();
+              await fetchData();
             }
           } catch (error) {
             toast({

@@ -1,14 +1,16 @@
-import { NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { promises as fs } from "fs";
-import path from "path";
-import { getWorkOrderById } from "~/server/queries/workOrder/queries";
-import { getColumnTasksByWorkOrderId } from "~/server/queries/columnsWorkOrder/queries";
-import { getTasksByWorkOrderId } from "~/server/queries/workTask/queries";
-import { getMachineryById } from "~/server/queries/machinery/queries";
-import { getUserById } from "~/server/queries/user/queries";
-import { getEmployeeById } from "~/server/queries/employee/queries";
-import { Task } from "~/server/types/ITasks";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { NextResponse } from 'next/server';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { getWorkOrderById } from '~/server/queries/workOrder/queries';
+import { getColumnTasksByWorkOrderId } from '~/server/queries/columnsWorkOrder/queries';
+import { getTasksByWorkOrderId } from '~/server/queries/workTask/queries';
+import { getMachineryById } from '~/server/queries/machinery/queries';
+import { getUserById } from '~/server/queries/user/queries';
+import { getEmployeeById } from '~/server/queries/employee/queries';
+import { Task } from '~/server/types/ITasks';
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +18,7 @@ export async function POST(req: Request) {
 
     // Fetch work order data
     const workOrder = await getWorkOrderById(orderId);
-    if (!workOrder) throw new Error("Work order not found");
+    if (!workOrder) throw new Error('Work order not found');
 
     let columns = await getColumnTasksByWorkOrderId(orderId);
     if (!columns) {
@@ -33,10 +35,10 @@ export async function POST(req: Request) {
     tasks.sort((a, b) => a.position - b.position);
 
     const machinery = await getMachineryById(workOrder.machine_id);
-    if (!machinery) throw new Error("Machinery not found");
+    if (!machinery) throw new Error('Machinery not found');
 
     const user = await getUserById(workOrder.assigned_user);
-    if (!user) throw new Error("User not found");
+    if (!user) throw new Error('User not found');
 
     // Create PDF document
     const pdfDoc = await PDFDocument.create();
@@ -44,13 +46,8 @@ export async function POST(req: Request) {
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     // Read images directly from the file system
-    const logoPath = path.join(process.cwd(), "public", "icons", "192.png");
-    const watermarkPath = path.join(
-      process.cwd(),
-      "public",
-      "icons",
-      "512.png",
-    );
+    const logoPath = path.join(process.cwd(), 'public', 'icons', '192.png');
+    const watermarkPath = path.join(process.cwd(), 'public', 'icons', '512.png');
 
     const logoBytes = await fs.readFile(logoPath);
     const watermarkBytes = await fs.readFile(watermarkPath);
@@ -87,7 +84,7 @@ export async function POST(req: Request) {
       });
 
       // Header text
-      newPage.drawText("Work Order Report", {
+      newPage.drawText('Work Order Report', {
         x: 20,
         y: newPage.getHeight() - 35,
         size: 20,
@@ -156,43 +153,23 @@ export async function POST(req: Request) {
     };
 
     // Work order details
+    drawWorkOrderDetail('Order ID:', workOrder.order_id.toString(), yOffset + 20);
+    drawWorkOrderDetail('Name:', workOrder.name, yOffset + 40);
     drawWorkOrderDetail(
-      "Order ID:",
-      workOrder.order_id.toString(),
-      yOffset + 20,
-    );
-    drawWorkOrderDetail("Name:", workOrder.name, yOffset + 40);
-    drawWorkOrderDetail(
-      "Machine:",
+      'Machine:',
       `${machinery.brand} ${machinery.model} (${machinery.serial_number})`,
-      yOffset + 60,
+      yOffset + 60
     );
-    drawWorkOrderDetail(
-      "Assigned to:",
-      `${user.first_name} ${user.last_name}`,
-      yOffset + 80,
-    );
-    drawWorkOrderDetail(
-      "Start Date:",
-      workOrder.start_date.toDateString(),
-      yOffset + 100,
-    );
+    drawWorkOrderDetail('Assigned to:', `${user.first_name} ${user.last_name}`, yOffset + 80);
+    drawWorkOrderDetail('Start Date:', workOrder.start_date.toDateString(), yOffset + 100);
 
     if (workOrder.end_date) {
-      drawWorkOrderDetail(
-        "End Date:",
-        workOrder.end_date.toDateString(),
-        yOffset + 120,
-      );
+      drawWorkOrderDetail('End Date:', workOrder.end_date.toDateString(), yOffset + 120);
     } else {
-      drawWorkOrderDetail("End Date:", "No end date", yOffset + 120);
+      drawWorkOrderDetail('End Date:', 'No end date', yOffset + 120);
     }
 
-    drawWorkOrderDetail(
-      "Status:",
-      workOrder.state === 1 ? "Active" : "Completed",
-      yOffset + 140,
-    );
+    drawWorkOrderDetail('Status:', workOrder.state === 1 ? 'Active' : 'Completed', yOffset + 140);
 
     yOffset += 160;
 
@@ -205,7 +182,7 @@ export async function POST(req: Request) {
       color: rgb(255 / 255, 196 / 255, 37 / 255),
     });
 
-    page.drawText("Columns and Tasks", {
+    page.drawText('Columns and Tasks', {
       x: 50,
       y: page.getHeight() - yOffset - 30,
       size: 18,
@@ -245,9 +222,7 @@ export async function POST(req: Request) {
 
       yOffset += 15;
 
-      const columnTasks = tasks.filter(
-        (task) => task.column_id === column.column_id,
-      );
+      const columnTasks = tasks.filter((task) => task.column_id === column.column_id);
       for (const task of columnTasks) {
         if (yOffset > page.getHeight() - 120) {
           ({ page, yOffset } = addPage());
@@ -277,14 +252,14 @@ export async function POST(req: Request) {
 
         const employee = await getEmployeeById(task.assigned_to);
         page.drawText(
-          `Assigned to: ${employee ? `${employee.firstName} ${employee.lastName}` : "Unassigned"}`,
+          `Assigned to: ${employee ? `${employee.firstName} ${employee.lastName}` : 'Unassigned'}`,
           {
             x: 70,
             y: page.getHeight() - yOffset - 35,
             size: 10,
             font,
             color: rgb(128 / 255, 128 / 255, 128 / 255),
-          },
+          }
         );
 
         page.drawText(`Priority: ${task.priority}`, {
@@ -295,16 +270,13 @@ export async function POST(req: Request) {
           color: rgb(128 / 255, 128 / 255, 128 / 255),
         });
 
-        page.drawText(
-          `Status: ${task.state === 1 ? "In Progress" : "Completed"}`,
-          {
-            x: 70,
-            y: page.getHeight() - yOffset - 75,
-            size: 10,
-            font,
-            color: rgb(128 / 255, 128 / 255, 128 / 255),
-          },
-        );
+        page.drawText(`Status: ${task.state === 1 ? 'In Progress' : 'Completed'}`, {
+          x: 70,
+          y: page.getHeight() - yOffset - 75,
+          size: 10,
+          font,
+          color: rgb(128 / 255, 128 / 255, 128 / 255),
+        });
 
         yOffset += 110;
       }
@@ -316,18 +288,15 @@ export async function POST(req: Request) {
     return new Response(pdfBytes, {
       status: 200,
       headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Work_Order_Report_${orderId}.pdf"`,
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="Work_Order_Report_${orderId}.pdf"`,
       },
     });
   } catch (error) {
     console.error(
-      "Error generating work order report:",
-      error instanceof Error ? error.stack : error,
+      'Error generating work order report:',
+      error instanceof Error ? error.stack : error
     );
-    return NextResponse.json(
-      { error: "Failed to generate report" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 });
   }
 }

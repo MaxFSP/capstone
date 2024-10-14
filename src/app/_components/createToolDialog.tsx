@@ -35,11 +35,52 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
   const [locationValue, setLocationValue] = useState(locations[0]?.name ?? '');
   const [conditionValue, setConditionValue] = useState<ToolCondition>('Good');
 
+  // Options arrays
+  const toolTypes = [
+    'Wrench',
+    'Hammer',
+    'Screwdriver',
+    'Drill',
+    'Grinder',
+    'Impact Wrench',
+    'Hydraulic Jack',
+    'Torque Wrench',
+    'Pliers',
+    'Allen Key',
+    'Sockets',
+  ];
+
+  const toolBrands = [
+    'Milwaukee',
+    'DeWalt',
+    'Bosch',
+    'Makita',
+    'Hilti',
+    'Snap-On',
+    'Stanley',
+    'Ridgid',
+    'Kobalt',
+    'Husky',
+  ];
+
+  const toolCategories = [
+    'Hand Tools',
+    'Power Tools',
+    'Measuring Tools',
+    'Cutting Tools',
+    'Pneumatic Tools',
+    'Hydraulic Tools',
+    'Electrical Tools',
+    'Safety Tools',
+    'Welding Tools',
+    'Fastening Tools',
+  ];
+
   const [toolFormValues, setToolFormValues] = useState({
     name: '',
-    brand: '',
-    category: '',
-    tool_type: '',
+    brand: toolBrands[0],
+    category: toolCategories[0],
+    tool_type: toolTypes[0],
     condition: 'Good' as ToolCondition,
     quantity: '',
     acquisition_date: new Date(),
@@ -54,32 +95,16 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
 
   // Validation functions
   const validateName = (name: string) => /^[A-Za-z\s]+$/.test(name);
-  const validateBrand = (brand: string) => /^[A-Za-z\s]+$/.test(brand);
-  const validateToolType = (tool_type: string) => /^[A-Za-z\s]+$/.test(tool_type);
-  const validateCategory = (category: string) => /^[A-Za-z\s]+$/.test(category);
   const validateQuantity = (quantity: string) => /^[0-9]+$/.test(quantity);
-  const validateAquisitionDate = (aquisition_date: Date) => aquisition_date !== null;
-  const validateObservations = (observations: string) => /^[A-Za-z0-9\s]+$/.test(observations);
+  const validateObservations = (observations: string) => /^[A-Za-z0-9\s]*$/.test(observations);
 
   // Effect to validate form
   useEffect(() => {
     const isNameValid = validateName(toolFormValues.name);
-    const isBrandValid = validateBrand(toolFormValues.brand);
-    const isToolTypeValid = validateToolType(toolFormValues.tool_type);
-    const isCategoryValid = validateCategory(toolFormValues.category);
     const isQuantityValid = validateQuantity(toolFormValues.quantity);
     const isObservationsValid = validateObservations(toolFormValues.observations);
-    const isAquisitionDateValid = validateAquisitionDate(toolFormValues.acquisition_date);
 
-    setIsToolFormValid(
-      isNameValid &&
-        isBrandValid &&
-        isToolTypeValid &&
-        isCategoryValid &&
-        isQuantityValid &&
-        isObservationsValid &&
-        isAquisitionDateValid
-    );
+    setIsToolFormValid(isNameValid && isQuantityValid && isObservationsValid);
   }, [toolFormValues]);
 
   // Handlers
@@ -107,7 +132,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         ...toolFormValues,
         condition: conditionValue,
         location_id: location.location_id,
-        acquisition_date: toolFormValues.acquisition_date,
+        acquisition_date: date,
       };
 
       const response = await fetch('/api/createTool', {
@@ -152,9 +177,9 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
     if (success) {
       setToolFormValues({
         name: '',
-        brand: '',
-        category: '',
-        tool_type: '',
+        brand: toolBrands[0],
+        category: toolCategories[0],
+        tool_type: toolTypes[0],
         condition: 'Good',
         quantity: '',
         acquisition_date: new Date(),
@@ -172,18 +197,6 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
   const isNameInvalid = useMemo(
     () => toolFormValues.name !== '' && !validateName(toolFormValues.name),
     [toolFormValues.name]
-  );
-  const isBrandInvalid = useMemo(
-    () => toolFormValues.brand !== '' && !validateBrand(toolFormValues.brand),
-    [toolFormValues.brand]
-  );
-  const isToolTypeInvalid = useMemo(
-    () => toolFormValues.tool_type !== '' && !validateToolType(toolFormValues.tool_type),
-    [toolFormValues.tool_type]
-  );
-  const isCategoryInvalid = useMemo(
-    () => toolFormValues.category !== '' && !validateCategory(toolFormValues.category),
-    [toolFormValues.category]
   );
   const isQuantityInvalid = useMemo(
     () => toolFormValues.quantity !== '' && !validateQuantity(toolFormValues.quantity),
@@ -219,22 +232,27 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         </div>
         <div className="flex-1">
           <Label htmlFor="brand">Brand</Label>
-          <Input
-            required
-            type="text"
-            id="brand"
-            name="brand"
-            value={toolFormValues.brand}
-            onChange={handleToolInputChange}
-            disabled={!isEditing}
-            className={cn(
-              'border border-border bg-background text-foreground',
-              isBrandInvalid && 'border-destructive'
-            )}
-          />
-          {isBrandInvalid && (
-            <p className="text-sm text-destructive">Brand can only contain letters and spaces.</p>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={!isEditing}>
+              <Button className="w-full border border-border bg-background text-foreground">
+                {toolFormValues.brand}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-background text-foreground">
+              <DropdownMenuLabel>Brands</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={toolFormValues.brand}
+                onValueChange={(value) => setToolFormValues((prev) => ({ ...prev, brand: value }))}
+              >
+                {toolBrands.map((brand) => (
+                  <DropdownMenuRadioItem key={brand} value={brand}>
+                    {brand}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -242,45 +260,55 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
       <div className="flex space-x-4">
         <div className="flex-1">
           <Label htmlFor="category">Category</Label>
-          <Input
-            required
-            type="text"
-            id="category"
-            name="category"
-            value={toolFormValues.category}
-            onChange={handleToolInputChange}
-            disabled={!isEditing}
-            className={cn(
-              'border border-border bg-background text-foreground',
-              isCategoryInvalid && 'border-destructive'
-            )}
-          />
-          {isCategoryInvalid && (
-            <p className="text-sm text-destructive">
-              Category can only contain letters and spaces.
-            </p>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={!isEditing}>
+              <Button className="w-full border border-border bg-background text-foreground">
+                {toolFormValues.category}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-background text-foreground">
+              <DropdownMenuLabel>Categories</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={toolFormValues.category}
+                onValueChange={(value) =>
+                  setToolFormValues((prev) => ({ ...prev, category: value }))
+                }
+              >
+                {toolCategories.map((category) => (
+                  <DropdownMenuRadioItem key={category} value={category}>
+                    {category}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="flex-1">
           <Label htmlFor="tool_type">Tool Type</Label>
-          <Input
-            required
-            type="text"
-            id="tool_type"
-            name="tool_type"
-            value={toolFormValues.tool_type}
-            onChange={handleToolInputChange}
-            disabled={!isEditing}
-            className={cn(
-              'border border-border bg-background text-foreground',
-              isToolTypeInvalid && 'border-destructive'
-            )}
-          />
-          {isToolTypeInvalid && (
-            <p className="text-sm text-destructive">
-              Tool Type can only contain letters and spaces.
-            </p>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={!isEditing}>
+              <Button className="w-full border border-border bg-background text-foreground">
+                {toolFormValues.tool_type}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-background text-foreground">
+              <DropdownMenuLabel>Tool Types</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={toolFormValues.tool_type}
+                onValueChange={(value) =>
+                  setToolFormValues((prev) => ({ ...prev, tool_type: value }))
+                }
+              >
+                {toolTypes.map((type) => (
+                  <DropdownMenuRadioItem key={type} value={type}>
+                    {type}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -310,14 +338,14 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
           <Label htmlFor="quantity">Quantity</Label>
           <Input
             required
-            type="text" // Changed to text to handle custom validation
+            type="text"
             id="quantity"
             name="quantity"
             value={toolFormValues.quantity}
             onChange={handleToolInputChange}
             disabled={!isEditing}
-            inputMode="numeric" // Helps mobile devices show numeric keyboard
-            pattern="[0-9]*" // HTML pattern for numeric input
+            inputMode="numeric"
+            pattern="[0-9]*"
             className={cn(
               'border border-border bg-background text-foreground',
               isQuantityInvalid && 'border-destructive'
@@ -334,7 +362,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         <div className="flex-1">
           <Label>Location</Label>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={!isEditing}>
               <Button className="w-full border border-border bg-background text-foreground">
                 {locationValue}
               </Button>
@@ -367,7 +395,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         <div className="flex-1">
           <Label>Condition</Label>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={!isEditing}>
               <Button className="w-full border border-border bg-background text-foreground">
                 {conditionValue}
               </Button>
@@ -393,7 +421,7 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
       <div className="flex flex-col">
         <Label>Acquisition Date</Label>
         <Popover>
-          <PopoverTrigger asChild>
+          <PopoverTrigger asChild disabled={!isEditing}>
             <Button
               variant={'outline'}
               className={cn(
@@ -433,9 +461,9 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
             onClick={() => {
               setToolFormValues({
                 name: '',
-                brand: '',
-                category: '',
-                tool_type: '',
+                brand: toolBrands[0],
+                category: toolCategories[0],
+                tool_type: toolTypes[0],
                 condition: 'Good',
                 quantity: '',
                 acquisition_date: new Date(),
