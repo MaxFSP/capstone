@@ -15,6 +15,7 @@ import { type User } from '~/server/types/IUser';
 import { type Machinery } from '~/server/types/IMachinery';
 
 import { AdminWorkOrderDataViewDialog } from './adminViewWorkOrderDialog';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
   const { workOrders } = props;
@@ -232,7 +233,7 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
                 : 'bg-primary text-primary-foreground'
             }`}
           >
-            ⮜
+            <FaArrowLeft />
           </button>
           <span className="ml-2 mr-2 text-sm font-medium text-foreground">
             Page {currentPage + 1} of {totalPages}
@@ -246,7 +247,7 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
                 : 'bg-primary text-primary-foreground'
             }`}
           >
-            ➤
+            <FaArrowRight />
           </button>
         </div>
         <div></div>
