@@ -9,6 +9,7 @@ import { type TasksOnColumns } from '~/server/types/ITasks';
 import { type Employee } from '~/server/types/IEmployee';
 import { type Tool } from '~/server/types/ITool';
 import { type Part } from '~/server/types/IPart';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs';
 
 // Define the ColumnType interface
 interface ColumnType {
@@ -79,29 +80,46 @@ export default function DashboardView() {
             columnsWorkOrder={columnsWorkOrder}
             fetchData={fetchData}
           />
-          {boardType === 'kanban' ? (
-            <KanbanBoard
-              key={`${workOrder.order_id}`}
-              workOrder={workOrder}
-              tasksOnColumns={tasksOnColumns}
-              allColumns={columnsWorkOrder}
-              employees={employees}
-              tools={tools}
-              parts={parts}
-              fetchData={fetchData}
-            />
-          ) : (
-            <ListBoard
-              key={`${workOrder.order_id}`}
-              workOrder={workOrder}
-              tasksOnColumns={tasksOnColumns}
-              allColumns={columnsWorkOrder}
-              employees={employees}
-              tools={tools}
-              parts={parts}
-              fetchData={fetchData}
-            />
-          )}
+          <Tabs defaultValue="kanban">
+            <TabsList className="m-4 grid grid-cols-2 rounded-lg border border-border bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] dark:bg-[hsl(var(--accent))] dark:text-[hsl(var(--accent-foreground))] sm:w-full md:w-1/2">
+              <TabsTrigger
+                value="kanban"
+                className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] "
+              >
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger
+                value="list"
+                className="rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--popover))] data-[state=active]:bg-[hsl(var(--primary))] data-[state=active]:text-[hsl(var(--primary-foreground))] "
+              >
+                List
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="kanban">
+              <KanbanBoard
+                key={`${workOrder.order_id}`}
+                workOrder={workOrder}
+                tasksOnColumns={tasksOnColumns}
+                allColumns={columnsWorkOrder}
+                employees={employees}
+                tools={tools}
+                parts={parts}
+                fetchData={fetchData}
+              />
+            </TabsContent>
+            <TabsContent value="list">
+              <ListBoard
+                key={`${workOrder.order_id}`}
+                workOrder={workOrder}
+                tasksOnColumns={tasksOnColumns}
+                allColumns={columnsWorkOrder}
+                employees={employees}
+                tools={tools}
+                parts={parts}
+                fetchData={fetchData}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center rounded-lg p-6 shadow-md">

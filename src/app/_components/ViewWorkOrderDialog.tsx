@@ -19,7 +19,7 @@ import { Calendar } from '~/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { useRouter } from 'next/navigation';
 import { type WorkOrdersWithUser } from '~/server/types/IOrders';
-import { type User } from '~/server/types/IUser';
+import { type UserWithOrg } from '~/server/types/IUser';
 import { type Machinery } from '~/server/types/IMachinery';
 import { Switch } from '~/components/ui/switch';
 import { type z } from 'zod';
@@ -38,7 +38,7 @@ export function WorkOrderDataViewDialog(props: {
   data: WorkOrdersWithUser;
   size: string;
   index: number;
-  users: User[];
+  users: UserWithOrg[];
   machines: Machinery[];
 }) {
   const { title, data, size, index, users, machines } = props;
@@ -46,7 +46,7 @@ export function WorkOrderDataViewDialog(props: {
   const router = useRouter();
   const current_date = data.start_date;
   const current_state = data.state;
-
+  const usersWithoutAdmin = users.filter((user) => !user.orgName.includes('Admin'));
   const [assigned_user, setAssignedUser] = useState(data.assigned_user.toString());
   const [machinery, setMachine] = useState(data.machine_id.toString());
   const [dateValue, setDateValue] = useState<Date>(new Date(data.start_date));
@@ -181,19 +181,44 @@ export function WorkOrderDataViewDialog(props: {
           <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">{title}</p>
         ) : (
           <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
-            {/* Your existing code */}
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-base font-semibold">ID</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{index}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Name</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{data.name}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Machine Serial</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{data.machine_serial}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Username</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{data.userName}</span>
+              </div>
+            </div>
           </div>
         )}
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground sm:max-w-2xl w-full">
         <DialogHeader>
-          <DialogTitle className="text-lg">Edit {title}</DialogTitle>
+          <DialogTitle className="text-lg">{isEditing ? `Edit ${title}` : title}</DialogTitle>
           <DialogDescription>
-            Make sure all the information is correct before saving changes.
+            {isEditing
+              ? 'Make sure all the information is correct before saving changes.'
+              : 'View the details of the work order below.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
             <div className="flex-1">
               <LabeledInput
                 label="Name"
@@ -231,7 +256,7 @@ export function WorkOrderDataViewDialog(props: {
             error={errors.find((e) => e.path[0] === 'observations')?.message}
           />
 
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
             <div className="flex-1">
               <Label>Start Date</Label>
               <Popover>
@@ -239,7 +264,7 @@ export function WorkOrderDataViewDialog(props: {
                   <Button
                     variant={'outline'}
                     className={cn(
-                      'w-[240px] justify-start bg-background text-left font-normal',
+                      'w-full justify-start bg-background text-left font-normal',
                       !dateValue && 'text-muted-foreground'
                     )}
                   >
@@ -247,7 +272,7 @@ export function WorkOrderDataViewDialog(props: {
                     {dateValue ? format(dateValue, 'PPP') : 'Pick a date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 ">
+                <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={dateValue}
@@ -265,7 +290,7 @@ export function WorkOrderDataViewDialog(props: {
             <div className="flex-1">
               <Label>Assigned User</Label>
               <SingleSelectCombobox
-                options={users.map((user) => ({
+                options={usersWithoutAdmin.map((user) => ({
                   label: `${user.first_name} ${user.last_name}`,
                   value: user.user_id.toString(),
                 }))}
@@ -276,55 +301,53 @@ export function WorkOrderDataViewDialog(props: {
               />
             </div>
           </div>
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2 text-destructive">
-                {current_state === 2 && (
-                  <Label>This work order is marked as done. Enable it to continue.</Label>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="enableWorkOrder"
-                  disabled={!isEditing}
-                  checked={currentStateBoolean}
-                  onCheckedChange={() => setCurrentStateBoolean(!currentStateBoolean)}
-                />
-
-                <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
-              </div>
-            </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="enableWorkOrder"
+              disabled={!isEditing}
+              checked={currentStateBoolean}
+              onCheckedChange={() => setCurrentStateBoolean(!currentStateBoolean)}
+            />
+            <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
           </div>
+          {current_state === 2 && (
+            <div className="flex items-center space-x-2 text-destructive">
+              <Label>This work order is marked as done. Enable it to continue.</Label>
+            </div>
+          )}
         </div>
         {errors.length > 0 && (
           <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
         )}
-        <DialogFooter className="sm:justify-start">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0 mt-4">
           {!isEditing && (
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button type="button" variant="secondary" className="w-full sm:w-auto">
                 Close
               </Button>
             </DialogClose>
           )}
-          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
+          <Button
+            onClick={isEditing ? handleCancelClick : handleEditClick}
+            className="w-full sm:w-auto"
+          >
             {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
-            <>
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveClick}
-                  disabled={!isFormValid || !hasChanges}
-                  className="bg-primary text-primary-foreground"
-                >
-                  Save
-                </Button>
-              </DialogClose>
-            </>
+            <DialogClose asChild>
+              <Button
+                onClick={handleSaveClick}
+                disabled={!isFormValid || !hasChanges}
+                className="w-full sm:w-auto bg-primary text-primary-foreground"
+              >
+                Save
+              </Button>
+            </DialogClose>
           )}
           <DialogClose asChild>
-            <Button onClick={() => generateReport(data.order_id)}>Generate Report</Button>
+            <Button onClick={() => generateReport(data.order_id)} className="w-full sm:w-auto">
+              Generate Report
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

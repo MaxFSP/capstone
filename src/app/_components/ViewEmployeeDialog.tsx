@@ -27,7 +27,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 import { Label } from '~/components/ui/label';
-import { Input } from '~/components/ui/input'; // Importing the simple Input component
+import { Input } from '~/components/ui/input';
 import { UploadButton } from '../utils/uploadthing';
 import { CalendarIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
@@ -233,7 +233,9 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
           <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-base font-semibold">ID</p>
-              <div className="flex items-center gap-2">{index}</div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{index}</span>
+              </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">First Name</p>
@@ -256,15 +258,19 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
           </div>
         )}
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto lg:max-w-2xl">
+      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground w-full sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-large">{title}</DialogTitle>
-          <DialogDescription>Manage employee details.</DialogDescription>
+          <DialogTitle className="text-lg">{isEditing ? `Edit ${title}` : title}</DialogTitle>
+          <DialogDescription>
+            {isEditing
+              ? 'Make sure all the information is correct before saving changes.'
+              : 'View the details of the employee below.'}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
             {data.imageUrl && (
-              <div>
+              <div className="flex-shrink-0 flex flex-col items-center">
                 <img
                   src={data.imageUrl}
                   alt="Profile Image"
@@ -279,9 +285,9 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
                 />
               </div>
             )}
-            <div className="flex-1 flex-col">
+            <div className="flex-1 flex flex-col space-y-4">
               {/* First Name and Last Name Inputs */}
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
                 <div className="flex-1">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
@@ -331,7 +337,7 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
               </div>
 
               {/* Age and Phone Number Inputs */}
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
                 <div className="flex-1">
                   <Label htmlFor="age">Age</Label>
                   <Input
@@ -379,7 +385,7 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
               </div>
 
               {/* Blood Type and Job Dropdowns */}
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
                 <div className="flex-1">
                   <Label htmlFor="bloodType">Blood Type</Label>
                   <DropdownMenu>
@@ -387,7 +393,7 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
                       <Button
                         variant="outline"
                         className={cn(
-                          'w-full border border-border bg-background text-foreground',
+                          'w-full border border-border bg-background text-foreground justify-between',
                           !isEditing && 'cursor-not-allowed opacity-50'
                         )}
                         disabled={!isEditing}
@@ -418,7 +424,7 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
                       <Button
                         variant="outline"
                         className={cn(
-                          'w-full border border-border bg-background text-foreground',
+                          'w-full border border-border bg-background text-foreground justify-between',
                           !isEditing && 'cursor-not-allowed opacity-50'
                         )}
                         disabled={!isEditing}
@@ -443,7 +449,9 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
 
               {/* Hire Date Picker */}
               <div className="flex flex-col">
-                <Label htmlFor="hireDate">Hire Date</Label>
+                <Label htmlFor="hireDate" className="mb-2">
+                  Hire Date
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -478,23 +486,21 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
 
           {/* Upload Images Section */}
           {!data.imageUrl && (
-            <div className="flex space-x-4">
-              <div className="flex-1">
-                <Label>Upload Images</Label>
-                <div className="flex items-center gap-2">
-                  <UploadButton
-                    disabled={!isEditing}
-                    input={{ employee_id: data.employee_id }}
-                    endpoint="employeeImageUploader"
-                    onClientUploadComplete={() => {
-                      toast({
-                        title: 'Success',
-                        description: 'Image uploaded successfully.',
-                      });
-                      router.refresh();
-                    }}
-                  />
-                </div>
+            <div className="flex flex-col mt-4">
+              <Label>Upload Images</Label>
+              <div className="flex items-center gap-2">
+                <UploadButton
+                  disabled={!isEditing}
+                  input={{ employee_id: data.employee_id }}
+                  endpoint="employeeImageUploader"
+                  onClientUploadComplete={() => {
+                    toast({
+                      title: 'Success',
+                      description: 'Image uploaded successfully.',
+                    });
+                    router.refresh();
+                  }}
+                />
               </div>
             </div>
           )}
@@ -506,13 +512,13 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
         )}
 
         {/* Dialog Footer */}
-        <DialogFooter className="sm:justify-start">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0 mt-4">
           {!isEditing && (
             <DialogClose asChild>
               <Button
                 type="button"
                 variant="secondary"
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                className="w-full sm:w-auto bg-secondary text-secondary-foreground hover:bg-secondary/90"
               >
                 Close
               </Button>
@@ -521,32 +527,32 @@ const EmployeeDataViewDialog: React.FC<EmployeeDataViewDialogProps> = ({
           <Button
             onClick={handleEditClick}
             className={cn(
+              'w-full sm:w-auto',
               isEditing ? 'bg-gray-500 text-white' : 'bg-primary text-primary-foreground'
             )}
           >
             {isEditing ? 'Cancel' : 'Edit'}
           </Button>
           {isEditing && (
-            <>
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveClick}
-                  disabled={!isFormValid || !hasChanges}
-                  className={cn(
-                    'bg-primary text-primary-foreground hover:bg-primary/90',
-                    (!isFormValid || !hasChanges) && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  Save
-                </Button>
-              </DialogClose>
-            </>
+            <DialogClose asChild>
+              <Button
+                onClick={handleSaveClick}
+                disabled={!isFormValid || !hasChanges}
+                className={cn(
+                  'w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90',
+                  (!isFormValid || !hasChanges) && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                Save
+              </Button>
+            </DialogClose>
           )}
+          {/* Uncomment if you want the Delete button */}
           {/* <DialogClose asChild>
             <Button
               onClick={handleDeleteClick}
               variant="destructive"
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="w-full sm:w-auto bg-red-600 text-white hover:bg-red-700"
             >
               Delete
             </Button>
