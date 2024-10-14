@@ -27,16 +27,16 @@ function KanbanBoard(props: {
   employees: Employee[];
   tools: Tool[];
   parts: Part[];
-  triggerRefresh: () => void;
+  fetchData: () => Promise<void>;
 }) {
-  const { workOrder, tasksOnColumns, allColumns, employees, tools, parts, triggerRefresh } = props;
+  const { workOrder, tasksOnColumns, allColumns, employees, tools, parts, fetchData } = props;
   const router = useRouter();
 
   useEffect(() => {
     setTasks(tasksOnColumns);
     setColumnOrder(Object.keys(tasksOnColumns));
     setColumnList(allColumns);
-  }, [tasksOnColumns, triggerRefresh, allColumns]);
+  }, [tasksOnColumns, allColumns]);
 
   const [tasks, setTasks] = useState<TasksOnColumns>(tasksOnColumns);
   const [columnOrder, setColumnOrder] = useState<string[]>(Object.keys(tasksOnColumns));
@@ -357,7 +357,7 @@ function KanbanBoard(props: {
                                           newTasks[columnId]?.splice(index, 1);
                                           setTasks(newTasks);
                                         }}
-                                        triggerRefresh={triggerRefresh}
+                                        fetchData={fetchData}
                                         type="kanban"
                                       />
                                     </div>
@@ -374,8 +374,8 @@ function KanbanBoard(props: {
                                   column_id={getColumnIdByName(columnId)}
                                   tools={tools}
                                   parts={parts}
-                                  triggerRefresh={triggerRefresh}
                                   type="kanban"
+                                  fetchData={fetchData} // Pass fetchData here
                                 />
                               </div>
                             </div>

@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 export default function EmployeeTable(props: { users: ClerkUser[]; orgs: Org[] }) {
   const { users, orgs } = props;
@@ -185,7 +186,7 @@ export default function EmployeeTable(props: { users: ClerkUser[]; orgs: Org[] }
             disabled={currentPage === 0}
             variant={currentPage === 0 ? 'secondary' : 'default'}
           >
-            ⮜
+            <FaArrowLeft />
           </Button>
           <span className="ml-2 mr-2 text-sm font-medium text-foreground">
             Page {currentPage + 1} of {totalPages}
@@ -197,7 +198,7 @@ export default function EmployeeTable(props: { users: ClerkUser[]; orgs: Org[] }
               (currentPage + 1) * itemsPerPage >= filteredUsers.length ? 'secondary' : 'default'
             }
           >
-            ➤
+            <FaArrowRight />
           </Button>
         </div>
         <div></div>

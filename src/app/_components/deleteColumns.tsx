@@ -19,7 +19,7 @@ import { FiTrash2 } from 'react-icons/fi';
 
 export default function DeleteColumnDialog(props: {
   columnsWorkOrder: Column[];
-  triggerRefresh: () => void;
+  fetchData: () => Promise<void>;
 }) {
   const router = useRouter();
 
@@ -33,12 +33,13 @@ export default function DeleteColumnDialog(props: {
     });
     if (response.ok) {
       router.refresh();
+      void props.fetchData();
     } else {
       console.error('Failed to delete columns:', response.statusText);
     }
   };
 
-  const { triggerRefresh, columnsWorkOrder } = props;
+  const { columnsWorkOrder } = props;
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>

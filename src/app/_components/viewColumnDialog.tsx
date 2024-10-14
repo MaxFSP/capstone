@@ -22,11 +22,11 @@ import { FiEdit2 } from 'react-icons/fi';
 
 export default function EditColumnDialog(props: {
   columnsWorkOrder: Column[];
-  triggerRefresh: () => void;
+  fetchData: () => Promise<void>;
 }) {
   const router = useRouter();
 
-  const { triggerRefresh, columnsWorkOrder } = props;
+  const { columnsWorkOrder, fetchData } = props;
   const [columnTitles, setColumnTitles] = useState<Record<number, string>>({});
 
   const initialValue = columnsWorkOrder;
@@ -58,8 +58,8 @@ export default function EditColumnDialog(props: {
         title: 'Success',
         description: 'Column edited successfully.',
       });
-      triggerRefresh();
       router.refresh();
+      void fetchData();
     } else {
       toast({
         title: 'Error',

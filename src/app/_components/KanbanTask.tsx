@@ -63,6 +63,8 @@ import { type Task } from '~/server/types/ITasks';
 import DeleteTaskDialog from './deleteTaskDialog';
 import { useRouter } from 'next/navigation';
 
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 export default function KanbanTask(props: {
   task: Task;
   employees: Employee[];
@@ -70,12 +72,12 @@ export default function KanbanTask(props: {
   tools: Tool[];
   parts: Part[];
   onGone: () => void;
-  triggerRefresh: () => void;
   type: string;
+  fetchData: () => Promise<void>;
 }) {
   type Priority = 'Low' | 'Medium' | 'High';
 
-  const { task, employees, column_id, tools, parts, onGone, triggerRefresh, type } = props;
+  const { task, employees, column_id, tools, parts, onGone, type, fetchData } = props;
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -83,13 +85,8 @@ export default function KanbanTask(props: {
   const [hasChanges, setHasChanges] = useState(false);
   const [initialFormData, setInitialFormData] = useState({ ...task });
 
-  let assigned_to = employees.find((employee) => employee.employee_id === task.assigned_to);
-  if (!assigned_to) {
-    assigned_to = employees[0]!;
-  }
-  const [assigned_employee, setAssignedEmployee] = useState(
-    assigned_to.firstName + ' ' + assigned_to.lastName
-  );
+  // Initialize assigned employee ID as a string
+  const [assignedEmployeeId, setAssignedEmployeeId] = useState(task.assigned_to.toString());
   const [priority, setPriority] = useState(task.priority);
 
   const [openTool, setOpenTool] = useState(false);
@@ -129,7 +126,7 @@ export default function KanbanTask(props: {
   useEffect(() => {
     if (!isEditing) {
       setTaskFormValue({ ...task });
-      setAssignedEmployee(assigned_to.firstName + ' ' + assigned_to.lastName);
+      setAssignedEmployeeId(task.assigned_to.toString());
       setPriority(task.priority);
       setDate({
         from: initialFormData.start_date,
@@ -143,7 +140,7 @@ export default function KanbanTask(props: {
   useEffect(() => {
     validateForm();
     checkForChanges();
-  }, [taskFormValue, priority, date, assigned_employee, toolList, partList]);
+  }, [taskFormValue, priority, date, assignedEmployeeId, toolList, partList]);
 
   const validateForm = () => {
     const isNameValid = validateStringWithSpaces(taskFormValue.title);
@@ -160,9 +157,9 @@ export default function KanbanTask(props: {
     const hasChanges =
       JSON.stringify(taskFormValue) !== JSON.stringify(task) ||
       priority !== task.priority ||
-      fromDate != task.start_date.toISOString().split('T')[0] ||
-      toDate != task.end_date.toISOString().split('T')[0] ||
-      assigned_employee !== assigned_to.firstName + ' ' + assigned_to.lastName ||
+      fromDate !== task.start_date.toISOString().split('T')[0] ||
+      toDate !== task.end_date.toISOString().split('T')[0] ||
+      assignedEmployeeId !== task.assigned_to.toString() ||
       toolList.length !== initialToolList.length ||
       partList.length !== initialPartList.length;
     setHasChanges(hasChanges);
@@ -220,9 +217,7 @@ export default function KanbanTask(props: {
 
   const handleSaveClick = async (): Promise<boolean> => {
     try {
-      taskFormValue.assigned_to = employees.find(
-        (employee) => employee.firstName + ' ' + employee.lastName === assigned_employee
-      )!.employee_id;
+      taskFormValue.assigned_to = parseInt(assignedEmployeeId);
 
       taskFormValue.start_date = date!.from!;
       taskFormValue.end_date = date!.to!;
@@ -266,9 +261,9 @@ export default function KanbanTask(props: {
             if (!addToolandPart.ok) {
               throw new Error('Failed to add tools and parts to task');
             }
-            triggerRefresh();
             router.refresh();
             setIsEditing(false);
+            await fetchData();
           } catch (error) {
             console.error('Failed to add tools and parts to task:', error);
           }
@@ -313,10 +308,17 @@ export default function KanbanTask(props: {
       <AlertDialogTrigger asChild>
         {type === 'kanban' ? (
           <div
-            className={`rounded ${task.priority === 'Low' ? 'bg-green-600' : task.priority === 'Medium' ? 'bg-yellow-600' : 'bg-red-600'} p-4 transition-shadow duration-150 ease-in-out hover:z-10 hover:shadow-outline`}
+            onClick={(e) => e.stopPropagation()}
+            className={`rounded ${
+              task.priority === 'Low'
+                ? 'bg-green-600'
+                : task.priority === 'Medium'
+                  ? 'bg-yellow-600'
+                  : 'bg-red-600'
+            }  transition-shadow p-4 duration-150 ease-in-out hover:z-10 hover:shadow-outline `}
             key={task.task_id + 'KanbanTask' + task.title}
           >
-            <div className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <div className="cursor-pointer">
               <h3 className="font-semibold">{task.title}</h3>
               <p>{task.start_date.toDateString() + ' - ' + task.end_date.toDateString()}</p>
             </div>
@@ -347,54 +349,37 @@ export default function KanbanTask(props: {
               />
             </div>
           </div>
-
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Observations</Label>
-              <Textarea
-                required
-                name="observations"
-                value={taskFormValue.description}
-                disabled={!isEditing}
-                onChange={(e) =>
-                  setTaskFormValue({
-                    ...taskFormValue,
-                    description: e.target.value,
-                  })
-                }
-                className={cn('w-full', isObservationsInvalid ? 'border-red-600' : '')}
-              />
-            </div>
+          <div className="flex-1">
+            <Label>Observations</Label>
+            <Textarea
+              required
+              name="observations"
+              value={taskFormValue.description}
+              disabled={!isEditing}
+              onChange={(e) =>
+                setTaskFormValue({
+                  ...taskFormValue,
+                  description: e.target.value,
+                })
+              }
+              className={cn('w-full', isObservationsInvalid ? 'border-red-600' : '')}
+            />
           </div>
-
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Assign an employee</Label>
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild disabled={!isEditing}>
-                  <Button className="w-full border border-border bg-background text-foreground">
-                    {assigned_employee}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full bg-background text-foreground">
-                  <DropdownMenuLabel>Employee</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={assigned_employee}
-                    onValueChange={(value: string) => setAssignedEmployee(value)}
-                  >
-                    {employees.map((employee) => (
-                      <DropdownMenuRadioItem
-                        key={employee.employee_id + 'employee' + employee.firstName + employee.job}
-                        value={employee.firstName + ' ' + employee.lastName}
-                      >
-                        {employee.firstName + ' ' + employee.lastName}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={employees.map((employee) => ({
+                  label: `${employee.firstName} ${employee.lastName}`,
+                  value: employee.employee_id.toString(),
+                }))}
+                placeholder="Select an employee..."
+                selectedValue={assignedEmployeeId}
+                onChange={(value) => setAssignedEmployeeId(value)}
+                disabled={!isEditing}
+              />
             </div>
+
             <div className="flex-1">
               <Label>Priority</Label>
               <DropdownMenu modal={false}>
