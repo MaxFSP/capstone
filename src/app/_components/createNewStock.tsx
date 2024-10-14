@@ -16,14 +16,14 @@ import { CreateMachineryDialog } from './createMachineryDialog';
 import { CreateToolDialog } from './createToolDialog';
 import { CreateEmployeeDialog } from './createEmployeeDialog';
 import { CreateWorkOrderDialog } from './createWorkOrderDialog';
-import { type User } from '~/server/types/IUser';
+import { type UserWithOrg } from '~/server/types/IUser';
 import { type Machinery } from '~/server/types/IMachinery';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '~/components/ui/tooltip';
 
 export function CreateNewStockDialog(props: {
   locations?: ILocation[];
   type: string;
-  users?: User[];
+  users?: UserWithOrg[];
   machines?: Machinery[];
 }) {
   const { locations, type, users, machines } = props;
