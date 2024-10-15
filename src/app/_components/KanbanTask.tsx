@@ -330,15 +330,15 @@ export default function KanbanTask(props: {
         ) : (
           <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Assigned to</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{employee?.firstName + ' ' + employee?.lastName}</span>
-              </div>
-            </div>
-            <div className="mb-2 flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">Title</p>
               <div className="flex items-center gap-2">
                 <span className="text-sm">{task.title}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Assigned to</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{employee?.firstName + ' ' + employee?.lastName}</span>
               </div>
             </div>
             <div className="mb-2 flex items-center justify-between">
