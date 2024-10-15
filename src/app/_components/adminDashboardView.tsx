@@ -65,12 +65,7 @@ export default function AdminDashboardView() {
         </div>
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center rounded-lg p-6 shadow-md">
-          <h1 className="mb-4 text-center text-3xl font-extrabold text-primary">
-            No Work Order Found
-          </h1>
-          <p className="w-full max-w-lg text-center text-lg text-muted-foreground">
-            Sit back and relax, we will create a work order for you soon.
-          </p>
+          <h1 className="mb-4 text-center text-3xl font-extrabold text-primary">Loading...</h1>
         </div>
       )}
     </div>
