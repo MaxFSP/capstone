@@ -283,8 +283,8 @@ export function AdminWorkOrderDataViewDialog(props: {
                         : 'Unassigned';
                       return (
                         <div key={task.task_id} className="p-2 border rounded">
-                          <p className="font-semibold">{task.title}</p>
-                          <p>{task.description}</p>
+                          <p className="font-semibold">Task title: {task.title}</p>
+                          <p>Description: {task.description}</p>
                           <p>Assigned To: {assignedTo}</p>
                           <p>Priority: {task.priority}</p>
                           <p>
