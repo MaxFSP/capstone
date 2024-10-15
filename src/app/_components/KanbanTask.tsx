@@ -72,12 +72,13 @@ export default function KanbanTask(props: {
   tools: Tool[];
   parts: Part[];
   onGone: () => void;
+  size: string;
   type: string;
   fetchData: () => Promise<void>;
 }) {
   type Priority = 'Low' | 'Medium' | 'High';
 
-  const { task, employees, column_id, tools, parts, onGone, type, fetchData } = props;
+  const { task, employees, column_id, tools, parts, onGone, type, fetchData, size } = props;
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -100,6 +101,7 @@ export default function KanbanTask(props: {
   const [toolList, setToolList] = useState<Tool[]>([]);
   const [initialPartList, setInitialPartList] = useState<Part[]>([]);
   const [initialToolList, setInitialToolList] = useState<Tool[]>([]);
+  const employee = employees.find((e) => e.employee_id === task.assigned_to);
 
   const [taskFormValue, setTaskFormValue] = useState({
     task_id: task.task_id,
@@ -323,8 +325,37 @@ export default function KanbanTask(props: {
               <p>{task.start_date.toDateString() + ' - ' + task.end_date.toDateString()}</p>
             </div>
           </div>
+        ) : size === 'lg' ? (
+          <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">View</p>
         ) : (
-          <p className="w-8 cursor-pointer text-small font-semibold">View</p>
+          <div className="flex flex-col border-b border-border px-5 py-4 text-foreground">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Assigned to</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{employee?.firstName + ' ' + employee?.lastName}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Title</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{task.title}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Priority</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{task.priority}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Start Date</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {task.start_date ? new Date(task.start_date).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </AlertDialogTrigger>
       <AlertDialogContent className="h-auto max-h-[90vh] max-w-[95vw] overflow-auto bg-background text-foreground lg:max-w-2xl">
@@ -635,7 +666,6 @@ export default function KanbanTask(props: {
               <AlertDialogCancel asChild>
                 <Button
                   type="button"
-                  variant={'default'}
                   onClick={handleSaveClick}
                   disabled={!isFormValid || !hasChanges}
                 >

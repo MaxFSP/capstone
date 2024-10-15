@@ -1,6 +1,4 @@
 import { useState, useEffect, type ChangeEvent } from 'react';
-export const dynamic = 'force-dynamic';
-
 import { Input } from '~/components/ui/input';
 import {
   Select,
@@ -16,6 +14,9 @@ import { type Machinery } from '~/server/types/IMachinery';
 
 import { AdminWorkOrderDataViewDialog } from './adminViewWorkOrderDialog';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+
+// Import icons
+import { FaDownload } from 'react-icons/fa';
 
 function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
   const { workOrders } = props;
@@ -103,6 +104,36 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
 
+  const handleDownloadButton = async (orderId: number) => {
+    try {
+      const response = await fetch('/api/generateWorkOrderExcelReport', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download Excel file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a link and trigger a download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Work_Order_Report_${orderId}.xlsx`;
+      a.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading Excel file:', error);
+    }
+  };
+
   return (
     <div className="px-4 pb-2 pt-0">
       {/* Filters */}
@@ -145,7 +176,7 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
         </Select>
       </div>
 
-      {/* Table */}
+      {/* Table for Larger Screens */}
       <div className="hidden rounded-lg bg-background p-4 shadow-lg md:block">
         <table className="w-full table-auto rounded-lg border border-border shadow-md">
           <thead className="bg-primary text-primary-foreground">
@@ -165,6 +196,7 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
               <th className="border-b border-border px-5 py-3 text-left">
                 <p className="text-s text-[11px] font-bold uppercase">Start Date</p>
               </th>
+              <th className="border-b border-border px-5 py-3 text-left"></th>
               <th className="border-b border-border px-5 py-3 text-left"></th>
             </tr>
           </thead>
@@ -203,7 +235,15 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
                       data={order}
                       type="list"
                       users={users}
+                      size="lg"
                       machines={machines}
+                    />
+                  </td>
+                  <td className={className}>
+                    <FaDownload
+                      onClick={() => handleDownloadButton(order.order_id)}
+                      className="cursor-pointer text-primary"
+                      size={20}
                     />
                   </td>
                 </tr>
@@ -211,13 +251,46 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
             })}
             {paginatedOrders.length === 0 && (
               <tr>
-                <td className="px-4 py-2 border-b text-center" colSpan={6}>
+                <td className="px-4 py-2 border-b text-center" colSpan={7}>
                   No work orders found.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* List for Smaller Screens */}
+      <div className="block rounded-lg bg-background p-4 shadow-lg md:hidden">
+        {paginatedOrders.map((order, index) => {
+          const user = users.find((u) => u.user_id === order.assigned_user);
+          const userName = user ? `${user.first_name} ${user.last_name}` : 'Unassigned';
+
+          let stateName = '';
+          if (order.state === 0) {
+            stateName = 'On Hold';
+          } else if (order.state === 1) {
+            stateName = 'In Progress';
+          } else if (order.state === 2) {
+            stateName = 'Done';
+          }
+
+          return (
+            <div key={order.order_id}>
+              <AdminWorkOrderDataViewDialog
+                title="View"
+                data={order}
+                type="list"
+                users={users}
+                size="sm"
+                machines={machines}
+              />
+            </div>
+          );
+        })}
+        {paginatedOrders.length === 0 && (
+          <div className="text-center text-sm text-muted-foreground">No work orders found.</div>
+        )}
       </div>
 
       {/* Pagination */}
