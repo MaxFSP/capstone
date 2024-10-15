@@ -357,6 +357,7 @@ function KanbanBoard(props: {
                                           newTasks[columnId]?.splice(index, 1);
                                           setTasks(newTasks);
                                         }}
+                                        size=""
                                         fetchData={fetchData}
                                         type="kanban"
                                       />

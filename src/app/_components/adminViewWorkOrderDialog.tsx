@@ -1,4 +1,6 @@
-// WorkOrderDataViewDialog.tsx
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// AdminWorkOrderDataViewDialog.tsx
 
 import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui/button';
@@ -12,140 +14,110 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '~/components/ui/dialog';
-import { CalendarIcon } from '@radix-ui/react-icons';
-import { format } from 'date-fns';
-import { cn } from '~/lib/utils';
-import { Calendar } from '~/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { useRouter } from 'next/navigation';
 import { type RegularWorkOrder } from '~/server/types/IOrders';
 import { type User } from '~/server/types/IUser';
 import { type Machinery } from '~/server/types/IMachinery';
-import { Switch } from '~/components/ui/switch';
-import { type z } from 'zod';
-import { useFormValidation } from '~/hooks/useFormValidation';
-import { regularWorkOrderSchema } from '~/server/types/IOrders';
-import LabeledInput from './LabeledInput';
-import { Label } from '~/components/ui/label';
 import { useToast } from '~/components/hooks/use-toast';
 
-import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+import { type Employee } from '~/server/types/IEmployee';
+import { type Task } from '~/server/types/ITasks';
+import { type Column } from '~/server/types/IColumns';
 
-type WorkOrderFormData = z.infer<typeof regularWorkOrderSchema>;
+interface WorkOrderDetails {
+  workOrder: RegularWorkOrder;
+  tasksOnColumns: Record<string, Task[]>;
+  columnsWorkOrder: Column[];
+  machinery: Machinery;
+  user: User;
+  employees: Employee[];
+}
 
 export function AdminWorkOrderDataViewDialog(props: {
   title: string;
   data: RegularWorkOrder;
   type: string;
+  size: string;
   users: User[];
-  machines: Machinery[];
 }) {
-  const { title, data, type, users, machines } = props;
-  const router = useRouter();
-  const current_date = data.start_date;
-  const current_state = data.state;
+  const { title, data, type, size, users } = props;
 
-  const [assigned_user, setAssignedUser] = useState(data.assigned_user.toString());
-  const [machinery, setMachine] = useState(data.machine_id.toString());
-  const [dateValue, setDateValue] = useState<Date>(new Date(data.start_date));
-  const [isEditing, setIsEditing] = useState(false);
-  const [initialFormData, setInitialFormData] = useState({ ...data });
-  const [hasChanges, setHasChanges] = useState(false);
-  const [currentStateBoolean, setCurrentStateBoolean] = useState<boolean>(data.state === 1);
   const { toast } = useToast();
-  const { formData, setFormData, isFormValid, errors, validateForm } =
-    useFormValidation<WorkOrderFormData>({
-      schema: regularWorkOrderSchema,
-      initialData: {
-        ...data,
-        start_date: new Date(data.start_date),
-        end_date: data.end_date ? new Date(data.end_date) : null,
-      },
-    });
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [workOrderDetails, setWorkOrderDetails] = useState<WorkOrderDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch data when dialog opens
   useEffect(() => {
-    if (!isEditing) {
-      setAssignedUser(data.assigned_user.toString());
-      setMachine(data.machine_id.toString());
-      setFormData({ ...data });
-      setDateValue(new Date(data.start_date));
+    if (dialogOpen) {
+      // Fetch the additional data
+      setLoading(true);
+      void fetchWorkOrderData();
     }
-  }, [isEditing, data]);
+  }, [dialogOpen]);
 
-  useEffect(() => {
-    checkForChanges();
-  }, [formData, machinery, assigned_user, dateValue, currentStateBoolean]);
-
-  const checkForChanges = () => {
-    const dateWithoutTime = dateValue.toISOString().split('T')[0];
-    const dateWithoutTimeCurrent = new Date(current_date).toISOString().split('T')[0];
-
-    const hasChanges =
-      JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
-      assigned_user !== data.assigned_user.toString() ||
-      machinery !== data.machine_id.toString() ||
-      dateWithoutTime !== dateWithoutTimeCurrent ||
-      currentStateBoolean !== (current_state === 1);
-
-    setHasChanges(hasChanges);
-  };
-
-  const handleEditClick = () => {
-    if (isEditing) {
-      setInitialFormData({ ...formData });
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value || null }));
-    validateForm();
-  };
-
-  const handleCancelClick = () => {
-    setFormData(initialFormData);
-    setCurrentStateBoolean(current_state === 1);
-    setIsEditing(false);
-  };
-
-  const handleSaveClick = async () => {
-    if (isFormValid && hasChanges) {
-      try {
-        const updatedFormData: WorkOrderFormData = {
-          ...formData,
-          assigned_user: parseInt(assigned_user),
-          machine_id: parseInt(machinery),
-          start_date: dateValue,
-          state: currentStateBoolean ? 1 : 0,
-        };
-
-        const response = await fetch('/api/updateWorkOrder', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updatedFormData),
-        });
-        if (response.ok) {
-          toast({
-            title: 'Success',
-            description: 'Work order edited successfully.',
-          });
-          router.refresh();
-          handleCancelClick();
-        } else {
-          console.error('Failed to update work order');
-          handleCancelClick();
-        }
-      } catch (error) {
-        console.error('Error updating work order:', error);
-        handleCancelClick();
+  const fetchWorkOrderData = async () => {
+    try {
+      const response = await fetch('/api/workOrderInformation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: data.order_id }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch work order data');
       }
+      const result = await response.json();
+      const dataReceived = result.data as WorkOrderDetails;
+      setWorkOrderDetails(dataReceived);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching work order data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch work order data.',
+        variant: 'destructive',
+      });
+      setLoading(false);
     }
   };
 
-  async function generateReport(orderId: number) {
+  // Function to generate Excel report
+  const generateExcelReport = async (orderId: number) => {
+    try {
+      const response = await fetch('/api/generateWorkOrderExcelReport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `WorkOrder_${orderId}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Failed to generate Excel report');
+        toast({
+          title: 'Error',
+          description: 'Failed to generate Excel report.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error generating Excel report:', error);
+      toast({
+        title: 'Error',
+        description: 'Error generating Excel report.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Function to generate PDF report
+  const generateReport = async (orderId: number) => {
     try {
       const response = await fetch('/api/generateWorkOrderReport', {
         method: 'POST',
@@ -166,14 +138,24 @@ export function AdminWorkOrderDataViewDialog(props: {
         window.URL.revokeObjectURL(url);
       } else {
         console.error('Failed to generate report');
+        toast({
+          title: 'Error',
+          description: 'Failed to generate report.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Error generating report:', error);
+      toast({
+        title: 'Error',
+        description: 'Error generating report.',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         {type === 'kanban' ? (
           <div
@@ -187,151 +169,151 @@ export function AdminWorkOrderDataViewDialog(props: {
               <h3 className="font-semibold">{data.name}</h3>
             </div>
           </div>
+        ) : size === 'lg' ? (
+          <p className="w-8 cursor-pointer text-sm font-semibold text-foreground">View</p>
         ) : (
-          <p className="w-8 cursor-pointer text-small font-semibold">View</p>
+          <div className="flex flex-col border-b border-border px-5 py-4 text-foreground cursor-pointer">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-base font-semibold">ID</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{data.order_id}</span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Name</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {data.name.length > 20 ? data.name.slice(0, 20) + '...' : data.name}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Assigned User</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {users.find((user) => user.user_id === data.assigned_user)
+                    ? `${users.find((user) => user.user_id === data.assigned_user)?.first_name} ${
+                        users.find((user) => user.user_id === data.assigned_user)?.last_name
+                      }`
+                    : 'Unassigned'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Start Date</p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {data.start_date ? new Date(data.start_date).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </DialogTrigger>
-      <DialogContent className="h-auto max-h-[90vh] overflow-auto bg-background text-foreground lg:max-w-2xl">
+      <DialogContent className="max-h-screen overflow-y-auto bg-background text-foreground w-full sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-lg">Edit {title}</DialogTitle>
-          <DialogDescription>
-            Make sure all the information is correct before saving changes.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>View the details of the work order below.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <LabeledInput
-                label="Name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                disabled={!isEditing}
-                required
-                error={errors.find((e) => e.path[0] === 'name')?.message}
-              />
-            </div>
-            <div className="flex-1">
-              <Label>Assigned Machine</Label>
-              <SingleSelectCombobox
-                options={machines.map((machine) => ({
-                  label: machine.serial_number,
-                  value: machine.machine_id.toString(),
-                }))}
-                placeholder="Select a machine..."
-                selectedValue={machinery}
-                onChange={(value) => setMachine(value)}
-                disabled={!isEditing}
-              />
-            </div>
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <p>Loading...</p>
           </div>
-
-          <LabeledInput
-            label="Observations"
-            name="observations"
-            type="text"
-            value={formData.observations ?? ''}
-            onChange={handleChange}
-            disabled={!isEditing}
-            error={errors.find((e) => e.path[0] === 'observations')?.message}
-          />
-
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <Label>Start Date</Label>
-              <Popover>
-                <PopoverTrigger asChild disabled={!isEditing}>
-                  <Button
-                    variant={'outline'}
-                    className={cn(
-                      'w-[240px] justify-start bg-background text-left font-normal',
-                      !dateValue && 'text-muted-foreground'
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateValue ? format(dateValue, 'PPP') : 'Pick a date'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 ">
-                  <Calendar
-                    mode="single"
-                    selected={dateValue}
-                    onSelect={(date) => {
-                      if (date) {
-                        setDateValue(date);
-                      }
-                    }}
-                    initialFocus
-                    className="border border-border bg-background text-foreground"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="flex-1">
-              <Label>Assigned User</Label>
-              <SingleSelectCombobox
-                options={users.map((user) => ({
-                  label: `${user.first_name} ${user.last_name}`,
-                  value: user.user_id.toString(),
-                }))}
-                placeholder="Select a user..."
-                selectedValue={assigned_user}
-                onChange={(value) => setAssignedUser(value)}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2 text-destructive">
-                {current_state === 2 && (
-                  <Label>This work order is marked as done. Enable it to continue.</Label>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="enableWorkOrder"
-                  disabled={!isEditing}
-                  checked={currentStateBoolean}
-                  onCheckedChange={() => setCurrentStateBoolean(!currentStateBoolean)}
-                />
-
-                <Label htmlFor="enableWorkOrder">Enable Work Order</Label>
+        ) : workOrderDetails ? (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-bold mb-4">Work Order Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="font-semibold">Order ID:</p>
+                  <p>{workOrderDetails.workOrder.order_id}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Name:</p>
+                  <p>{workOrderDetails.workOrder.name}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Machine:</p>
+                  <p>{`${workOrderDetails.machinery.brand} ${workOrderDetails.machinery.model} (${workOrderDetails.machinery.serial_number})`}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Assigned User:</p>
+                  <p>{`${workOrderDetails.user.first_name} ${workOrderDetails.user.last_name}`}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">Start Date:</p>
+                  <p>{new Date(workOrderDetails.workOrder.start_date).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="font-semibold">End Date:</p>
+                  <p>
+                    {workOrderDetails.workOrder.end_date
+                      ? new Date(workOrderDetails.workOrder.end_date).toLocaleDateString()
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold">Status:</p>
+                  <p>
+                    {workOrderDetails.workOrder.state === 1
+                      ? 'Active'
+                      : workOrderDetails.workOrder.state === 0
+                        ? 'On Hold'
+                        : 'Completed'}
+                  </p>
+                </div>
+                {/* Add more details if needed */}
               </div>
             </div>
+            {/* Columns and Tasks */}
+            <div>
+              <h2 className="text-xl font-bold mb-4">Columns and Tasks</h2>
+              {workOrderDetails.columnsWorkOrder.map((column: Column) => (
+                <div key={column.column_id} className="mt-4">
+                  <h3 className="text-lg font-semibold">{column.title}</h3>
+                  <div className="space-y-2">
+                    {workOrderDetails.tasksOnColumns[column.title]?.map((task: Task) => {
+                      const assignedEmployee = task.assigned_to
+                        ? workOrderDetails.employees.find(
+                            (e: Employee) => e.employee_id === task.assigned_to
+                          )
+                        : null;
+                      const assignedTo = assignedEmployee
+                        ? `${assignedEmployee.firstName} ${assignedEmployee.lastName}`
+                        : 'Unassigned';
+                      return (
+                        <div key={task.task_id} className="p-2 border rounded">
+                          <p className="font-semibold">{task.title}</p>
+                          <p>{task.description}</p>
+                          <p>Assigned To: {assignedTo}</p>
+                          <p>Priority: {task.priority}</p>
+                          <p>
+                            Status:{' '}
+                            {task.state === 1
+                              ? 'In Progress'
+                              : task.state === 0
+                                ? 'On Hold'
+                                : 'Completed'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-        {errors.length > 0 && (
-          <div className="mt-4 text-sm text-red-500">Please correct the errors before saving.</div>
+        ) : (
+          <div>
+            <p>No data available.</p>
+          </div>
         )}
-        <DialogFooter className="sm:justify-start">
-          {!isEditing && (
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Close
-              </Button>
-            </DialogClose>
-          )}
-          <Button onClick={isEditing ? handleCancelClick : handleEditClick}>
-            {isEditing ? 'Cancel' : 'Edit'}
-          </Button>
-          {isEditing && (
-            <>
-              <DialogClose asChild>
-                <Button
-                  onClick={handleSaveClick}
-                  disabled={!isFormValid || !hasChanges}
-                  className="bg-primary text-primary-foreground"
-                >
-                  Save
-                </Button>
-              </DialogClose>
-            </>
-          )}
+        <DialogFooter className="mt-4">
           <DialogClose asChild>
-            <Button onClick={() => generateReport(data.order_id)}>Generate Report</Button>
+            <Button variant="secondary">Close</Button>
           </DialogClose>
+          <Button onClick={() => generateExcelReport(data.order_id)}>Download Excel Report</Button>
+          <Button onClick={() => generateReport(data.order_id)}>Generate Report</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
