@@ -27,6 +27,7 @@ import {
   CommandList,
 } from '~/components/ui/command';
 import { Drawer, DrawerContent, DrawerTrigger } from '~/components/ui/drawer';
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
 
 import {
   AlertDialog,
@@ -56,6 +57,9 @@ import { type Tool } from '~/server/types/ITool';
 import { type Part } from '~/server/types/IPart';
 import { useToast } from '~/components/hooks/use-toast';
 
+import { ScrollArea } from '~/components/ui/scroll-area';
+import { Separator } from '~/components/ui/separator';
+
 export function CreateTaskDialog(props: {
   employees: Employee[];
   pos: number;
@@ -67,17 +71,20 @@ export function CreateTaskDialog(props: {
 }) {
   const { employees, pos, column_id, tools, parts, type, fetchData } = props;
   const router = useRouter();
-  const [assigned_employee, setAssignedEmployee] = useState(
-    employees[0]!.firstName + ' ' + employees[0]!.lastName
+  const [assignedEmployeeId, setAssignedEmployeeId] = useState(
+    employees[0]?.employee_id.toString() ?? ''
   );
+
   const [priority, setPriority] = useState('Low');
 
   const [openTool, setOpenTool] = useState(false);
   const [openPart, setOpenPart] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 768px)');
-  const [selectedTool, setSelectedTool] = useState(tools[0]!.brand + ': ' + tools[0]!.name);
+  const [selectedTool, setSelectedTool] = useState(tools[0]?.brand + ': ' + tools[0]?.name ?? '');
 
-  const [selectedPart, setSelectedPart] = useState(parts[0]!.name + ': ' + parts[0]!.part_number);
+  const [selectedPart, setSelectedPart] = useState(
+    parts[0]?.name + ': ' + parts[0]?.part_number ?? ''
+  );
 
   const [partList, setPartList] = useState<Part[]>([]);
   const [toolList, setToolList] = useState<Tool[]>([]);
@@ -88,7 +95,7 @@ export function CreateTaskDialog(props: {
     description: '',
     start_date: new Date(),
     end_date: new Date(),
-    assigned_to: employees[0]!.employee_id,
+    assigned_to: employees[0]?.employee_id ?? 0,
     column_id: column_id,
     position: pos,
     priority: priority,
@@ -107,105 +114,103 @@ export function CreateTaskDialog(props: {
 
     if (isNameValid && isDescriptionValid) {
       setIsOrderFormValid(true);
+    } else {
+      setIsOrderFormValid(false);
     }
   }, [taskFormValue]);
 
   const validateStringWithSpaces = (name: string) => /^[A-Za-z\s]+$/.test(name);
 
-  const handleWorkOrderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleWorkOrderChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTaskFormValue((prevValues) => ({ ...prevValues, [name]: value }));
   };
 
   const handleSaveClick = async (): Promise<boolean> => {
     try {
-      taskFormValue.assigned_to = employees.find(
-        (employee) => employee.firstName + ' ' + employee.lastName === assigned_employee
-      )!.employee_id;
-
-      taskFormValue.start_date = date!.from!;
-      taskFormValue.end_date = date!.to!;
-
-      taskFormValue.column_id = column_id;
-      taskFormValue.position = pos;
-      taskFormValue.priority = priority;
+      const newTask = {
+        ...taskFormValue,
+        assigned_to: parseInt(assignedEmployeeId),
+        start_date: date?.from ?? new Date(),
+        end_date: date?.to ?? new Date(),
+        column_id: column_id,
+        position: pos,
+        priority: priority,
+      };
 
       const response = await fetch('/api/createTask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(taskFormValue),
-      }).then(async (response) => {
-        if (!response.ok) {
-          throw new Error('Failed to create task');
-        } else {
-          const { data } = await response.json();
-          const toolListIds = toolList.map((tool) => tool.tool_id);
-          const partListIds = partList.map((part) => part.part_id);
-
-          const toolsAndParts = {
-            task_id: data[0].task_id,
-            tools: toolListIds,
-            parts: partListIds,
-          };
-
-          try {
-            const addToolandPart = await fetch('/api/addToolsAndPartsToTask', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(toolsAndParts),
-            });
-            if (!addToolandPart.ok) {
-              throw new Error('Failed to add tools and parts to task');
-            }
-            if (addToolandPart.ok) {
-              toast({
-                title: 'Success',
-                description: 'Tools and parts added successfully.',
-              });
-              router.refresh();
-              await fetchData();
-            }
-          } catch (error) {
-            toast({
-              title: 'Error',
-              description: 'Failed to add tools and parts to task.',
-              variant: 'destructive',
-            });
-          }
-        }
+        body: JSON.stringify(newTask),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to create task');
+      }
+
+      const { data } = await response.json();
+      const taskId = data[0].task_id;
+
+      const toolListIds = toolList.map((tool) => tool.tool_id);
+      const partListIds = partList.map((part) => part.part_id);
+
+      const toolsAndParts = {
+        task_id: taskId,
+        tools: toolListIds,
+        parts: partListIds,
+      };
+
+      const addToolAndPartResponse = await fetch('/api/addToolsAndPartsToTask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(toolsAndParts),
+      });
+
+      if (!addToolAndPartResponse.ok) {
+        throw new Error('Failed to add tools and parts to task');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Task created and tools/parts added successfully.',
+      });
+      router.refresh();
+      await fetchData();
 
       return true;
     } catch (error) {
+      console.error('Error creating task:', error);
       toast({
-        title: 'Success',
+        title: 'Error',
         description: 'Task could not be created.',
+        variant: 'destructive',
       });
-
       return false;
     }
   };
 
   const handleSaveAndCloseClick = async () => {
-    await handleSaveClick();
-    setTaskFormValue({
-      title: '',
-      description: '',
-      start_date: new Date(),
-      end_date: new Date(),
-      assigned_to: employees[0]!.employee_id,
-      column_id: column_id,
-      position: pos,
-      priority: priority,
-    });
-    setToolList([]);
-    setPartList([]);
-    setPriority('Low');
-    setAssignedEmployee(employees[0]!.firstName + ' ' + employees[0]!.lastName);
+    const success = await handleSaveClick();
+    if (success) {
+      setTaskFormValue({
+        title: '',
+        description: '',
+        start_date: new Date(),
+        end_date: new Date(),
+        assigned_to: employees[0]?.employee_id ?? 0,
+        column_id: column_id,
+        position: pos,
+        priority: 'Low',
+      });
+      setToolList([]);
+      setPartList([]);
+      setPriority('Low');
+      setAssignedEmployeeId(employees[0]?.employee_id.toString() ?? '');
+    }
   };
 
   const isNameInvalid = useMemo(
@@ -217,6 +222,7 @@ export function CreateTaskDialog(props: {
     () => taskFormValue.description !== '' && !validateStringWithSpaces(taskFormValue.description),
     [taskFormValue.description]
   );
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -264,14 +270,9 @@ export function CreateTaskDialog(props: {
               <Label>Observations</Label>
               <Textarea
                 required
-                name="observations"
+                name="description"
                 value={taskFormValue.description}
-                onChange={(e) =>
-                  setTaskFormValue({
-                    ...taskFormValue,
-                    description: e.target.value,
-                  })
-                }
+                onChange={handleWorkOrderChange}
                 className={cn(
                   'border border-border bg-background text-foreground',
                   isObservationsInvalid && 'border-destructive'
@@ -283,33 +284,15 @@ export function CreateTaskDialog(props: {
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Assign an employee</Label>
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    className="w-full border border-border bg-background text-foreground"
-                    variant="outline"
-                  >
-                    {assigned_employee}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full bg-background text-foreground">
-                  <DropdownMenuLabel>Employee</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={assigned_employee}
-                    onValueChange={(value: string) => setAssignedEmployee(value)}
-                  >
-                    {employees.map((employee) => (
-                      <DropdownMenuRadioItem
-                        key={employee.employee_id}
-                        value={employee.firstName + ' ' + employee.lastName}
-                      >
-                        {employee.firstName + ' ' + employee.lastName}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <SingleSelectCombobox
+                options={employees.map((employee) => ({
+                  label: `${employee.firstName} ${employee.lastName}`,
+                  value: employee.employee_id.toString(),
+                }))}
+                placeholder="Select an employee..."
+                selectedValue={assignedEmployeeId}
+                onChange={setAssignedEmployeeId}
+              />
             </div>
             <div className="flex-1">
               <Label>Priority</Label>
@@ -440,6 +423,67 @@ export function CreateTaskDialog(props: {
             </div>
           </div>
 
+          {/* Scroll Areas for Selected Tools and Parts */}
+          <div className="flex space-x-4">
+            {toolList.length > 0 ? (
+              <ScrollArea className="h-32 w-full flex-1 rounded-md border">
+                <Label className="p-2">Selected tools to use</Label>
+                <div className="p-2">
+                  {toolList.map((tool) => (
+                    <div key={tool.tool_type + 'tool' + tool.name + tool.tool_id}>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <p>{tool.brand + ': ' + tool.name}</p>
+                        <Button
+                          type="button"
+                          variant={'destructive'}
+                          className="cursor-pointer rounded-md bg-red-600 px-4 py-0 text-white"
+                          onClick={() => {
+                            setToolList(toolList.filter((t) => t.tool_id !== tool.tool_id));
+                          }}
+                        >
+                          X
+                        </Button>
+                      </div>
+                      <Separator className="my-2" />
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <div className="flex-1"></div>
+            )}
+
+            {partList.length > 0 ? (
+              <ScrollArea className="h-32 w-full flex-1 rounded-md border">
+                <Label className="p-2">Selected parts to use</Label>
+                <div className="p-2">
+                  {partList.map((part) => (
+                    <div key={part.part_id + 'part' + part.name}>
+                      <div
+                        key={part.part_id + 'part' + part.part_number + part.name}
+                        className="mt-2 flex items-center justify-between gap-2"
+                      >
+                        <p>{part.name + ': ' + part.part_number}</p>
+                        <Button
+                          type="button"
+                          className="cursor-pointer rounded-md bg-red-600 px-4 py-0 text-white"
+                          onClick={() => {
+                            setPartList(partList.filter((p) => p.part_id !== part.part_id));
+                          }}
+                        >
+                          X
+                        </Button>
+                      </div>
+                      <Separator className="my-2" />
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <div className="flex-1"></div>
+            )}
+          </div>
+
           <div className="flex space-x-4">
             <div className="flex-1">
               <Label>Date Range</Label>
@@ -499,15 +543,15 @@ export function CreateTaskDialog(props: {
                   description: '',
                   start_date: new Date(),
                   end_date: new Date(),
-                  assigned_to: employees[0]!.employee_id,
+                  assigned_to: employees[0]?.employee_id ?? 0,
                   column_id: column_id,
                   position: pos,
-                  priority: priority,
+                  priority: 'Low',
                 });
                 setToolList([]);
                 setPartList([]);
                 setPriority('Low');
-                setAssignedEmployee(employees[0]!.firstName + ' ' + employees[0]!.lastName);
+                setAssignedEmployeeId(employees[0]?.employee_id.toString() ?? '');
               }}
             >
               Close
@@ -550,7 +594,7 @@ function PartList({
             <CommandItem
               key={part.part_id}
               value={part.name}
-              onSelect={(value: string) => {
+              onSelect={() => {
                 setSelectedPart(part.name + ': ' + part.part_number);
                 if (!partList.some((p) => p.part_id === part.part_id)) {
                   setPartList([...partList, part]);
@@ -590,7 +634,7 @@ function ToolList({
             <CommandItem
               key={tool.tool_id}
               value={tool.name}
-              onSelect={(value: string) => {
+              onSelect={() => {
                 setSelectedTool(tool.brand + ': ' + tool.name);
                 if (!toolList.some((t) => t.tool_id === tool.tool_id)) {
                   setToolList([...toolList, tool]);

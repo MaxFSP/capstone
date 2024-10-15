@@ -269,7 +269,9 @@ export function CreateEmployeeDialog() {
       </div>
 
       <div className="flex flex-col">
-        <Label htmlFor="hireDate">Hire Date</Label>
+        <Label htmlFor="hireDate" className="mb-2">
+          Hire Date
+        </Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button

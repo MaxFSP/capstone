@@ -169,7 +169,11 @@ export async function POST(req: Request) {
       drawWorkOrderDetail('End Date:', 'No end date', yOffset + 120);
     }
 
-    drawWorkOrderDetail('Status:', workOrder.state === 1 ? 'Active' : 'Completed', yOffset + 140);
+    drawWorkOrderDetail(
+      'Status:',
+      workOrder.state === 1 ? 'Active' : workOrder.state === 0 ? 'On Hold' : 'Completed',
+      yOffset + 140
+    );
 
     yOffset += 160;
 
