@@ -233,10 +233,9 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
                     <AdminWorkOrderDataViewDialog
                       title={order.name}
                       data={order}
-                      type="list"
                       users={users}
+                      type="list"
                       size="lg"
-                      machines={machines}
                     />
                   </td>
                   <td className={className}>
@@ -252,7 +251,7 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
             {paginatedOrders.length === 0 && (
               <tr>
                 <td className="px-4 py-2 border-b text-center" colSpan={7}>
-                  No work orders found.
+                  Loading....
                 </td>
               </tr>
             )}
@@ -281,9 +280,8 @@ function AdminListBoard(props: { workOrders: RegularWorkOrder[] }) {
                 title="View"
                 data={order}
                 type="list"
-                users={users}
                 size="sm"
-                machines={machines}
+                users={users}
               />
             </div>
           );

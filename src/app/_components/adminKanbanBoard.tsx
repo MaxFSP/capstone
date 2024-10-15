@@ -168,8 +168,8 @@ function AdminKanbanBoard(props: {
                                       title={order.name}
                                       data={order}
                                       type="kanban"
+                                      size=""
                                       users={users}
-                                      machines={machines}
                                     />
                                   </div>
                                 )}
