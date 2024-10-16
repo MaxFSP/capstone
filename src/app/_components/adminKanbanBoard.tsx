@@ -42,6 +42,8 @@ function AdminKanbanBoard(props: {
         newColumnsData.Done?.push(order);
       }
     });
+    console.log('Initial workOrders:', workOrders); // Log workOrders
+    console.log('Initial columnsData:', newColumnsData); // Log columnsData
 
     setColumnsData(newColumnsData);
   }, [workOrders]);
@@ -116,7 +118,6 @@ function AdminKanbanBoard(props: {
         throw new Error('Failed to update work order state');
       }
       router.refresh();
-      void fetchData();
     } catch (error) {
       console.error('Error updating work order state:', error);
     }
