@@ -6,15 +6,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
 import { AlertDialogCancel, AlertDialogFooter } from '~/components/ui/alert-dialog';
 import { Label } from '~/components/ui/label';
 import { CalendarIcon } from '@radix-ui/react-icons';
@@ -27,13 +18,12 @@ import { type ToolCondition } from '~/server/types/ITool';
 import { useToast } from '~/components/hooks/use-toast'; // Assuming you have a useToast hook
 import { useRouter } from 'next/navigation';
 
+import { SingleSelectCombobox } from '~/components/ui/SingleSelectCombobox';
+
 export function CreateToolDialog(props: { locations: ILocation[] }) {
   const { locations } = props;
   const router = useRouter();
   const { toast } = useToast();
-
-  const [locationValue, setLocationValue] = useState(locations[0]?.name ?? '');
-  const [conditionValue, setConditionValue] = useState<ToolCondition>('Good');
 
   // Options arrays
   const toolTypes = [
@@ -85,10 +75,9 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
     quantity: '',
     acquisition_date: new Date(),
     location_id: locations[0]?.location_id ?? 0,
+    location_name: locations[0]?.name ?? '',
     observations: '',
   });
-
-  const [date, setDate] = useState<Date>(new Date());
 
   const [isEditing, setIsEditing] = useState(true);
   const [isToolFormValid, setIsToolFormValid] = useState(false);
@@ -107,6 +96,20 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
     setIsToolFormValid(isNameValid && isQuantityValid && isObservationsValid);
   }, [toolFormValues]);
 
+  // Error flags using useMemo
+  const isNameInvalid = useMemo(
+    () => toolFormValues.name !== '' && !validateName(toolFormValues.name),
+    [toolFormValues.name]
+  );
+  const isQuantityInvalid = useMemo(
+    () => toolFormValues.quantity !== '' && !validateQuantity(toolFormValues.quantity),
+    [toolFormValues.quantity]
+  );
+  const isObservationsInvalid = useMemo(
+    () => toolFormValues.observations !== '' && !validateObservations(toolFormValues.observations),
+    [toolFormValues.observations]
+  );
+
   // Handlers
   const handleToolInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -123,16 +126,8 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
 
   const handleSaveClick = async (): Promise<boolean> => {
     try {
-      const location = locations.find((loc) => loc.name === locationValue);
-      if (!location) {
-        throw new Error('Selected location is invalid.');
-      }
-
       const payload = {
         ...toolFormValues,
-        condition: conditionValue,
-        location_id: location.location_id,
-        acquisition_date: date,
       };
 
       const response = await fetch('/api/createTool', {
@@ -184,28 +179,12 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         quantity: '',
         acquisition_date: new Date(),
         location_id: locations[0]?.location_id ?? 0,
+        location_name: locations[0]?.name ?? '',
         observations: '',
       });
-      setDate(new Date());
-      setLocationValue(locations[0]?.name ?? '');
-      setConditionValue('Good');
       setIsEditing(true);
     }
   };
-
-  // Error flags using useMemo
-  const isNameInvalid = useMemo(
-    () => toolFormValues.name !== '' && !validateName(toolFormValues.name),
-    [toolFormValues.name]
-  );
-  const isQuantityInvalid = useMemo(
-    () => toolFormValues.quantity !== '' && !validateQuantity(toolFormValues.quantity),
-    [toolFormValues.quantity]
-  );
-  const isObservationsInvalid = useMemo(
-    () => toolFormValues.observations !== '' && !validateObservations(toolFormValues.observations),
-    [toolFormValues.observations]
-  );
 
   return (
     <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
@@ -232,27 +211,18 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
         </div>
         <div className="flex-1">
           <Label htmlFor="brand">Brand</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild disabled={!isEditing}>
-              <Button className="w-full border border-border bg-background text-foreground">
-                {toolFormValues.brand}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel>Brands</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={toolFormValues.brand}
-                onValueChange={(value) => setToolFormValues((prev) => ({ ...prev, brand: value }))}
-              >
-                {toolBrands.map((brand) => (
-                  <DropdownMenuRadioItem key={brand} value={brand}>
-                    {brand}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SingleSelectCombobox
+            options={toolBrands.map((brand) => ({
+              label: brand,
+              value: brand,
+            }))}
+            placeholder="Select a brand..."
+            selectedValue={toolFormValues.brand!}
+            onChange={(value) => {
+              setToolFormValues((prev) => ({ ...prev, brand: value }));
+            }}
+            disabled={!isEditing}
+          />
         </div>
       </div>
 
@@ -260,55 +230,33 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
       <div className="flex space-x-4">
         <div className="flex-1">
           <Label htmlFor="category">Category</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild disabled={!isEditing}>
-              <Button className="w-full border border-border bg-background text-foreground">
-                {toolFormValues.category}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel>Categories</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={toolFormValues.category}
-                onValueChange={(value) =>
-                  setToolFormValues((prev) => ({ ...prev, category: value }))
-                }
-              >
-                {toolCategories.map((category) => (
-                  <DropdownMenuRadioItem key={category} value={category}>
-                    {category}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SingleSelectCombobox
+            options={toolCategories.map((category) => ({
+              label: category,
+              value: category,
+            }))}
+            placeholder="Select a category..."
+            selectedValue={toolFormValues.category!}
+            onChange={(value) => {
+              setToolFormValues((prev) => ({ ...prev, category: value }));
+            }}
+            disabled={!isEditing}
+          />
         </div>
         <div className="flex-1">
           <Label htmlFor="tool_type">Tool Type</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild disabled={!isEditing}>
-              <Button className="w-full border border-border bg-background text-foreground">
-                {toolFormValues.tool_type}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel>Tool Types</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={toolFormValues.tool_type}
-                onValueChange={(value) =>
-                  setToolFormValues((prev) => ({ ...prev, tool_type: value }))
-                }
-              >
-                {toolTypes.map((type) => (
-                  <DropdownMenuRadioItem key={type} value={type}>
-                    {type}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SingleSelectCombobox
+            options={toolTypes.map((type) => ({
+              label: type,
+              value: type,
+            }))}
+            placeholder="Select a tool type..."
+            selectedValue={toolFormValues.tool_type!}
+            onChange={(value) => {
+              setToolFormValues((prev) => ({ ...prev, tool_type: value }));
+            }}
+            disabled={!isEditing}
+          />
         </div>
       </div>
 
@@ -361,59 +309,45 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
       <div className="flex space-x-4">
         <div className="flex-1">
           <Label>Location</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild disabled={!isEditing}>
-              <Button className="w-full border border-border bg-background text-foreground">
-                {locationValue}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel>Locations</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={locationValue}
-                onValueChange={(value) => {
-                  setLocationValue(value);
-                  const selectedLocation = locations.find((loc) => loc.name === value);
-                  if (selectedLocation) {
-                    setToolFormValues((prev) => ({
-                      ...prev,
-                      location_id: selectedLocation.location_id,
-                    }));
-                  }
-                }}
-              >
-                {locations.map((location) => (
-                  <DropdownMenuRadioItem key={location.name} value={location.name}>
-                    {location.name}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SingleSelectCombobox
+            options={locations.map((location) => ({
+              label: location.name,
+              value: location.name,
+            }))}
+            placeholder="Select a location..."
+            selectedValue={toolFormValues.location_name}
+            onChange={(value) => {
+              const selectedLocation = locations.find((loc) => loc.name === value);
+              if (selectedLocation) {
+                setToolFormValues((prev) => ({
+                  ...prev,
+                  location_name: selectedLocation.name,
+                  location_id: selectedLocation.location_id,
+                }));
+              }
+            }}
+            disabled={!isEditing}
+          />
         </div>
         <div className="flex-1">
           <Label>Condition</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild disabled={!isEditing}>
-              <Button className="w-full border border-border bg-background text-foreground">
-                {conditionValue}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background text-foreground">
-              <DropdownMenuLabel>Condition</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={conditionValue}
-                onValueChange={(value: string) => setConditionValue(value as ToolCondition)}
-              >
-                <DropdownMenuRadioItem value="Good">Good</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Bad">Bad</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Excellent">Excellent</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="Poor">Poor</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SingleSelectCombobox
+            options={[
+              { label: 'Good', value: 'Good' },
+              { label: 'Bad', value: 'Bad' },
+              { label: 'Excellent', value: 'Excellent' },
+              { label: 'Poor', value: 'Poor' },
+            ]}
+            placeholder="Select a condition..."
+            selectedValue={toolFormValues.condition}
+            onChange={(value) => {
+              setToolFormValues((prev) => ({
+                ...prev,
+                condition: value as ToolCondition,
+              }));
+            }}
+            disabled={!isEditing}
+          />
         </div>
       </div>
 
@@ -426,20 +360,23 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
               variant={'outline'}
               className={cn(
                 'w-[240px] justify-start border border-border bg-background text-left font-normal text-foreground',
-                !date && 'text-muted-foreground'
+                !toolFormValues.acquisition_date && 'text-muted-foreground'
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, 'PPP') : <span>Pick a date</span>}
+              {toolFormValues.acquisition_date ? (
+                format(toolFormValues.acquisition_date, 'PPP')
+              ) : (
+                <span>Pick a date</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto bg-background p-0 text-foreground" align="start">
             <Calendar
               mode="single"
-              selected={date}
+              selected={toolFormValues.acquisition_date}
               onSelect={(selectedDate) => {
                 if (selectedDate) {
-                  setDate(selectedDate);
                   setToolFormValues((prev) => ({
                     ...prev,
                     acquisition_date: selectedDate,
@@ -468,11 +405,9 @@ export function CreateToolDialog(props: { locations: ILocation[] }) {
                 quantity: '',
                 acquisition_date: new Date(),
                 location_id: locations[0]?.location_id ?? 0,
+                location_name: locations[0]?.name ?? '',
                 observations: '',
               });
-              setDate(new Date());
-              setLocationValue(locations[0]?.name ?? '');
-              setConditionValue('Good');
               setIsEditing(true);
             }}
             className="bg-secondary text-secondary-foreground"
