@@ -161,11 +161,11 @@ export function AdminWorkOrderDataViewDialog(props: {
           <div
             onClick={(e) => e.stopPropagation()}
             className={
-              'transition-shadow p-4 duration-150 ease-in-out hover:z-10 hover:shadow-outline'
+              'transition-shadow p-4 duration-150 ease-in-out hover:z-10 hover:shadow-outline border border-border rounded-lg'
             }
             key={data.order_id + 'KanbanTask'}
           >
-            <div className="cursor-pointer">
+            <div className="cursor-pointer ">
               <h3 className="font-semibold">{data.name}</h3>
             </div>
           </div>

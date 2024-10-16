@@ -2,7 +2,12 @@ import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 const isProtectedRoute = (pathname: string) => {
-  const excludedRoutes = ['/signIn', '/api/uploadthing', '/api/generateWorkOrderReport'];
+  const excludedRoutes = [
+    '/signIn',
+    '/api/uploadthing',
+    '/api/generateWorkOrderReport',
+    '/api/updateWorkOrderState',
+  ];
   return !excludedRoutes.some((route) => pathname.startsWith(route));
 };
 
