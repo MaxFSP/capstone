@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 const partsColumns = [
   { key: 'name', label: 'Name' },
   { key: 'condition', label: 'Condition' },
+  { key: 'part_number', label: 'Part Number' },
   { key: 'quantity', label: 'Quantity' },
 ];
 

@@ -120,7 +120,7 @@ export const partStock = createTable(
   {
     part_id: serial('part_id').primaryKey(),
     name: text('name').notNull(),
-    part_number: text('part_number').notNull(),
+    part_number: text('part_number').unique().notNull(),
     condition: varchar('condition', { length: 255 }).notNull(),
     quantity: integer('quantity').notNull(),
     location_id: serial('location_id').references(() => locations.location_id),
