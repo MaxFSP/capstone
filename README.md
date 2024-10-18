@@ -8,3 +8,4 @@
 - [x] attach database to UI
 - [x] add authentication (w/ clerk)
 - [x] create db schema
+Done
